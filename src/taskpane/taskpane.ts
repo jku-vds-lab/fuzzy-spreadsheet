@@ -1,4 +1,4 @@
-import Dimensions from './dimensions';
+import CellOperations from './operations';
 // C:\Windows\SysWOW64\F12
 
 /*
@@ -9,44 +9,49 @@ import Dimensions from './dimensions';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("run").onclick = addImpact;
-  document.getElementById("impact").onclick = addImpact;
+  document.getElementById("run").onclick = run;
+  document.getElementById("impact").onclick = run;
 }
 
-async function addImpact() {
-  try {
-    // Ensure cells and shapes are the same length
-    await Excel.run(async (context) => {
-      let dim = new Dimensions();
-      let cellAddresses = ["I6", "I7", "I8", "I9", "I11", "I12", "I13", "I14",
-        "I15", "I16"];
-      await dim.scanRange(cellAddresses, "I18");
-      let cells = dim.getCells();
-      dim.addImpactInfo(cells);
-      let shapes = dim.getShapes();
-      const sheet = context.workbook.worksheets.getItem("Probability");
-      for (let i = 0; i < cells.length; i++) {
-        var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
-        impact.name = "Impact" + i;
-        impact.height = shapes[i].height;
-        impact.width = shapes[i].width;
-        impact.left = cells[i].left + 2;
-        impact.top = cells[i].top + cells[i].height / 4;
-        impact.rotation = 0;
-        impact.fill.transparency = shapes[i].transparency;
-        impact.lineFormat.weight = 0;
-        impact.lineFormat.color = shapes[i].color;
-        impact.fill.setSolidColor(shapes[i].color);
-      }
-      // createImpactLegend().then(function () { });
-      await context.sync();
-    });
-  } catch (error) {
-    console.error(error);
-  }
-}
+// async function addImpact() {
+//   try {
+//     // Ensure cells and shapes are the same length
+//     await Excel.run(async (context) => {
+//       let dim = new CellOperations();
+//       let cellAddresses = ["I6", "I7", "I8", "I9", "I11", "I12", "I13", "I14",
+//         "I15", "I16"];
+//       await dim.scanRange(cellAddresses, "I18");
+//       let cells = dim.getCells();
+//       dim.addImpactInfo(cells);
+//       let shapes = dim.getShapes();
+//       const sheet = context.workbook.worksheets.getItem("Probability");
+//       for (let i = 0; i < cells.length; i++) {
+//         var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
+//         impact.name = "Impact" + i;
+//         impact.height = shapes[i].height;
+//         impact.width = shapes[i].width;
+//         impact.left = cells[i].left + 2;
+//         impact.top = cells[i].top + cells[i].height / 4;
+//         impact.rotation = 0;
+//         impact.fill.transparency = shapes[i].transparency;
+//         impact.lineFormat.weight = 0;
+//         impact.lineFormat.color = shapes[i].color;
+//         impact.fill.setSolidColor(shapes[i].color);
+//       }
+//       // createImpactLegend().then(function () { });
+//       await context.sync();
+//     });
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
 async function run() {
   try {
+    let x = new CellOperations();
+    let cells = await x.scanCellsInRange();
+    await x.insertRelations(cells);
+    console.log("Cells");
+    console.log(cells);
     await Excel.run(async context => {
       /**
        * Insert your Excel code here

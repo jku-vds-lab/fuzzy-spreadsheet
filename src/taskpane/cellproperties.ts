@@ -1,6 +1,7 @@
 /* global Excel */
 
 export default class CellProperties {
+  public id: string;
   public cell: string;
   public value: number;
   public top: number;
@@ -15,6 +16,7 @@ export default class CellProperties {
   public inCells: CellProperties[];
   public outCells: CellProperties[];
   CellProperties() {
+    this.id = "";
     this.cell = "";
     this.value = 0;
     this.top = 0;
