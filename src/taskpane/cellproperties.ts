@@ -2,7 +2,7 @@
 
 export default class CellProperties {
   public id: string;
-  public cell: string;
+  public address: string;
   public value: number;
   public top: number;
   public left: number;
@@ -17,7 +17,7 @@ export default class CellProperties {
   public outCells: CellProperties[];
   CellProperties() {
     this.id = "";
-    this.cell = "";
+    this.address = "";
     this.value = 0;
     this.top = 0;
     this.left = 0;
@@ -29,7 +29,7 @@ export default class CellProperties {
     this.outputCells = new Array<string>();
   }
   async getCellProperties(cellAddress: string, focusCell: string, degreeToFocus: number) {
-    this.cell = cellAddress;
+    this.address = cellAddress;
     this.isFocus = false;
     if (cellAddress == focusCell) {
       this.isFocus = true;

@@ -9,15 +9,13 @@ export default class CellOperations {
 
   CellOperations() { }
 
-  getCells() {
-    return this.cells;
-  }
   getShapes() {
     return this.shapes;
   }
 
-  async scanCellsInRange() {
-    let cells = new Array<CellProperties>();
+  async getCellsAttributes() {
+    this.cells = new Array<CellProperties>();
+
     await Excel.run(async (context) => {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
@@ -34,37 +32,39 @@ export default class CellOperations {
         for (let j = colIndex; j < colIndex + colCount; j++) {
 
           let cell = sheet.getCell(i, j);
+
           cell.load(["formulas", "top", "left", "height", "width", "address", "values"]);
+
           await context.sync();
 
           if (cell.values[0][0] == "") {
             continue;
           }
-          let cellProp = new CellProperties();
-          cellProp.id = "R" + i + "C" + j;
-          cellProp.cell = cell.address;
-          cellProp.value = cell.values[0][0];
-          cellProp.top = cell.top;
-          cellProp.left = cell.left;
-          cellProp.height = cell.height;
-          cellProp.width = cell.width;
-          cellProp.formula = cell.formulas[0][0];
-          if (cellProp.formula == cellProp.value) {
-            cellProp.formula = "";
+
+          let cellProperties = new CellProperties();
+          cellProperties.id = "R" + i + "C" + j;
+          cellProperties.address = cell.address;
+          cellProperties.value = cell.values[0][0];
+          cellProperties.top = cell.top;
+          cellProperties.left = cell.left;
+          cellProperties.height = cell.height;
+          cellProperties.width = cell.width;
+          cellProperties.formula = cell.formulas[0][0];
+
+          if (cellProperties.formula == cellProperties.value) {
+            cellProperties.formula = "";
           }
-          cellProp.inCells = new Array<CellProperties>();
-          cellProp.outCells = new Array<CellProperties>();
-          cells.push(cellProp);
+          cellProperties.inCells = new Array<CellProperties>();
+          cellProperties.outCells = new Array<CellProperties>();
+          this.cells.push(cellProperties);
         }
       }
-      // define input/output cells now
-      // this.insertRelations(cells);
       await context.sync();
     });
-    return cells;
+    return this.cells;
   }
 
-  async insertRelations(cells: CellProperties[]) {
+  async getRelations(cells: CellProperties[]) {
 
     for (let i = 0; i < cells.length; i++) {
 
@@ -74,31 +74,83 @@ export default class CellOperations {
 
       let rangeAddress = CellOperations.getRangeFromFormula(cells[i].formula);
 
+
       await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        const range = sheet.getRange(rangeAddress);
-        range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
-        await context.sync();
 
-        const rowIndex = range.rowIndex;
-        const colIndex = range.columnIndex;
-        const rowCount = range.rowCount;
-        const colCount = range.columnCount;
+        for (let rangeIndex = 0; rangeIndex < rangeAddress.length; rangeIndex++) {
 
-        for (let r = rowIndex; r < rowIndex + rowCount; r++) {
-          for (let c = colIndex; c < colIndex + colCount; c++) {
-            let id = "R" + r + "C" + c;
-            cells.forEach((cell: CellProperties) => {
-              if (cell.id == id) {
-                cells[i].inCells.push(cell);
-                cell.outCells.push(cells[i]);
+          const range = sheet.getRange(rangeAddress[rangeIndex]);
+          range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
+          await context.sync();
 
-              }
-            })
+          const rowIndex = range.rowIndex;
+          const colIndex = range.columnIndex;
+          const rowCount = range.rowCount;
+          const colCount = range.columnCount;
+
+          for (let r = rowIndex; r < rowIndex + rowCount; r++) {
+            for (let c = colIndex; c < colIndex + colCount; c++) {
+              const id = "R" + r + "C" + c;
+              cells.forEach((cell: CellProperties) => {
+                if (cell.id == id) {
+                  cells[i].inCells.push(cell);
+                  cell.outCells.push(cells[i]);
+                }
+              })
+            }
           }
         }
       });
     }
+  }
+
+  inCellsDegree(cells: CellProperties[], i: number) {
+
+    cells.forEach((inCell: CellProperties) => {
+      inCell.degreeToFocus = i;
+      if (inCell.inCells.length > 0) {
+        i = i + 1;
+        this.inCellsDegree(inCell.inCells, i++);
+      }
+      i = 1;
+    });
+  }
+
+  outCellsDegree(cells: CellProperties[], i: number) {
+
+    cells.forEach((outCell: CellProperties) => {
+      outCell.degreeToFocus = i;
+      if (outCell.outCells.length > 0) {
+        i = i + 1;
+        this.inCellsDegree(outCell.outCells, i++);
+      }
+      i = 1;
+    });
+  }
+
+  getNeighbourhood(cells: CellProperties[], focusCellAddress: string) {
+    let focusCell = new CellProperties();
+
+    cells.forEach((cell: CellProperties) => {
+      if (cell.address == focusCellAddress) {
+        focusCell = cell;
+      }
+    });
+
+    focusCell.degreeToFocus = 0;
+
+    this.inCellsDegree(focusCell.inCells, 1);
+    this.inCellsDegree(focusCell.outCells, 1);
+    // this.outCellsDegree(focusCell.inCells, 1);
+    // this.outCellsDegree(focusCell.outCells, 1);
+    console.log(cells);
+
+    // await Excel.run(async (context) => {
+
+    //   const sheet = context.workbook.worksheets.getActiveWorksheet();
+    //   context.sync();
+    // })
   }
 
 
@@ -188,62 +240,69 @@ export default class CellOperations {
     }
   }
   static getRangeFromFormula(formula: string) {
-    let rangeAddress = "";
+    let rangeAddress = new Array<string>();
     if (formula == "") {
       return;
     }
-    if (formula.includes("SUM")) {
+    if (formula.includes("SUM") && formula.includes(',')) {
       let i = formula.indexOf("SUM");
-      rangeAddress = formula.slice(i + 3);
-      // rangeAddress = formula.replace("= SUM", "");
+      formula = formula.slice(i + 3);
+      formula = formula.replace('(', '');
+      formula = formula.replace(')', '');
+      rangeAddress = formula.split(',');
+    }
+
+    if (formula.includes("SUM") && formula.includes(":")) {
+      let i = formula.indexOf("SUM");
+      rangeAddress.push(formula.slice(i + 3));
     }
     if (formula.includes("MEDIAN")) {
       let i = formula.indexOf("MEDIAN");
-      rangeAddress = formula.slice(i + 6);
-      // rangeAddress = formula.replace("= MEDIAN", "");
+      rangeAddress.push(formula.slice(i + 6));
     }
+
     return rangeAddress;
   }
-  addRelationshipInfo(cells: CellProperties[]) {
-    Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getItem("Probability");
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].outputCells = new Array<string>();
-        cells[i].inputCells = new Array<Excel.Range>();
-        let rangeAddress: string = CellOperations.getRangeFromFormula(cells[i].formula);
-        if (rangeAddress.includes(",")) {
-          let splits = rangeAddress.split(",");
-          for (var split in splits) {
-            cells[i].inputCells.push(sheet.getRange(split));
-            // cells[i].inputCells.format.fill.color = "orange";
-          }
-        }
-        cells[i].inputCells.forEach((c: Excel.Range) => {
-          // c.format.fill.color("orange");
-          c.format.fill.color = "orange";
-        });
-        for (let j = 0; j < cells.length; j++) {
-          if (cells[i].cell == cells[j].cell) {
-            continue;
-          }
-          rangeAddress = CellOperations.getRangeFromFormula(cells[j].formula);
-          if (rangeAddress.includes(",")) {
-            continue;
-          } // not checking it at the moment, but also needs to be included
-          let range = sheet.getRange(rangeAddress);
-          let checkIntersection = range.getIntersectionOrNullObject(cells[i].cell);
-          checkIntersection.load("address");
-          await context.sync().then(function () {
-            if (checkIntersection.address) {
-              cells[i].outputCells.push(cells[j].cell);
-            }
-          });
-        }
-        console.log("Output Cells for  " + cells[i].cell, cells[i].outputCells);
-      }
-      await context.sync().then(function () { });
-    }).catch(function (error) {
-      console.log("Error: " + JSON.stringify(error.debugInfo));
-    });
-  }
+  // addRelationshipInfo(cells: CellProperties[]) {
+  //   Excel.run(async (context) => {
+  //     const sheet = context.workbook.worksheets.getItem("Probability");
+  //     for (let i = 0; i < cells.length; i++) {
+  //       cells[i].outputCells = new Array<string>();
+  //       cells[i].inputCells = new Array<Excel.Range>();
+  //       let rangeAddress: string = CellOperations.getRangeFromFormula(cells[i].formula);
+  //       if (rangeAddress.includes(",")) {
+  //         let splits = rangeAddress.split(",");
+  //         for (var split in splits) {
+  //           cells[i].inputCells.push(sheet.getRange(split));
+  //           // cells[i].inputCells.format.fill.color = "orange";
+  //         }
+  //       }
+  //       cells[i].inputCells.forEach((c: Excel.Range) => {
+  //         // c.format.fill.color("orange");
+  //         c.format.fill.color = "orange";
+  //       });
+  //       for (let j = 0; j < cells.length; j++) {
+  //         if (cells[i].address == cells[j].address) {
+  //           continue;
+  //         }
+  //         rangeAddress = CellOperations.getRangeFromFormula(cells[j].formula);
+  //         if (rangeAddress.includes(",")) {
+  //           continue;
+  //         } // not checking it at the moment, but also needs to be included
+  //         let range = sheet.getRange(rangeAddress);
+  //         let checkIntersection = range.getIntersectionOrNullObject(cells[i].address);
+  //         checkIntersection.load("address");
+  //         await context.sync().then(function () {
+  //           if (checkIntersection.address) {
+  //             cells[i].outputCells.push(cells[j].address);
+  //           }
+  //         });
+  //       }
+  //       console.log("Output Cells for  " + cells[i].address, cells[i].outputCells);
+  //     }
+  //     await context.sync().then(function () { });
+  //   }).catch(function (error) {
+  //     console.log("Error: " + JSON.stringify(error.debugInfo));
+  //   });
+  // }
 }

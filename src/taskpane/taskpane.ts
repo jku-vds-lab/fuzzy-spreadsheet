@@ -47,11 +47,11 @@ Office.initialize = () => {
 // }
 async function run() {
   try {
-    let x = new CellOperations();
-    let cells = await x.scanCellsInRange();
-    await x.insertRelations(cells);
-    console.log("Cells");
-    console.log(cells);
+    let cellOp = new CellOperations();
+    let cells = await cellOp.getCellsAttributes();
+    console.log("-----------------------------------");
+    await cellOp.getRelations(cells);
+
     await Excel.run(async context => {
       /**
        * Insert your Excel code here
@@ -66,6 +66,7 @@ async function run() {
 
       await context.sync();
       console.log(`The range address was ${range.address}.`);
+      cellOp.getNeighbourhood(cells, range.address);
     });
   } catch (error) {
     console.error(error);
