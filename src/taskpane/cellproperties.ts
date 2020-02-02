@@ -137,7 +137,7 @@ export default class CellProperties {
 
     this.inCellsDegree(focusCell.inputCells, 1);
     this.outCellsDegree(focusCell.outputCells, 1);
-    console.log(focusCell);
+    return focusCell;
   }
 
   private getRangeFromFormula(formula: string) {

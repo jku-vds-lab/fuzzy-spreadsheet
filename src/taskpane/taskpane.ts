@@ -37,8 +37,11 @@ async function run() {
       range.format.fill.color = "yellow";
 
       await context.sync();
-      console.log(`The range address was ${range.address}.`);
-      await cellOp.addImpactInfo(cells, range.address);
+
+      let focusCell = cellProp.getNeighbouringCells(cells, range.address);
+      cellOp.setCells(cells);
+
+      await cellOp.addImpact(focusCell);
     });
   } catch (error) {
     console.error(error);

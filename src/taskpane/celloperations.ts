@@ -15,6 +15,10 @@ export default class CellOperations {
     return this.shapes;
   }
 
+  setCells(cells: CellProperties[]) {
+    this.cells = cells;
+  }
+
 
   addSpreadInfo() {
     Excel.run(async (context) => {
@@ -38,99 +42,159 @@ export default class CellOperations {
     });
   }
 
-  async addImpactInfo(cells: CellProperties[], focusCellAddress: string) {
+  private addImpactInfo(focusCell: CellProperties) {
 
-    let x = new CellProperties();
-    x.getNeighbouringCells(cells, focusCellAddress);
-    console.log(cells);
-    // use these cells for getting impact infor and other info
+    let height = 5;
+    let width = 5;
 
-    // console.log(this.cells);
-    // this.cells = cells;
-    // let color = "green";
-    // let transparency = 0;
-    // let height = 5;
-    // let width = 5;
-    // let secondDegreeDivisor = -1;
-    // this.shapes = new Array<ShapeProperties>();
-    // // Finding the firstDegreeDivisor
-    // this.cells.forEach((cell: CellProperties) => {
-    //   let val = cell.value;
-    //   if (val < 0) {
-    //     val = -cell.value;
-    //   }
-    //   if (cell.degreeToFocus == 1 && val > firstDegreeDivisor) {
-    //     firstDegreeDivisor = val;
-    //   }
-    // });
-    // // Finding the secondDegreeDivisor & assigning shape properties
-    // this.cells.forEach((cell: CellProperties) => {
-    //   let val = cell.value;
-    //   if (val < 0) {
-    //     val = -cell.value;
-    //   }
-    //   if (cell.value < 0) {
-    //     color = "red";
-    //   }
-    //   if (cell.degreeToFocus == 1) {
-    //     secondDegreeDivisor = val;
-    //     transparency = 1 - val / firstDegreeDivisor;
-    //   } else if (cell.degreeToFocus == 2) {
-    //     transparency = 1 - val / secondDegreeDivisor;
-    //   }
-    //   this.shapes.push(
-    //     new ShapeProperties().getShapeProperties(Excel.GeometricShapeType.rectangle, color, transparency, height, width)
-    //   );
-    // });
+    this.shapes = new Array<ShapeProperties>();
+
+    focusCell.inputCells.forEach((inCell: CellProperties) => {
+
+      let prop = this.calculateInTransparency(inCell.value, focusCell.value, focusCell.inputCells);
+
+      this.shapes.push(
+        new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      );
+    })
+
+    focusCell.outputCells.forEach((outCell: CellProperties) => {
+
+      let prop = this.calculateOutTransparency(outCell.value, focusCell.value, focusCell.outputCells);
+
+      this.shapes.push(
+        new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      );
+    })
   }
 
-  // async function addImpact() {
-  //   try {
-  //     // Ensure cells and shapes are the same length
-  //     await Excel.run(async (context) => {
-  //       let dim = new CellOperations();
-  //       let cellAddresses = ["I6", "I7", "I8", "I9", "I11", "I12", "I13", "I14",
-  //         "I15", "I16"];
-  //       await dim.scanRange(cellAddresses, "I18");
-  //       let cells = dim.getCells();
-  //       dim.addImpactInfo(cells);
-  //       let shapes = dim.getShapes();
-  //       const sheet = context.workbook.worksheets.getItem("Probability");
-  //       for (let i = 0; i < cells.length; i++) {
-  //         var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
-  //         impact.name = "Impact" + i;
-  //         impact.height = shapes[i].height;
-  //         impact.width = shapes[i].width;
-  //         impact.left = cells[i].left + 2;
-  //         impact.top = cells[i].top + cells[i].height / 4;
-  //         impact.rotation = 0;
-  //         impact.fill.transparency = shapes[i].transparency;
-  //         impact.lineFormat.weight = 0;
-  //         impact.lineFormat.color = shapes[i].color;
-  //         impact.fill.setSolidColor(shapes[i].color);
-  //       }
-  //       // createImpactLegend().then(function () { });
-  //       await context.sync();
-  //     });
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // }
+  async addImpact(focusCell: CellProperties) {
+    this.addImpactInfo(focusCell);
 
-  async addLikelihoodInfo(cells: CellProperties[], shapes: ShapeProperties[], likelihoodAddresses: string[]) {
-    this.cells = cells;
-    this.shapes = shapes;
-    let likelihoodCell: number;
-    if (this.shapes.length > 0) {
-      if (this.shapes.length != likelihoodAddresses.length) {
-        return;
-      }
-      for (let i = 0; i < this.shapes.length; i++) {
-        likelihoodCell = 50; //await new CellProperties().getCellValue(likelihoodAddresses[i]);
-        this.shapes[i].height = likelihoodCell / 10;
-        this.shapes[i].width = likelihoodCell / 10;
-      }
+    try {
+      // Ensure cells and shapes are the same length
+      await Excel.run(async (context) => {
+
+        const sheet = context.workbook.worksheets.getItem("Probability");
+        for (let i = 0; i < this.shapes.length; i++) {
+          var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
+          impact.name = "Impact" + i;
+          impact.height = this.shapes[i].height;
+          impact.width = this.shapes[i].width;
+          impact.left = this.shapes[i].cell.left + 2;
+          impact.top = this.shapes[i].cell.top + this.shapes[i].cell.height / 4;
+          impact.rotation = 0;
+          impact.fill.transparency = this.shapes[i].transparency;
+          impact.lineFormat.weight = 0;
+          impact.lineFormat.color = this.shapes[i].color;
+          impact.fill.setSolidColor(this.shapes[i].color);
+        }
+        // createImpactLegend().then(function () { });
+        await context.sync();
+      });
+    } catch (error) {
+      console.error(error);
     }
   }
+
+  private calculateInTransparency(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+
+    let color = "green";
+    let transparency = 0;
+
+    if (focusCellValue > 0 && cellValue < 0) {
+      color = "red";
+    }
+
+    if (focusCellValue < 0 && cellValue < 0 && focusCellValue > cellValue) {
+      color = "red";
+    }
+
+    if (cellValue < focusCellValue) {
+
+      let value = cellValue / focusCellValue;
+
+      if (value < 0) {
+        value = -value;
+      }
+
+      transparency = 1 - value;
+    }
+    else {
+      let maxValue = cellValue;
+
+      cells.forEach((c: CellProperties) => {
+        let val = c.value;
+
+        if (val < 0) {
+          val = -val;
+        }
+        if (c.value > maxValue) {
+          maxValue = c.value;
+        }
+      })
+
+      transparency = 1 - (cellValue / maxValue);
+    }
+
+    return { color: color, transparency: transparency };
+  }
+
+  private calculateOutTransparency(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+
+    let color = "green";
+    let transparency = 0;
+
+    if (focusCellValue > 0 && cellValue < 0) {
+      color = "red";
+    }
+
+    if (focusCellValue < 0 && cellValue < 0 && focusCellValue > cellValue) {
+      color = "red";
+    }
+
+    if (cellValue < focusCellValue) {
+      let maxValue = cellValue;
+
+      cells.forEach((c: CellProperties) => {
+        let val = c.value;
+        if (val < 0) {
+          val = -val;
+        }
+        if (c.value > maxValue) {
+          maxValue = c.value;
+        }
+      })
+
+      transparency = 1 - (cellValue / maxValue);
+
+    }
+    else {
+      let value = cellValue / focusCellValue;
+
+      if (value < 0) {
+        value = -value;
+      }
+
+      transparency = 1 - value;
+    }
+
+    return { color: color, transparency: transparency };
+  }
+  // async addLikelihoodInfo(cells: CellProperties[], shapes: ShapeProperties[], likelihoodAddresses: string[]) {
+  //   this.cells = cells;
+  //   this.shapes = shapes;
+  //   let likelihoodCell: number;
+  //   if (this.shapes.length > 0) {
+  //     if (this.shapes.length != likelihoodAddresses.length) {
+  //       return;
+  //     }
+  //     for (let i = 0; i < this.shapes.length; i++) {
+  //       likelihoodCell = 50; //await new CellProperties().getCellValue(likelihoodAddresses[i]);
+  //       this.shapes[i].height = likelihoodCell / 10;
+  //       this.shapes[i].width = likelihoodCell / 10;
+  //     }
+  //   }
+  // }
 
 }
