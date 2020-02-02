@@ -50,6 +50,7 @@ export default class CellOperations {
           cellProperties.height = cell.height;
           cellProperties.width = cell.width;
           cellProperties.formula = cell.formulas[0][0];
+          cellProperties.degreeToFocus = -1;
 
           if (cellProperties.formula == cellProperties.value) {
             cellProperties.formula = "";
@@ -107,23 +108,24 @@ export default class CellOperations {
 
   inCellsDegree(cells: CellProperties[], i: number) {
 
-    cells.forEach((inCell: CellProperties) => {
-      inCell.degreeToFocus = i;
-      if (inCell.inCells.length > 0) {
-        i = i + 1;
-        this.inCellsDegree(inCell.inCells, i++);
+    cells.forEach((cell: CellProperties) => {
+      let j = i;
+      cell.degreeToFocus = j;
+      if (cell.inCells.length > 0) {
+        j = i + 1;
+        this.inCellsDegree(cell.inCells, j);
       }
-      i = 1;
+      j = i;
     });
   }
 
   outCellsDegree(cells: CellProperties[], i: number) {
 
-    cells.forEach((outCell: CellProperties) => {
-      outCell.degreeToFocus = i;
-      if (outCell.outCells.length > 0) {
+    cells.forEach((cell: CellProperties) => {
+      cell.degreeToFocus = i;
+      if (cell.outCells.length > 0) {
         i = i + 1;
-        this.inCellsDegree(outCell.outCells, i++);
+        this.outCellsDegree(cell.outCells, i);
       }
       i = 1;
     });
@@ -141,10 +143,8 @@ export default class CellOperations {
     focusCell.degreeToFocus = 0;
 
     this.inCellsDegree(focusCell.inCells, 1);
-    this.inCellsDegree(focusCell.outCells, 1);
-    // this.outCellsDegree(focusCell.inCells, 1);
-    // this.outCellsDegree(focusCell.outCells, 1);
-    console.log(cells);
+    this.outCellsDegree(focusCell.outCells, 1);
+    console.log(focusCell);
 
     // await Excel.run(async (context) => {
 
