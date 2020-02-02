@@ -1,4 +1,5 @@
-import CellOperations from './operations';
+import CellOperations from './celloperations';
+import CellProperties from './cellproperties';
 // C:\Windows\SysWOW64\F12
 
 /*
@@ -13,44 +14,15 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = run;
 }
 
-// async function addImpact() {
-//   try {
-//     // Ensure cells and shapes are the same length
-//     await Excel.run(async (context) => {
-//       let dim = new CellOperations();
-//       let cellAddresses = ["I6", "I7", "I8", "I9", "I11", "I12", "I13", "I14",
-//         "I15", "I16"];
-//       await dim.scanRange(cellAddresses, "I18");
-//       let cells = dim.getCells();
-//       dim.addImpactInfo(cells);
-//       let shapes = dim.getShapes();
-//       const sheet = context.workbook.worksheets.getItem("Probability");
-//       for (let i = 0; i < cells.length; i++) {
-//         var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
-//         impact.name = "Impact" + i;
-//         impact.height = shapes[i].height;
-//         impact.width = shapes[i].width;
-//         impact.left = cells[i].left + 2;
-//         impact.top = cells[i].top + cells[i].height / 4;
-//         impact.rotation = 0;
-//         impact.fill.transparency = shapes[i].transparency;
-//         impact.lineFormat.weight = 0;
-//         impact.lineFormat.color = shapes[i].color;
-//         impact.fill.setSolidColor(shapes[i].color);
-//       }
-//       // createImpactLegend().then(function () { });
-//       await context.sync();
-//     });
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }
+
 async function run() {
   try {
+
     let cellOp = new CellOperations();
-    let cells = await cellOp.getCellsAttributes();
-    console.log("-----------------------------------");
-    await cellOp.getRelations(cells);
+    let cellProp = new CellProperties();
+    let cells = await cellProp.getCellsProperties();
+    await cellProp.getRelationshipOfCells(cells);
+
 
     await Excel.run(async context => {
       /**
@@ -66,7 +38,7 @@ async function run() {
 
       await context.sync();
       console.log(`The range address was ${range.address}.`);
-      cellOp.getNeighbourhood(cells, range.address);
+      await cellOp.addImpactInfo(cells, range.address);
     });
   } catch (error) {
     console.error(error);
