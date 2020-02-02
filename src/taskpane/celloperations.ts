@@ -53,18 +53,21 @@ export default class CellOperations {
 
       let prop = this.calculateInTransparency(inCell.value, focusCell.value, focusCell.inputCells);
 
-      this.shapes.push(
-        new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      );
+      console.log("In Cell: " + prop.color + " transparency: " + prop.transparency);
+
+      // this.shapes.push(
+      //   new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      // );
     })
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
 
-      let prop = this.calculateOutTransparency(outCell.value, focusCell.value, focusCell.outputCells);
+      let prop = this.calculateOutTransparency(outCell.value, focusCell.value, outCell.inputCells);
+      console.log("Out Cell: " + prop.color + " transparency: " + prop.transparency);
 
-      this.shapes.push(
-        new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      );
+      // this.shapes.push(
+      //   new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      // );
     })
   }
 
@@ -110,17 +113,22 @@ export default class CellOperations {
       color = "red";
     }
 
+    if (cellValue < 0) {
+      cellValue = -cellValue;
+    }
+
+    if (focusCellValue < 0) {
+      focusCellValue = -focusCellValue;
+    }
+
     if (cellValue < focusCellValue) {
 
       let value = cellValue / focusCellValue;
 
-      if (value < 0) {
-        value = -value;
-      }
-
       transparency = 1 - value;
     }
     else {
+
       let maxValue = cellValue;
 
       cells.forEach((c: CellProperties) => {
@@ -129,8 +137,8 @@ export default class CellOperations {
         if (val < 0) {
           val = -val;
         }
-        if (c.value > maxValue) {
-          maxValue = c.value;
+        if (val > maxValue) {
+          maxValue = val;
         }
       })
 
@@ -153,7 +161,20 @@ export default class CellOperations {
       color = "red";
     }
 
+    if (focusCellValue < 0 && cellValue > 0) {
+      color = "red";
+    }
+
+    if (cellValue < 0) {
+      cellValue = -cellValue;
+    }
+
+    if (focusCellValue < 0) {
+      focusCellValue = -focusCellValue;
+    }
+
     if (cellValue < focusCellValue) {
+
       let maxValue = cellValue;
 
       cells.forEach((c: CellProperties) => {
@@ -161,20 +182,18 @@ export default class CellOperations {
         if (val < 0) {
           val = -val;
         }
-        if (c.value > maxValue) {
-          maxValue = c.value;
+        if (val > maxValue) {
+          maxValue = val;
         }
       })
 
-      transparency = 1 - (cellValue / maxValue);
+      transparency = 1 - (focusCellValue / maxValue);
+      console.log("Cell Value: " + cellValue + "Max Value: " + maxValue);
+      console.log("Transparency here: " + transparency);
 
     }
     else {
-      let value = cellValue / focusCellValue;
-
-      if (value < 0) {
-        value = -value;
-      }
+      let value = focusCellValue / cellValue;
 
       transparency = 1 - value;
     }
