@@ -1,18 +1,14 @@
 /* global console, Excel */
 import CellProperties from './cellproperties';
-import ShapeProperties from './shapeproperties';
+import CustomShape from './customshape';
 
 export default class CellOperations {
   chartType: string;
   cells: CellProperties[];
-  shapes: ShapeProperties[];
+  customShapes: CustomShape[];
 
   CellOperations() {
     this.cells = new Array<CellProperties>();
-  }
-
-  getShapes() {
-    return this.shapes;
   }
 
   setCells(cells: CellProperties[]) {
@@ -45,27 +41,22 @@ export default class CellOperations {
 
   private addImpactInfo(focusCell: CellProperties) {
 
-    let height = 5;
-    let width = 5;
-
-    this.shapes = new Array<ShapeProperties>();
+    this.customShapes = new Array<CustomShape>();
 
     focusCell.inputCells.forEach((inCell: CellProperties) => {
 
-      let prop = this.calculateInTransparency(inCell.value, focusCell.value, focusCell.inputCells);
+      let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
 
-      this.shapes.push(
-        new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      );
+      let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+      this.customShapes.push(customShape);
     })
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
 
-      let prop = this.calculateOutTransparency(outCell.value, focusCell.value, outCell.inputCells);
+      let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells);
 
-      this.shapes.push(
-        new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      );
+      let customShape: CustomShape = { cell: outCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+      this.customShapes.push(customShape);
     })
   }
 
@@ -73,24 +64,26 @@ export default class CellOperations {
     this.addImpactInfo(focusCell);
 
     try {
-      // Ensure cells and shapes are the same length
       await Excel.run(async (context) => {
 
         const sheet = context.workbook.worksheets.getItem("Probability");
-        for (let i = 0; i < this.shapes.length; i++) {
-          var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
-          impact.name = "Impact" + i;
-          console.log("Impact object: " + impact.name);
-          impact.height = this.shapes[i].height;
-          impact.width = this.shapes[i].width;
-          impact.left = this.shapes[i].cell.left + 2;
-          impact.top = this.shapes[i].cell.top + this.shapes[i].cell.height / 4;
-          impact.rotation = 0;
-          impact.fill.transparency = this.shapes[i].transparency;
-          impact.lineFormat.weight = 0;
-          impact.lineFormat.color = this.shapes[i].color;
-          impact.fill.setSolidColor(this.shapes[i].color);
-        }
+        let i = 0;
+
+        this.customShapes.forEach((customShape: CustomShape) => {
+          customShape.shape = sheet.shapes.addGeometricShape("Rectangle");
+          customShape.shape.name = "Impact" + i;
+          customShape.shape.left = customShape.cell.left + 2;
+          customShape.shape.top = customShape.cell.top + customShape.cell.height / 4;
+          customShape.shape.height = 5;
+          customShape.shape.width = 5;
+          customShape.shape.geometricShapeType = Excel.GeometricShapeType.rectangle;
+          customShape.shape.fill.setSolidColor(customShape.color);
+          customShape.shape.fill.transparency = customShape.transparency;
+          customShape.shape.lineFormat.weight = 0;
+          customShape.shape.lineFormat.color = customShape.color;
+          i++;
+        })
+
         // createImpactLegend().then(function () { });
         await context.sync();
       });
@@ -99,7 +92,7 @@ export default class CellOperations {
     }
   }
 
-  private calculateInTransparency(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let color = "green";
     let transparency = 0;
@@ -149,7 +142,7 @@ export default class CellOperations {
   }
 
   // Fix color values for negative values
-  private calculateOutTransparency(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private outputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let color = "green";
     let transparency = 0;
@@ -201,7 +194,7 @@ export default class CellOperations {
     return { color: color, transparency: transparency };
   }
 
-  addLikelihoodInfo() {
+  private addLikelihoodInfo() {
 
     for (let i = 0; i < this.cells.length; i++) {
       for (let r = 5; r < 18; r++) {
@@ -211,30 +204,27 @@ export default class CellOperations {
         }
       }
     }
-
-    if (this.shapes.length > 0) {
-      for (let i = 0; i < this.shapes.length; i++) {
-        this.shapes[i].height = this.shapes[i].cell.likelihood / 10;
-        this.shapes[i].width = this.shapes[i].cell.likelihood / 10;
-      }
-    }
   }
 
   // // Not possible without impact yet
   async addLikelihood() {
+
     this.addLikelihoodInfo();
 
     await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getItem("Probability");
 
-      for (let i = 0; i < this.shapes.length; i++) {
-        var shape = sheet.shapes.getItem("Impact" + i);
+      for (let i = 0; i < this.customShapes.length; i++) {
+
+        const sheet = context.workbook.worksheets.getItem("Probability");
+
+        let shape = sheet.shapes.getItem("Impact" + i);
         shape.load(["height", "width"]);
+
         await context.sync();
 
-        console.log("Rectangle Found");
-        shape.height = this.shapes[i].height;
-        shape.width = this.shapes[i].width;
+        const likelihood = this.customShapes[i].cell.likelihood / 10;
+        shape.height = likelihood;
+        shape.width = likelihood;
 
       }
       // createLikelihoodLegend().then(function () { });

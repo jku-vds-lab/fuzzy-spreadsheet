@@ -74,7 +74,41 @@ async function spread() {
   }
 }
 
+async function removeAll() {
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem("Probability");
 
+    if (focusCell != null) {
+      if (focusCell.address != null) {
+        const cell = sheet.getRange(focusCell.address);
+        cell.format.fill.clear();
+      }
+    }
+
+    var shapes = sheet.shapes;
+    shapes.load("items/$none");
+    return context.sync().then(function () {
+      shapes.items.forEach(function (shape) {
+        shape.delete();
+      });
+      return context.sync();
+    });
+  });
+}
+
+// async function removeDistributions() {
+//   await Excel.run(async (context) => {
+//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     var charts = sheet.charts;
+//     charts.load("items/$none");
+//     return context.sync().then(function () {
+//       charts.items.forEach(function (chart) {
+//         chart.delete();
+//       });
+//       return context.sync();
+//     });
+//   });
+// }
 
 // async function protectSheet() {
 //   await Excel.run(async (context) => {
@@ -171,33 +205,5 @@ async function spread() {
 //       cell.values = [[textRange[i]]];
 //     }
 //     await context.sync();
-//   });
-// }
-async function removeAll() {
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getItem("Probability");
-    const cell = sheet.getRange(focusCell.address);
-    cell.format.fill.clear();
-    var shapes = sheet.shapes;
-    shapes.load("items/$none");
-    return context.sync().then(function () {
-      shapes.items.forEach(function (shape) {
-        shape.delete();
-      });
-      return context.sync();
-    });
-  });
-}
-// async function removeDistributions() {
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
-//     var charts = sheet.charts;
-//     charts.load("items/$none");
-//     return context.sync().then(function () {
-//       charts.items.forEach(function (chart) {
-//         chart.delete();
-//       });
-//       return context.sync();
-//     });
 //   });
 // }

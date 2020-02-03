@@ -14,9 +14,10 @@ export default class CellProperties {
   public degreeToFocus: number;
   public formula: any;
   public likelihood: number;
+  public spreadRange: string;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
-  public spreadRange: string;
+
 
   CellProperties() {
     this.id = "";
