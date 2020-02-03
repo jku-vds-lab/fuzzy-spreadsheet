@@ -43,13 +43,29 @@ export default class CellOperations {
 
     this.customShapes = new Array<CustomShape>();
 
-    focusCell.inputCells.forEach((inCell: CellProperties) => {
+    if (focusCell.formula.includes("MEDIAN")) {
+      console.log("Compute normalized euclidean distance");
+      focusCell.inputCells.forEach((inCell: CellProperties) => {
 
-      let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
+        let i = focusCell.formula.indexOf("MEDIAN");
+        const range = focusCell.formula.slice(i + 6);
 
-      let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
-      this.customShapes.push(customShape);
-    })
+        let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, range);
+
+        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        this.customShapes.push(customShape);
+      })
+    }
+
+    if (focusCell.formula.includes("SUM")) {
+      focusCell.inputCells.forEach((inCell: CellProperties) => {
+
+        let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
+
+        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        this.customShapes.push(customShape);
+      })
+    }
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
 
@@ -101,8 +117,18 @@ export default class CellOperations {
       color = "red";
     }
 
-    if (focusCellValue < 0 && cellValue < 0 && cellValue < focusCellValue) { // because of the negative sign, the smaller the number the higher it is
-      color = "red";
+    if (focusCellValue < 0 && cellValue < 0) { // because of the negative sign, the smaller the number the higher it is
+      let isAnyCellPositive = false;
+
+      cells.forEach((cell: CellProperties) => {
+        if (cell.value > 0) {
+          isAnyCellPositive = true;
+        }
+      })
+
+      if (isAnyCellPositive) { // if even one cell is positive, then it means that only that cell is contributing positively and rest all are contributing negatively
+        color = "red";
+      }
     }
 
     // Make both values positive
@@ -141,6 +167,29 @@ export default class CellOperations {
     return { color: color, transparency: transparency };
   }
 
+  private inputColorPropertiesMedian(cellValue: number, focusCellValue: number, range: string) {
+
+    let transparency = 0;
+
+    Excel.run(async (context) => {
+
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      let stdDev = context.workbook.functions.stDev_S(sheet.getRange(range));
+      stdDev.load("value");
+      await context.sync();
+
+      transparency = (focusCellValue - cellValue) / (2 * stdDev.value);
+
+      if (transparency < 0) {
+        transparency = -transparency;
+      }
+
+      return context.sync();
+    });
+
+    return { color: "green", transparency: transparency }
+  }
+
   // Fix color values for negative values
   private outputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
@@ -151,8 +200,18 @@ export default class CellOperations {
       color = "red";
     }
 
-    if (focusCellValue < 0 && cellValue < 0 && cellValue < focusCellValue) { // because of the negative sign, the smaller the number the higher it is
-      color = "red";
+    if (focusCellValue < 0 && cellValue < 0) { // because of the negative sign, the smaller the number the higher it is
+      let isAnyCellPositive = false;
+
+      cells.forEach((cell: CellProperties) => {
+        if (cell.value > 0) {
+          isAnyCellPositive = true;
+        }
+      })
+
+      if (isAnyCellPositive) { // if even one cell is positive, then it means that only that cell is contributing positively and rest all are contributing negatively
+        color = "red";
+      }
     }
 
     if (focusCellValue < 0 && cellValue > 0) { // because of the negative sign, the smaller the number the higher it is
