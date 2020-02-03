@@ -108,12 +108,16 @@ export default class CellOperations {
     }
   }
 
-  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let color = "green";
-    let transparency = 0;
+
 
     if (focusCellValue > 0 && cellValue < 0) {
+      color = "red";
+    }
+
+    if (focusCellValue < 0 && cellValue > 0) { // because of the negative sign, the smaller the number the higher it is
       color = "red";
     }
 
@@ -130,6 +134,13 @@ export default class CellOperations {
         color = "red";
       }
     }
+    return color;
+  }
+
+  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+
+    let transparency = 0;
+    const color = this.computeColor(cellValue, focusCellValue, cells);
 
     // Make both values positive
     if (cellValue < 0) {
@@ -193,30 +204,8 @@ export default class CellOperations {
   // Fix color values for negative values
   private outputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
-    let color = "green";
     let transparency = 0;
-
-    if (focusCellValue > 0 && cellValue < 0) {
-      color = "red";
-    }
-
-    if (focusCellValue < 0 && cellValue < 0) { // because of the negative sign, the smaller the number the higher it is
-      let isAnyCellPositive = false;
-
-      cells.forEach((cell: CellProperties) => {
-        if (cell.value > 0) {
-          isAnyCellPositive = true;
-        }
-      })
-
-      if (isAnyCellPositive) { // if even one cell is positive, then it means that only that cell is contributing positively and rest all are contributing negatively
-        color = "red";
-      }
-    }
-
-    if (focusCellValue < 0 && cellValue > 0) { // because of the negative sign, the smaller the number the higher it is
-      color = "red";
-    }
+    const color = this.computeColor(cellValue, focusCellValue, cells);
 
     // Make both values positive
     if (cellValue < 0) {
