@@ -10,51 +10,53 @@ import CellProperties from './cellproperties';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("run").onclick = run;
-  document.getElementById("impact").onclick = run;
+  document.getElementById("impact").onclick = impact;
+  document.getElementById("likelihood").onclick = likelihood;
 }
 
 
-async function run() {
+var cellOp = new CellOperations();
+var cellProp = new CellProperties();
+var cells;
+var focusCell;
+
+async function impact() {
   try {
 
-    let cellOp = new CellOperations();
-    let cellProp = new CellProperties();
-    let cells = await cellProp.getCellsProperties();
+    cellOp = new CellOperations();
+    cellProp = new CellProperties();
+    cells = await cellProp.getCellsProperties();
     await cellProp.getRelationshipOfCells(cells);
 
 
     await Excel.run(async context => {
-      /**
-       * Insert your Excel code here
-       */
+
       const range = context.workbook.getSelectedRange();
-
-      // Read the range address
       range.load("address");
-
       // Update the fill color
       range.format.fill.color = "yellow";
-
       await context.sync();
 
-      let focusCell = cellProp.getNeighbouringCells(cells, range.address);
+      focusCell = cellProp.getNeighbouringCells(cells, range.address);
       cellOp.setCells(cells);
 
       await cellOp.addImpact(focusCell);
+      await context.sync();
+
     });
   } catch (error) {
     console.error(error);
   }
 }
 
-// letlikehoodAddresses = ["J6", "J7", "J8", "J9", "J11", "J12", "J13", "J14",
-// "J15", "J16"];
+async function likelihood() {
+  try {
+    await cellOp.addLikelihood();
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-// async function addRelationship() {
-//   let cells = dim.getCells();
-//   dim.addRelationshipInfo(cells);
-// }
 // async function addSpread(isLine = false) {
 //   let cells = dim.getCells();
 //   await Excel.run(async (context) => {
@@ -101,28 +103,7 @@ async function run() {
 //     await context.sync();
 //   });
 // }
-// // Not possible without impact yet
-// async function addLikelihood(isImpact: boolean = true) {
-//   let shapes = dim.getShapes();
-//   await dim.addLikelihoodInfo(cells, shapes, likehoodAddresses);
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
-//     for (let i = 0; i < shapes.length; i++) {
-//       var shape = sheet.shapes.getItem("Impact" + i);
-//       console.log(shape);
-//       shape.load(["geometricShapeType", "width", "height"]);
-//       await context.sync();
-//       console.log("Geometric Shape Type: " + shape.geometricShapeType);
-//       if (shape.geometricShapeType == Excel.GeometricShapeType.rectangle) {
-//         console.log("Rectangle Found");
-//         shape.height = shapes[i].height;
-//         shape.width = shapes[i].width;
-//       }
-//     }
-//     createLikelihoodLegend().then(function () { });
-//     await context.sync();
-//   });
-// }
+
 
 // async function protectSheet() {
 //   await Excel.run(async (context) => {

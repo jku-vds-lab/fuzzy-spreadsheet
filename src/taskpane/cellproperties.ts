@@ -10,6 +10,7 @@ export default class CellProperties {
   public isFocus: boolean;
   public degreeToFocus: number;
   public formula: any;
+  public likelihood: number;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
 
@@ -22,6 +23,7 @@ export default class CellProperties {
     this.height = 0;
     this.width = 0;
     this.isFocus = false;
+    this.likelihood = 100;
     this.degreeToFocus = -1;
     this.formula = "";
   }
@@ -66,6 +68,7 @@ export default class CellProperties {
           if (cellProperties.formula == cellProperties.value) {
             cellProperties.formula = "";
           }
+
           cellProperties.inputCells = new Array<CellProperties>();
           cellProperties.outputCells = new Array<CellProperties>();
           cells.push(cellProperties);
@@ -140,6 +143,7 @@ export default class CellProperties {
     return focusCell;
   }
 
+  // Need a proper solution
   private getRangeFromFormula(formula: string) {
     let rangeAddress = new Array<string>();
     if (formula == "") {

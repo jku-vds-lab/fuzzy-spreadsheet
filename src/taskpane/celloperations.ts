@@ -79,6 +79,7 @@ export default class CellOperations {
         for (let i = 0; i < this.shapes.length; i++) {
           var impact = sheet.shapes.addGeometricShape("Rectangle"); // shapes[i].shapeType
           impact.name = "Impact" + i;
+          console.log("Impact object: " + impact.name);
           impact.height = this.shapes[i].height;
           impact.width = this.shapes[i].width;
           impact.left = this.shapes[i].cell.left + 2;
@@ -198,20 +199,44 @@ export default class CellOperations {
 
     return { color: color, transparency: transparency };
   }
-  // async addLikelihoodInfo(cells: CellProperties[], shapes: ShapeProperties[], likelihoodAddresses: string[]) {
-  //   this.cells = cells;
-  //   this.shapes = shapes;
-  //   let likelihoodCell: number;
-  //   if (this.shapes.length > 0) {
-  //     if (this.shapes.length != likelihoodAddresses.length) {
-  //       return;
-  //     }
-  //     for (let i = 0; i < this.shapes.length; i++) {
-  //       likelihoodCell = 50; //await new CellProperties().getCellValue(likelihoodAddresses[i]);
-  //       this.shapes[i].height = likelihoodCell / 10;
-  //       this.shapes[i].width = likelihoodCell / 10;
-  //     }
-  //   }
-  // }
 
+  addLikelihoodInfo() {
+    for (let i = 0; i < this.cells.length; i++) {
+      for (let r = 5; r < 18; r++) {
+        let id = "R" + r + "C8";
+        if (this.cells[i].id == id) {
+          this.cells[i].likelihood = this.cells[i + 1].value;
+        }
+      }
+    }
+
+    if (this.shapes.length > 0) {
+      for (let i = 0; i < this.shapes.length; i++) {
+        this.shapes[i].height = this.shapes[i].cell.likelihood / 10;
+        this.shapes[i].width = this.shapes[i].cell.likelihood / 10;
+      }
+    }
+  }
+
+  // // Not possible without impact yet
+  async addLikelihood() {
+    this.addLikelihoodInfo();
+
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getItem("Probability");
+
+      for (let i = 0; i < this.shapes.length; i++) {
+        var shape = sheet.shapes.getItem("Impact" + i);
+        shape.load(["height", "width"]);
+        await context.sync();
+
+        console.log("Rectangle Found");
+        shape.height = this.shapes[i].height;
+        shape.width = this.shapes[i].width;
+
+      }
+      // createLikelihoodLegend().then(function () { });
+      await context.sync();
+    });
+  }
 }
