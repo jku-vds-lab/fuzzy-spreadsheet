@@ -53,21 +53,18 @@ export default class CellOperations {
 
       let prop = this.calculateInTransparency(inCell.value, focusCell.value, focusCell.inputCells);
 
-      console.log("In Cell: " + prop.color + " transparency: " + prop.transparency);
-
-      // this.shapes.push(
-      //   new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      // );
+      this.shapes.push(
+        new ShapeProperties().setShapeProperties(inCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      );
     })
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
 
       let prop = this.calculateOutTransparency(outCell.value, focusCell.value, outCell.inputCells);
-      console.log("Out Cell: " + prop.color + " transparency: " + prop.transparency);
 
-      // this.shapes.push(
-      //   new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
-      // );
+      this.shapes.push(
+        new ShapeProperties().setShapeProperties(outCell, Excel.GeometricShapeType.rectangle, prop.color, prop.transparency, height, width)
+      );
     })
   }
 
@@ -109,10 +106,11 @@ export default class CellOperations {
       color = "red";
     }
 
-    if (focusCellValue < 0 && cellValue < 0 && focusCellValue > cellValue) {
+    if (focusCellValue < 0 && cellValue < 0 && cellValue < focusCellValue) { // because of the negative sign, the smaller the number the higher it is
       color = "red";
     }
 
+    // Make both values positive
     if (cellValue < 0) {
       cellValue = -cellValue;
     }
@@ -130,7 +128,7 @@ export default class CellOperations {
     else {
 
       let maxValue = cellValue;
-
+      // go through the input cells of the focus cell
       cells.forEach((c: CellProperties) => {
         let val = c.value;
 
@@ -148,6 +146,7 @@ export default class CellOperations {
     return { color: color, transparency: transparency };
   }
 
+  // Fix color values for negative values
   private calculateOutTransparency(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let color = "green";
@@ -157,14 +156,15 @@ export default class CellOperations {
       color = "red";
     }
 
-    if (focusCellValue < 0 && cellValue < 0 && focusCellValue > cellValue) {
+    if (focusCellValue < 0 && cellValue < 0 && cellValue < focusCellValue) { // because of the negative sign, the smaller the number the higher it is
       color = "red";
     }
 
-    if (focusCellValue < 0 && cellValue > 0) {
+    if (focusCellValue < 0 && cellValue > 0) { // because of the negative sign, the smaller the number the higher it is
       color = "red";
     }
 
+    // Make both values positive
     if (cellValue < 0) {
       cellValue = -cellValue;
     }
@@ -173,10 +173,16 @@ export default class CellOperations {
       focusCellValue = -focusCellValue;
     }
 
-    if (cellValue < focusCellValue) {
+    if (cellValue > focusCellValue) {
 
+      let value = focusCellValue / cellValue;
+
+      transparency = 1 - value;
+
+    }
+    else {
       let maxValue = cellValue;
-
+      // go through the input cells of the output cell
       cells.forEach((c: CellProperties) => {
         let val = c.value;
         if (val < 0) {
@@ -188,14 +194,6 @@ export default class CellOperations {
       })
 
       transparency = 1 - (focusCellValue / maxValue);
-      console.log("Cell Value: " + cellValue + "Max Value: " + maxValue);
-      console.log("Transparency here: " + transparency);
-
-    }
-    else {
-      let value = focusCellValue / cellValue;
-
-      transparency = 1 - value;
     }
 
     return { color: color, transparency: transparency };
