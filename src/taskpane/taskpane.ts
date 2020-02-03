@@ -26,25 +26,23 @@ var focusCell: CellProperties;
 async function markAsFocusCell() {
   try {
 
+    let range;
+
+    Excel.run(async context => {
+
+      range = context.workbook.getSelectedRange();
+      range.load("address");
+      range.format.fill.color = "yellow";
+      await context.sync();
+    });
+
     cellOp = new CellOperations();
     cellProp = new CellProperties();
     cells = await cellProp.getCellsProperties();
     await cellProp.getRelationshipOfCells(cells);
+    focusCell = cellProp.getNeighbouringCells(cells, range.address);
+    cellOp.setCells(cells);
 
-    await Excel.run(async context => {
-
-      const range = context.workbook.getSelectedRange();
-      range.load("address");
-      // Update the fill color
-      range.format.fill.color = "yellow";
-      await context.sync();
-
-      focusCell = cellProp.getNeighbouringCells(cells, range.address);
-      cellOp.setCells(cells);
-
-      await context.sync();
-
-    });
   } catch (error) {
     console.error(error);
   }
