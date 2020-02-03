@@ -20,8 +20,8 @@ Office.initialize = () => {
 
 var cellOp = new CellOperations();
 var cellProp = new CellProperties();
-var cells;
-var focusCell;
+var cells: CellProperties[];
+var focusCell: CellProperties;
 
 async function markAsFocusCell() {
   try {
@@ -68,7 +68,7 @@ async function likelihood() {
 
 async function spread() {
   try {
-    await cellOp.addSpread();
+    cellOp.addSpread(focusCell);
   } catch (error) {
     console.error(error);
   }
@@ -176,6 +176,8 @@ async function spread() {
 async function removeAll() {
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getItem("Probability");
+    const cell = sheet.getRange(focusCell.address);
+    cell.format.fill.clear();
     var shapes = sheet.shapes;
     shapes.load("items/$none");
     return context.sync().then(function () {

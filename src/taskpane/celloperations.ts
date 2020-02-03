@@ -21,7 +21,7 @@ export default class CellOperations {
 
 
   // Creating cheat sheet
-  async addSpreadInfo() {
+  async addCheatSheet() {
     await Excel.run(async (context) => {
       const cheatsheet = context.workbook.worksheets.add("CheatSheet");
       let data: number[][] = new Array<Array<number>>();
@@ -242,59 +242,74 @@ export default class CellOperations {
     });
   }
 
-  async addSpread() {
+  private addSpreadInfo() {
+    // make it dynamic
+    let ranges: string[] = [
+      "A1:A47",
+      "B1:B47",
+      "C1:C47",
+      "D1:D47",
+      "E1:E47",
+      "F1:F47",
+      "G1:G47",
+      "H1:H47",
+      "I1:I47",
+      "J1:J47",
+      "K1:K47"
+    ];
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getItem("Probability");
-      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-      // make it dynamic
-      let ranges: string[] = [
-        "A1:A47",
-        "B1:B47",
-        "C1:C47",
-        "D1:D47",
-        "E1:E47",
-        "F1:F47",
-        "G1:G47",
-        "H1:H47",
-        "I1:I47",
-        "J1:J47",
-        "K1:K47"
-      ];
+    let rangeIndex = 0;
 
-      let rangeIndex = 0;
-
-      for (let i = 0; i < this.cells.length; i++) {
-        for (let r = 5; r < 18; r++) {
-          let id = "R" + r + "C8";
-          if (this.cells[i].id == id) {
-            this.cells[i].spreadRange = ranges[rangeIndex];
-
-            const dataRange = cheatSheet.getRange(ranges[rangeIndex]);
-
-            let chart: Excel.Chart;
-            chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
-            chart.setPosition(this.cells[i].address, this.cells[i].address);
-            chart.left = this.cells[i].left + 0.2 * this.cells[i].width;
-            chart.title.visible = false;
-            chart.legend.visible = false;
-            chart.axes.valueAxis.minimum = 0;
-            chart.axes.valueAxis.maximum = 0.21;
-            chart.dataLabels.showValue = false;
-            chart.axes.valueAxis.visible = false;
-            chart.axes.categoryAxis.visible = false;
-            chart.axes.valueAxis.majorGridlines.visible = false;
-            chart.plotArea.top = 0;
-            chart.plotArea.left = 0;
-            chart.plotArea.width = this.cells[i].width - 0.4 * this.cells[i].width;
-            chart.plotArea.height = 100;
-            chart.format.fill.clear();
-            chart.format.border.clear();
-            rangeIndex++;
-          }
+    for (let i = 0; i < this.cells.length; i++) {
+      for (let r = 5; r < 18; r++) {
+        let id = "R" + r + "C8";
+        if (this.cells[i].id == id) {
+          this.cells[i].spreadRange = ranges[rangeIndex];
+          rangeIndex++;
         }
       }
-      await context.sync();
+    }
+  }
+
+  addSpread(focusCell: CellProperties) {
+
+    this.addSpreadInfo();
+    this.drawLineChart(focusCell);
+
+    focusCell.inputCells.forEach((cell: CellProperties) => {
+      this.drawLineChart(cell);
+    })
+
+    focusCell.outputCells.forEach((cell: CellProperties) => {
+      this.drawLineChart(cell);
+    })
+  }
+
+  private drawLineChart(cell: CellProperties) {
+
+    Excel.run((context) => {
+
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+      const dataRange = cheatSheet.getRange(cell.spreadRange);
+      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+      chart.setPosition(cell.address, cell.address);
+      chart.left = cell.left + 0.2 * cell.width;
+      chart.title.visible = false;
+      chart.legend.visible = false;
+      chart.axes.valueAxis.minimum = 0;
+      chart.axes.valueAxis.maximum = 0.21;
+      chart.dataLabels.showValue = false;
+      chart.axes.valueAxis.visible = false;
+      chart.axes.categoryAxis.visible = false;
+      chart.axes.valueAxis.majorGridlines.visible = false;
+      chart.plotArea.top = 0;
+      chart.plotArea.left = 0;
+      chart.plotArea.width = cell.width - 0.4 * cell.width;
+      chart.plotArea.height = 100;
+      chart.format.fill.clear();
+      chart.format.border.clear();
+      return context.sync();
     });
   }
 }
