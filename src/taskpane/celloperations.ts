@@ -20,15 +20,16 @@ export default class CellOperations {
   }
 
 
-  addSpreadInfo() {
-    Excel.run(async (context) => {
+  // Creating cheat sheet
+  async addSpreadInfo() {
+    await Excel.run(async (context) => {
       const cheatsheet = context.workbook.worksheets.add("CheatSheet");
       let data: number[][] = new Array<Array<number>>();
-      let means = [32, 13, 7, 12, 26.6, 0.6, 1, 9, 9, 7]; // make it dynamic
-      let stdDev = [6.38, 2.5, 2.9, 1.8, 4.8, 0.2, 0.4, 2.7, 2.2, 1.34]; // make it dynamic
+      let means = [32, 13, 7, 12, 26.6, 0.6, 1, 9, 9, 7, 5.4]; // make it dynamic
+      let stdDev = [6.38, 2.5, 2.9, 1.8, 4.8, 0.2, 0.4, 2.7, 2.2, 1.34, 5.84]; // make it dynamic
       for (let i = 0; i < 47; i++) {
         let row = new Array<number>();
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 11; j++) {
           var normalVal = context.workbook.functions.norm_Dist(i + 1, means[j], stdDev[j], false);
           normalVal.load("value");
           await context.sync();
@@ -36,7 +37,7 @@ export default class CellOperations {
         }
         data.push(row);
       }
-      var range = cheatsheet.getRange("A1:J47");
+      var range = cheatsheet.getRange("A1:K47");
       range.values = data;
       await context.sync();
     });
@@ -201,6 +202,7 @@ export default class CellOperations {
   }
 
   addLikelihoodInfo() {
+
     for (let i = 0; i < this.cells.length; i++) {
       for (let r = 5; r < 18; r++) {
         let id = "R" + r + "C8";
@@ -236,6 +238,62 @@ export default class CellOperations {
 
       }
       // createLikelihoodLegend().then(function () { });
+      await context.sync();
+    });
+  }
+
+  async addSpread() {
+
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+      // make it dynamic
+      let ranges: string[] = [
+        "A1:A47",
+        "B1:B47",
+        "C1:C47",
+        "D1:D47",
+        "E1:E47",
+        "F1:F47",
+        "G1:G47",
+        "H1:H47",
+        "I1:I47",
+        "J1:J47",
+        "K1:K47"
+      ];
+
+      let rangeIndex = 0;
+
+      for (let i = 0; i < this.cells.length; i++) {
+        for (let r = 5; r < 18; r++) {
+          let id = "R" + r + "C8";
+          if (this.cells[i].id == id) {
+            this.cells[i].spreadRange = ranges[rangeIndex];
+
+            const dataRange = cheatSheet.getRange(ranges[rangeIndex]);
+
+            let chart: Excel.Chart;
+            chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+            chart.setPosition(this.cells[i].address, this.cells[i].address);
+            chart.left = this.cells[i].left + 0.2 * this.cells[i].width;
+            chart.title.visible = false;
+            chart.legend.visible = false;
+            chart.axes.valueAxis.minimum = 0;
+            chart.axes.valueAxis.maximum = 0.21;
+            chart.dataLabels.showValue = false;
+            chart.axes.valueAxis.visible = false;
+            chart.axes.categoryAxis.visible = false;
+            chart.axes.valueAxis.majorGridlines.visible = false;
+            chart.plotArea.top = 0;
+            chart.plotArea.left = 0;
+            chart.plotArea.width = this.cells[i].width - 0.4 * this.cells[i].width;
+            chart.plotArea.height = 100;
+            chart.format.fill.clear();
+            chart.format.border.clear();
+            rangeIndex++;
+          }
+        }
+      }
       await context.sync();
     });
   }

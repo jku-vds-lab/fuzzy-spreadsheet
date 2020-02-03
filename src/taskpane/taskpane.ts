@@ -10,8 +10,11 @@ import CellProperties from './cellproperties';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
+  document.getElementById("focusCell").onclick = markAsFocusCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
+  document.getElementById("spread").onclick = spread;
+  document.getElementById("removeAll").onclick = removeAll;
 }
 
 
@@ -20,14 +23,13 @@ var cellProp = new CellProperties();
 var cells;
 var focusCell;
 
-async function impact() {
+async function markAsFocusCell() {
   try {
 
     cellOp = new CellOperations();
     cellProp = new CellProperties();
     cells = await cellProp.getCellsProperties();
     await cellProp.getRelationshipOfCells(cells);
-
 
     await Excel.run(async context => {
 
@@ -40,10 +42,17 @@ async function impact() {
       focusCell = cellProp.getNeighbouringCells(cells, range.address);
       cellOp.setCells(cells);
 
-      await cellOp.addImpact(focusCell);
       await context.sync();
 
     });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function impact() {
+  try {
+    await cellOp.addImpact(focusCell);
   } catch (error) {
     console.error(error);
   }
@@ -57,52 +66,14 @@ async function likelihood() {
   }
 }
 
-// async function addSpread(isLine = false) {
-//   let cells = dim.getCells();
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
-//     const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-//     // make it dynamic
-//     let ranges: string[] = [
-//       "A1:A47",
-//       "B1:B47",
-//       "C1:C47",
-//       "D1:D47",
-//       "E1:E47",
-//       "F1:F47",
-//       "G1:G47",
-//       "H1:H47",
-//       "I1:I47",
-//       "J1:J47"
-//     ];
-//     for (let i = 0; i < ranges.length; i++) {
-//       const dataRange = cheatSheet.getRange(ranges[i]);
-//       let chart: Excel.Chart;
-//       if (isLine) {
-//         chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
-//       } else {
-//         chart = sheet.charts.add("ColumnClustered", dataRange, Excel.ChartSeriesBy.auto);
-//       }
-//       chart.setPosition(cells[i].cell, cells[i].cell);
-//       chart.left = cells[i].left + 0.2 * cells[i].width;
-//       chart.title.visible = false;
-//       chart.legend.visible = false;
-//       chart.axes.valueAxis.minimum = 0;
-//       chart.axes.valueAxis.maximum = 0.21;
-//       chart.dataLabels.showValue = false;
-//       chart.axes.valueAxis.visible = false;
-//       chart.axes.categoryAxis.visible = false;
-//       chart.axes.valueAxis.majorGridlines.visible = false;
-//       chart.plotArea.top = 0;
-//       chart.plotArea.left = 0;
-//       chart.plotArea.width = cells[i].width - 0.4 * cells[i].width;
-//       chart.plotArea.height = 100;
-//       chart.format.fill.clear();
-//       chart.format.border.clear();
-//     }
-//     await context.sync();
-//   });
-// }
+async function spread() {
+  try {
+    await cellOp.addSpread();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 
 
 // async function protectSheet() {
@@ -202,19 +173,19 @@ async function likelihood() {
 //     await context.sync();
 //   });
 // }
-// async function removeAll() {
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
-//     var shapes = sheet.shapes;
-//     shapes.load("items/$none");
-//     return context.sync().then(function () {
-//       shapes.items.forEach(function (shape) {
-//         shape.delete();
-//       });
-//       return context.sync();
-//     });
-//   });
-// }
+async function removeAll() {
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem("Probability");
+    var shapes = sheet.shapes;
+    shapes.load("items/$none");
+    return context.sync().then(function () {
+      shapes.items.forEach(function (shape) {
+        shape.delete();
+      });
+      return context.sync();
+    });
+  });
+}
 // async function removeDistributions() {
 //   await Excel.run(async (context) => {
 //     const sheet = context.workbook.worksheets.getItem("Probability");

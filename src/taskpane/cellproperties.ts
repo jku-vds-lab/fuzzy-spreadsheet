@@ -1,4 +1,7 @@
 /* global console, Excel */
+
+// Find a way to figure out which cells are uncertain so that we dont have to use their column index anymore
+// maybe with the help of their formula?
 export default class CellProperties {
   public id: string;
   public address: string;
@@ -13,6 +16,7 @@ export default class CellProperties {
   public likelihood: number;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
+  public spreadRange: string;
 
   CellProperties() {
     this.id = "";
@@ -26,6 +30,7 @@ export default class CellProperties {
     this.likelihood = 100;
     this.degreeToFocus = -1;
     this.formula = "";
+    this.spreadRange = "";
   }
 
   async getCellsProperties(cells = new Array<CellProperties>()) {
