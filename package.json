@@ -28,7 +28,9 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
-    "@types/jquery": "^3.3.31"
+    "@types/jquery": "^3.3.31",
+    "@types/mathjs": "^6.0.4",
+    "mathjs": "^6.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",

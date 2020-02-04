@@ -1,4 +1,5 @@
 /* global console, Excel */
+import { sqrt } from 'mathjs';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
 
@@ -47,10 +48,9 @@ export default class CellOperations {
       console.log("Compute normalized euclidean distance");
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
-        let i = focusCell.formula.indexOf("MEDIAN");
-        const range = focusCell.formula.slice(i + 6);
+        let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, focusCell.inputCells);
 
-        let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, range);
+        // console.log("MEDIAN: " + colorProperties.transparency);
 
         let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
@@ -62,6 +62,8 @@ export default class CellOperations {
 
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
 
+        console.log("SUM: " + colorProperties.transparency);
+
         let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
       })
@@ -70,6 +72,8 @@ export default class CellOperations {
     focusCell.outputCells.forEach((outCell: CellProperties) => {
 
       let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells);
+
+      console.log("OUT: " + colorProperties.transparency);
 
       let customShape: CustomShape = { cell: outCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
       this.customShapes.push(customShape);
@@ -178,26 +182,50 @@ export default class CellOperations {
     return { color: color, transparency: transparency };
   }
 
-  private inputColorPropertiesMedian(cellValue: number, focusCellValue: number, range: string) {
+  private inputColorPropertiesMedian(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let transparency = 0;
+    let max = -1;
+    let min = 100;
+    let sum = 0;
+    let n = 0;
 
-    Excel.run(async (context) => {
 
-      const sheet = context.workbook.worksheets.getItem("Probability");
-      let stdDev = context.workbook.functions.stDev_S(sheet.getRange(range));
-      stdDev.load("value");
-      await context.sync();
+    cells.forEach((cell: CellProperties) => {
 
-      transparency = (focusCellValue - cellValue) / (2 * stdDev.value);
-
-      if (transparency < 0) {
-        transparency = -transparency;
+      sum += cell.value;
+      n++;
+      if (cell.value > max) {
+        max = cell.value
       }
 
-      return context.sync();
+      if (cell.value < min) {
+        min = cell.value;
+      }
     });
 
+    let stdDev: number = 0;
+    let mean = sum / n;
+
+    cells.forEach((cell: CellProperties) => {
+      stdDev += (cell.value - mean) * (cell.value - mean);
+    });
+
+    stdDev = sqrt(stdDev / n);
+
+    console.log(" Stddev: " + stdDev);
+
+    transparency = (focusCellValue - cellValue) / (2 * stdDev);
+
+    if (transparency < 0) {
+      transparency = -transparency;
+    }
+
+    if (transparency > 1) {
+      transparency = 1;
+    }
+
+    console.log(" Transparency: " + transparency);
     return { color: "green", transparency: transparency }
   }
 
