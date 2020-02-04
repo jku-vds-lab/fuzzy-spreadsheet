@@ -332,6 +332,11 @@ export default class CellOperations {
 
   private drawLineChart(cell: CellProperties) {
 
+    console.log(cell, cell.spreadRange);
+    if (cell.spreadRange == "") {
+      return;
+    }
+
     Excel.run((context) => {
 
       const sheet = context.workbook.worksheets.getItem("Probability");

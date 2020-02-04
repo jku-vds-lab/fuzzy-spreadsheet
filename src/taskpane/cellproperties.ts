@@ -13,8 +13,8 @@ export default class CellProperties {
   public isFocus: boolean;
   public degreeToFocus: number;
   public formula: any;
-  public likelihood: number;
-  public spreadRange: string;
+  public likelihood: number = 100;
+  public spreadRange: string = "";
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
 
