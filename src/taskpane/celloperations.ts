@@ -1,5 +1,5 @@
 /* global console, Excel */
-import { sqrt } from 'mathjs';
+import { std } from 'mathjs';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
 
@@ -49,8 +49,6 @@ export default class CellOperations {
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
         let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, focusCell.inputCells);
-
-        // console.log("MEDIAN: " + colorProperties.transparency);
 
         let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
@@ -185,33 +183,14 @@ export default class CellOperations {
   private inputColorPropertiesMedian(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let transparency = 0;
-    let max = -1;
-    let min = 100;
-    let sum = 0;
-    let n = 0;
+    let values: number[] = new Array<number>();
 
 
     cells.forEach((cell: CellProperties) => {
-
-      sum += cell.value;
-      n++;
-      if (cell.value > max) {
-        max = cell.value
-      }
-
-      if (cell.value < min) {
-        min = cell.value;
-      }
+      values.push(cell.value);
     });
 
-    let stdDev: number = 0;
-    let mean = sum / n;
-
-    cells.forEach((cell: CellProperties) => {
-      stdDev += (cell.value - mean) * (cell.value - mean);
-    });
-
-    stdDev = sqrt(stdDev / n);
+    let stdDev = std(values);
 
     console.log(" Stddev: " + stdDev);
 
