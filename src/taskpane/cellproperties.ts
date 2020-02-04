@@ -85,6 +85,7 @@ export default class CellProperties {
     return cells;
   }
 
+  // add arrows on hover
   async getRelationshipOfCells(cells: CellProperties[]) {
 
     try {
