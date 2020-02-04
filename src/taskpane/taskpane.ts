@@ -94,6 +94,14 @@ async function removeAll() {
   });
 }
 
+async function showArrows() {
+  try {
+    cellOp.addArrows(focusCell);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // async function removeDistributions() {
 //   await Excel.run(async (context) => {
 //     const sheet = context.workbook.worksheets.getItem("Probability");

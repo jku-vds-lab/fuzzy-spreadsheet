@@ -362,4 +362,38 @@ export default class CellOperations {
       return context.sync();
     });
   }
+
+  async addArrows(focusCell: CellProperties) {
+
+    let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
+
+    await Excel.run(async (context) => {
+
+      for (let i = 0; i < focusCell.inputCells.length; i++) {
+
+        if (focusCell.top == focusCell.inputCells[i].top) {
+          // arrow should be curved down
+          distance = (focusCell.left - focusCell.inputCells[i].left); // the sign will indicate where the cell is placed, so the arrow can change accordingly
+          console.log("Left Distance: " + distance);
+        }
+
+        if (focusCell.left == focusCell.inputCells[i].left) {
+          distance = (focusCell.top - focusCell.inputCells[i].top);
+          console.log("Top Distance: " + distance);
+        }
+        var shapes = context.workbook.worksheets.getItem("Probability").shapes;
+        let arrow = shapes.addGeometricShape(Excel.GeometricShapeType.curvedDownArrow);
+
+
+        arrow.width = distance + 50 + (i + 1);
+        arrow.left = focusCell.inputCells[i].left;
+        arrow.top = focusCell.inputCells[i].top + 10;
+        arrow.height = 10 * (8 - i);
+        arrow.incrementTop(-10 * (8 - i));
+        arrow.name = "arrow";
+
+        await context.sync();
+      }
+    })
+  }
 }
