@@ -14,6 +14,7 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
+  document.getElementById("relationship").onclick = showArrows;
   document.getElementById("removeAll").onclick = removeAll;
 }
 

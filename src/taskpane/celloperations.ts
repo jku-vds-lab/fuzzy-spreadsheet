@@ -273,14 +273,18 @@ export default class CellOperations {
         const sheet = context.workbook.worksheets.getItem("Probability");
 
         let shape = sheet.shapes.getItem("Impact" + i);
-        shape.load(["height", "width"]);
+        shape.load(["height", "width", "top"]);
 
         await context.sync();
 
-        const likelihood = this.customShapes[i].cell.likelihood / 10;
+        let likelihood = this.customShapes[i].cell.likelihood / 10;
+
+        if (likelihood == 10) {
+          likelihood = this.cells[15].height;
+          shape.top = shape.top - 4;
+        }
         shape.height = likelihood;
         shape.width = likelihood;
-
       }
       // createLikelihoodLegend().then(function () { });
       await context.sync();
@@ -371,26 +375,36 @@ export default class CellOperations {
 
       for (let i = 0; i < focusCell.inputCells.length; i++) {
 
+        let type: Excel.GeometricShapeType;
+        let rotation = 0;
+
         if (focusCell.top == focusCell.inputCells[i].top) {
           // arrow should be curved down
           distance = (focusCell.left - focusCell.inputCells[i].left); // the sign will indicate where the cell is placed, so the arrow can change accordingly
+          type = Excel.GeometricShapeType.curvedDownArrow;
           console.log("Left Distance: " + distance);
         }
 
         if (focusCell.left == focusCell.inputCells[i].left) {
           distance = (focusCell.top - focusCell.inputCells[i].top);
+          type = Excel.GeometricShapeType.curvedLeftArrow;
+          rotation = 180;
           console.log("Top Distance: " + distance);
         }
+
         var shapes = context.workbook.worksheets.getItem("Probability").shapes;
         let arrow = shapes.addGeometricShape(Excel.GeometricShapeType.curvedDownArrow);
-
 
         arrow.width = distance + 50 + (i + 1);
         arrow.left = focusCell.inputCells[i].left;
         arrow.top = focusCell.inputCells[i].top + 10;
         arrow.height = 10 * (8 - i);
         arrow.incrementTop(-10 * (8 - i));
+        arrow.fill.setSolidColor("orange");
+        arrow.lineFormat.visible = false;
         arrow.name = "arrow";
+        arrow.rotation = rotation;
+
 
         await context.sync();
       }
