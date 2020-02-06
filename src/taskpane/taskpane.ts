@@ -40,18 +40,20 @@ async function markAsFocusCell() {
     cellOp = new CellOperations();
     cellProp = new CellProperties();
     cells = await cellProp.getCellsProperties();
+
     await cellProp.getRelationshipOfCells(cells);
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
+    console.log("Cells: ", cells);
 
   } catch (error) {
     console.error(error);
   }
 }
 
-async function impact() {
+function impact() {
   try {
-    await cellOp.addImpact(focusCell);
+    cellOp.addImpact(focusCell);
   } catch (error) {
     console.error(error);
   }
@@ -97,7 +99,8 @@ async function removeAll() {
 
 async function showArrows() {
   try {
-    cellOp.addArrows(focusCell);
+    cellOp.addInArrows(focusCell, focusCell.inputCells);
+    cellOp.addOutArrows(focusCell, focusCell.outputCells);
   } catch (error) {
     console.error(error);
   }

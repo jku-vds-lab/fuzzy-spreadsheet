@@ -42,6 +42,7 @@ export default class CellOperations {
 
   private addImpactInfo(focusCell: CellProperties) {
 
+    console.log(focusCell);
     this.customShapes = new Array<CustomShape>();
 
     if (focusCell.formula.includes("MEDIAN")) {
@@ -78,11 +79,11 @@ export default class CellOperations {
     })
   }
 
-  async addImpact(focusCell: CellProperties) {
+  addImpact(focusCell: CellProperties) {
     this.addImpactInfo(focusCell);
-
+    console.log("Initially: ", this.customShapes)
     try {
-      await Excel.run(async (context) => {
+      Excel.run(function (context) {
 
         const sheet = context.workbook.worksheets.getItem("Probability");
         let i = 0;
@@ -102,9 +103,10 @@ export default class CellOperations {
           i++;
         })
 
-        // createImpactLegend().then(function () { });
-        await context.sync();
+        console.log("Later: ", this.customShapes);   // createImpactLegend().then(function () { });
+        return context.sync();
       });
+
     } catch (error) {
       console.error(error);
     }
@@ -367,44 +369,111 @@ export default class CellOperations {
     });
   }
 
-  async addArrows(focusCell: CellProperties) {
+  async addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
     let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
 
     await Excel.run(async (context) => {
 
-      for (let i = 0; i < focusCell.inputCells.length; i++) {
+      for (let i = 0; i < cells.length; i++) {
 
         let type: Excel.GeometricShapeType;
-        let rotation = 0;
-
-        if (focusCell.top == focusCell.inputCells[i].top) {
-          // arrow should be curved down
-          distance = (focusCell.left - focusCell.inputCells[i].left); // the sign will indicate where the cell is placed, so the arrow can change accordingly
-          type = Excel.GeometricShapeType.curvedDownArrow;
-          console.log("Left Distance: " + distance);
-        }
-
-        if (focusCell.left == focusCell.inputCells[i].left) {
-          distance = (focusCell.top - focusCell.inputCells[i].top);
-          type = Excel.GeometricShapeType.curvedLeftArrow;
-          rotation = 180;
-          console.log("Top Distance: " + distance);
-        }
-
         var shapes = context.workbook.worksheets.getItem("Probability").shapes;
-        let arrow = shapes.addGeometricShape(Excel.GeometricShapeType.curvedDownArrow);
 
-        arrow.width = distance + 50 + (i + 1);
-        arrow.left = focusCell.inputCells[i].left;
-        arrow.top = focusCell.inputCells[i].top + 10;
-        arrow.height = 10 * (8 - i);
-        arrow.incrementTop(-10 * (8 - i));
-        arrow.fill.setSolidColor("orange");
-        arrow.lineFormat.visible = false;
-        arrow.name = "arrow";
-        arrow.rotation = rotation;
+        if (focusCell.top == cells[i].top) {
+          // negative distance is not handled at the moment
+          distance = (focusCell.left - cells[i].left);
+          type = Excel.GeometricShapeType.curvedDownArrow;
 
+          let arrow = shapes.addGeometricShape(type);
+          arrow.width = distance + focusCell.width + (i + 1);
+          arrow.left = cells[i].left;
+          arrow.top = cells[i].top + 10;
+          arrow.height = 10 * (cells.length - i); // 10 is to be replaced by something dynamic, depending on the samples
+          arrow.incrementTop(-10 * (cells.length - i));
+          arrow.fill.setSolidColor("orange");
+          // arrow.fill.transparency = 0.9;
+          arrow.lineFormat.visible = false;
+          arrow.name = "arrow";
+          // arrow.rotation = rotation;
+
+        }
+
+        if (focusCell.left == cells[i].left) {
+          distance = (focusCell.top - cells[i].top);
+          type = Excel.GeometricShapeType.curvedLeftArrow;
+          let arrow = shapes.addGeometricShape(type);
+
+          if (distance < 0) {
+            distance = -distance;
+          }
+
+          arrow.width = 10;
+          arrow.left = cells[i].left;
+          arrow.top = cells[i].top;
+          arrow.height = distance;
+          arrow.incrementTop(-10 * (i + 1));
+          arrow.fill.setSolidColor("orange");
+          // arrow.fill.transparency = 0.7;
+          arrow.lineFormat.visible = false;
+          arrow.name = "arrow";
+          arrow.rotation = 180;
+        }
+
+        await context.sync();
+      }
+    })
+  }
+  async addOutArrows(focusCell: CellProperties, cells: CellProperties[]) {
+
+    let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
+
+    await Excel.run(async (context) => {
+
+      for (let i = 0; i < cells.length; i++) {
+
+        let type: Excel.GeometricShapeType;
+        var shapes = context.workbook.worksheets.getItem("Probability").shapes;
+
+        if (focusCell.top == cells[i].top) {
+          // negative distance is not handled at the moment
+          distance = (focusCell.left - cells[i].left);
+          type = Excel.GeometricShapeType.curvedDownArrow;
+
+          let arrow = shapes.addGeometricShape(type);
+          arrow.width = distance + focusCell.width + (i + 1);
+          arrow.left = focusCell.left;
+          arrow.top = focusCell.top + 10;
+          arrow.height = 10 * (cells.length - i); // 10 is to be replaced by something dynamic, depending on the samples
+          arrow.incrementTop(-10 * (cells.length - i));
+          arrow.fill.setSolidColor("orange");
+          // arrow.fill.transparency = 0.9;
+          arrow.lineFormat.visible = false;
+          arrow.name = "arrow";
+          // arrow.rotation = rotation;
+
+        }
+
+        if (focusCell.left == cells[i].left) {
+          distance = (focusCell.top - cells[i].top);
+          type = Excel.GeometricShapeType.curvedRightArrow;
+          let arrow = shapes.addGeometricShape(type);
+
+          if (distance < 0) {
+            distance = -distance;
+          }
+
+          arrow.width = 10;
+          arrow.left = focusCell.left;
+          arrow.top = focusCell.top;
+          arrow.height = distance;
+          arrow.incrementTop(10 * (i + 1));
+          arrow.fill.setSolidColor("orange");
+          // arrow.fill.transparency = 0.7;
+          arrow.lineFormat.visible = false;
+          arrow.name = "arrow";
+          // arrow.rotation = 180;
+        }
 
         await context.sync();
       }
