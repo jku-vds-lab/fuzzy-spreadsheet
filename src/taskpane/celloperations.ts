@@ -79,11 +79,11 @@ export default class CellOperations {
     })
   }
 
-  addImpact(focusCell: CellProperties) {
+  async addImpact(focusCell: CellProperties) {
     this.addImpactInfo(focusCell);
     console.log("Initially: ", this.customShapes)
     try {
-      Excel.run(function (context) {
+      Excel.run(async (context) => {
 
         const sheet = context.workbook.worksheets.getItem("Probability");
         let i = 0;
@@ -104,7 +104,7 @@ export default class CellOperations {
         })
 
         console.log("Later: ", this.customShapes);   // createImpactLegend().then(function () { });
-        return context.sync();
+        await context.sync();
       });
 
     } catch (error) {

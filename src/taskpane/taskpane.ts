@@ -51,9 +51,9 @@ async function markAsFocusCell() {
   }
 }
 
-function impact() {
+async function impact() {
   try {
-    cellOp.addImpact(focusCell);
+    await cellOp.addImpact(focusCell);
   } catch (error) {
     console.error(error);
   }
