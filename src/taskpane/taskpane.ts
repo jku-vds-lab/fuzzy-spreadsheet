@@ -78,7 +78,8 @@ async function spread() {
 async function removeAll() {
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getItem("Probability");
-
+    const range = sheet.getUsedRange(true);
+    range.format.font.color = "black";
     if (focusCell != null) {
       if (focusCell.address != null) {
         const cell = sheet.getRange(focusCell.address);
@@ -97,10 +98,37 @@ async function removeAll() {
   });
 }
 
-async function showArrows() {
+function showArrows() {
   try {
+    blurBackground();
     cellOp.addInArrows(focusCell, focusCell.inputCells);
     cellOp.addOutArrows(focusCell, focusCell.outputCells);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function blurBackground() {
+  try {
+    Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      const range = sheet.getUsedRange(true);
+      range.format.font.color = "lightgrey";
+
+      let specialRange = sheet.getRange(focusCell.address);
+      specialRange.format.font.color = "black";
+
+      focusCell.inputCells.forEach((cell: CellProperties) => {
+        specialRange = sheet.getRange(cell.address);
+        specialRange.format.font.color = "black";
+      })
+
+      focusCell.outputCells.forEach((cell: CellProperties) => {
+        specialRange = sheet.getRange(cell.address);
+        specialRange.format.font.color = "black";
+      })
+      return context.sync();
+    })
   } catch (error) {
     console.error(error);
   }

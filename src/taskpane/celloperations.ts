@@ -369,11 +369,11 @@ export default class CellOperations {
     });
   }
 
-  async addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
+  addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
     let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
 
-    await Excel.run(async (context) => {
+    Excel.run(async (context) => {
 
       for (let i = 0; i < cells.length; i++) {
 
@@ -424,11 +424,11 @@ export default class CellOperations {
       }
     })
   }
-  async addOutArrows(focusCell: CellProperties, cells: CellProperties[]) {
+  addOutArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
     let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
 
-    await Excel.run(async (context) => {
+    Excel.run(async (context) => {
 
       for (let i = 0; i < cells.length; i++) {
 
@@ -440,14 +440,18 @@ export default class CellOperations {
           distance = (focusCell.left - cells[i].left);
           type = Excel.GeometricShapeType.curvedDownArrow;
 
+          if (distance < 0) {
+            console.log("Top: ", distance);
+          }
+
           let arrow = shapes.addGeometricShape(type);
           arrow.width = distance + focusCell.width + (i + 1);
           arrow.left = focusCell.left;
           arrow.top = focusCell.top + 10;
           arrow.height = 10 * (cells.length - i); // 10 is to be replaced by something dynamic, depending on the samples
           arrow.incrementTop(-10 * (cells.length - i));
-          arrow.fill.setSolidColor("orange");
-          // arrow.fill.transparency = 0.9;
+          arrow.fill.setSolidColor("blue");
+          arrow.fill.transparency = 0.5;
           arrow.lineFormat.visible = false;
           arrow.name = "arrow";
           // arrow.rotation = rotation;
@@ -458,21 +462,32 @@ export default class CellOperations {
           distance = (focusCell.top - cells[i].top);
           type = Excel.GeometricShapeType.curvedRightArrow;
           let arrow = shapes.addGeometricShape(type);
+          let rotation = 180;
+          let incrementLeft = 0;
+
+          if (distance > 0) {
+            console.log("Incrementing: " + focusCell.width);
+            incrementLeft = focusCell.width;
+          }
 
           if (distance < 0) {
+            console.log("Left: ", distance);
             distance = -distance;
+            rotation = 0;
           }
 
           arrow.width = 10;
           arrow.left = focusCell.left;
+          arrow.incrementLeft(incrementLeft);
           arrow.top = focusCell.top;
           arrow.height = distance;
           arrow.incrementTop(10 * (i + 1));
-          arrow.fill.setSolidColor("orange");
-          // arrow.fill.transparency = 0.7;
+          arrow.fill.setSolidColor("blue");
+          arrow.fill.transparency = 0.5;
           arrow.lineFormat.visible = false;
           arrow.name = "arrow";
-          // arrow.rotation = 180;
+          // arrow.rotation = rotation;
+
         }
 
         await context.sync();

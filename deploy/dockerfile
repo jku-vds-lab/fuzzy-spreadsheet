@@ -13,7 +13,8 @@ RUN git clone https://github.com/JKU-ICG/fuzzy-spreadsheet.git
 WORKDIR /fuzzy-spreadsheet
 
 RUN npm install
+RUN npm install webpack -g
 RUN npm install -g nodemon
 
-CMD ["run"]
+RUN webpack
 
