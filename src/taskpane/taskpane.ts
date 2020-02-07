@@ -16,8 +16,18 @@ Office.initialize = () => {
   document.getElementById("spread").onclick = spread;
   document.getElementById("relationship").onclick = showArrows;
   document.getElementById("removeAll").onclick = removeAll;
+  document.getElementById("neighbour").onchange = callMe;
+
+  // var slider = document.getElementById("myRange");
+  // console.log(slider);
 }
 
+function callMe() {
+
+  var e = document.getElementById("list") as HTMLSelectElement;
+  console.log(e.options[e.selectedIndex].value);
+
+}
 
 var cellOp = new CellOperations();
 var cellProp = new CellProperties();
