@@ -29,8 +29,12 @@ jobs:
           CI: true
 
       -
-        name: copy manifest to deploy folder (./dist)
-        run: cp manifest_github.xml ./dist/
+        name: copy index.html to deploy folder (./dist)
+        run: cp index.html ./dist/
+
+      -
+        name: copy+rename manifest to deploy folder (./dist)
+        run: cp manifest_github.xml ./dist/manifest.xml
 
       -
         name: copy assets to deploy folder (./dist)
