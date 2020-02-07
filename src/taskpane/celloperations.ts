@@ -462,7 +462,6 @@ export default class CellOperations {
           distance = (focusCell.top - cells[i].top);
           type = Excel.GeometricShapeType.curvedRightArrow;
           let arrow = shapes.addGeometricShape(type);
-          let rotation = 180;
           let incrementLeft = 0;
 
           if (distance > 0) {
@@ -473,7 +472,7 @@ export default class CellOperations {
           if (distance < 0) {
             console.log("Left: ", distance);
             distance = -distance;
-            rotation = 0;
+            let rotation = 0;
           }
 
           arrow.width = 10;
