@@ -32,10 +32,6 @@ jobs:
         name: copy+rename manifest to deploy folder (./dist)
         run: cp manifest_github.xml ./dist/manifest.xml
 
-      -
-        name: copy assets to deploy folder (./dist)
-        run: cp -r assets/ ./dist/
-
       - 
         name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v1
