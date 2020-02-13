@@ -1,5 +1,6 @@
 /* global console, Excel */
 import { std } from 'mathjs';
+import * as jstat from 'jstat';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
 
@@ -17,11 +18,24 @@ export default class CellOperations {
   }
 
 
+  createNormalDistributions(cells: CellProperties[]) {
+    let min = 0;
+    let max = 40;
+    cells.forEach((cell: CellProperties) => {
+      if (cell.isUncertain) {
+
+        // let samples =
+        console.log(jstat.normal.pdf(5, 10, 3));
+      }
+    })
+  }
+
   // Creating cheat sheet
   async addCheatSheet() {
     await Excel.run(async (context) => {
       const cheatsheet = context.workbook.worksheets.add("CheatSheet");
       let data: number[][] = new Array<Array<number>>();
+
       let means = [32, 13, 7, 12, 26.6, 0.6, 1, 9, 9, 7, 5.4]; // make it dynamic
       let stdDev = [6.38, 2.5, 2.9, 1.8, 4.8, 0.2, 0.4, 2.7, 2.2, 1.34, 5.84]; // make it dynamic
       for (let i = 0; i < 47; i++) {
@@ -252,6 +266,7 @@ export default class CellOperations {
 
   private addLikelihoodInfo() {
 
+    // use the info of uncertain cells
     for (let i = 0; i < this.cells.length; i++) {
       for (let r = 5; r < 18; r++) {
         let id = "R" + r + "C8";

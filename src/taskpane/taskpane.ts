@@ -50,6 +50,7 @@ async function markAsFocusCell() {
     await cellProp.getRelationshipOfCells(cells);
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
+    cellProp.checkUncertainty(cells);
     // console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
@@ -74,8 +75,8 @@ async function likelihood() {
 
 async function spread() {
   try {
-    cellProp.checkUncertainty(cells);
 
+    cellOp.createNormalDistributions(cells);
 
     // cellOp.addSpread(focusCell);
   } catch (error) {

@@ -20,6 +20,8 @@ export default class CellProperties {
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public isUncertain: boolean = false;
+  public variance: number = 0;
+  public samples: number[];
 
 
   CellProperties() {
@@ -110,14 +112,10 @@ export default class CellProperties {
 
       if (cell.formula.includes("-")) {
         let result = this.checkMeanValues(cell.inputCells);
-        console.log(cell);
-        console.log(result);
-        if (!result) {
-          console.log("Step 1: " + result);
-          cell.inputCells.forEach((iCell: CellProperties) => {
-            console.log("Inside result: " + result);
-            result = this.checkMeanValues(iCell.inputCells);
 
+        if (!result) {
+          cell.inputCells.forEach((iCell: CellProperties) => {
+            result = this.checkMeanValues(iCell.inputCells);
           })
         }
         cell.isUncertain = result;
