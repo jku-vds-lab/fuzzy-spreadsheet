@@ -42,10 +42,9 @@ export default class CellOperations {
 
   private addImpactInfo(focusCell: CellProperties) {
 
-    console.log(focusCell);
     this.customShapes = new Array<CustomShape>();
 
-    if (focusCell.formula.includes("MEDIAN")) {
+    if (focusCell.formula.includes("GEOMEAN")) {
       console.log("Compute normalized euclidean distance");
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
@@ -56,7 +55,7 @@ export default class CellOperations {
       })
     }
 
-    if (focusCell.formula.includes("SUM")) {
+    if (focusCell.formula.includes("SUM") || focusCell.formula.includes('-')) {
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
@@ -81,7 +80,7 @@ export default class CellOperations {
 
   async addImpact(focusCell: CellProperties) {
     this.addImpactInfo(focusCell);
-    console.log("Initially: ", this.customShapes)
+
     try {
       Excel.run(async (context) => {
 
@@ -103,7 +102,7 @@ export default class CellOperations {
           i++;
         })
 
-        console.log("Later: ", this.customShapes);   // createImpactLegend().then(function () { });
+        // createImpactLegend().then(function () { });
         await context.sync();
       });
 
@@ -294,6 +293,8 @@ export default class CellOperations {
   }
 
   private addSpreadInfo() {
+
+
     // make it dynamic
     let ranges: string[] = [
       "A1:A47",
@@ -315,6 +316,7 @@ export default class CellOperations {
       for (let r = 5; r < 18; r++) {
         let id = "R" + r + "C8";
         if (this.cells[i].id == id) {
+
           this.cells[i].spreadRange = ranges[rangeIndex];
           rangeIndex++;
         }
@@ -349,6 +351,7 @@ export default class CellOperations {
       const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
       const dataRange = cheatSheet.getRange(cell.spreadRange);
       let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+
       chart.setPosition(cell.address, cell.address);
       chart.left = cell.left + 0.2 * cell.width;
       chart.title.visible = false;

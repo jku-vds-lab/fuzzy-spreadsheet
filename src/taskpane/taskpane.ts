@@ -17,16 +17,12 @@ Office.initialize = () => {
   document.getElementById("relationship").onclick = showArrows;
   document.getElementById("removeAll").onclick = removeAll;
   document.getElementById("neighbour").onchange = callMe;
-
-  // var slider = document.getElementById("myRange");
-  // console.log(slider);
 }
 
 function callMe() {
 
   var e = document.getElementById("list") as HTMLSelectElement;
   console.log(e.options[e.selectedIndex].value);
-
 }
 
 var cellOp = new CellOperations();
@@ -54,8 +50,7 @@ async function markAsFocusCell() {
     await cellProp.getRelationshipOfCells(cells);
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
-    console.log("Cells: ", cells);
-
+    // console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
   }
@@ -79,7 +74,10 @@ async function likelihood() {
 
 async function spread() {
   try {
-    cellOp.addSpread(focusCell);
+    cellProp.checkUncertainty(cells);
+
+
+    // cellOp.addSpread(focusCell);
   } catch (error) {
     console.error(error);
   }
