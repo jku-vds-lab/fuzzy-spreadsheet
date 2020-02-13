@@ -30,6 +30,7 @@
   "dependencies": {
     "@types/jquery": "^3.3.31",
     "@types/mathjs": "^6.0.4",
+    "jstat": "^1.9.2",
     "mathjs": "^6.6.0"
   },
   "devDependencies": {
