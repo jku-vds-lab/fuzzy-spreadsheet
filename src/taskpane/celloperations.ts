@@ -17,19 +17,6 @@ export default class CellOperations {
     this.cells = cells;
   }
 
-
-  createNormalDistributions(cells: CellProperties[]) {
-    let min = 0;
-    let max = 40;
-    cells.forEach((cell: CellProperties) => {
-      if (cell.isUncertain) {
-
-        // let samples =
-        console.log(jstat.normal.pdf(5, 10, 3));
-      }
-    })
-  }
-
   // Creating cheat sheet
   async addCheatSheet() {
     await Excel.run(async (context) => {
@@ -307,41 +294,47 @@ export default class CellOperations {
     });
   }
 
-  private addSpreadInfo() {
+  private addVarianceInfo() {
 
-
-    // make it dynamic
-    let ranges: string[] = [
-      "A1:A47",
-      "B1:B47",
-      "C1:C47",
-      "D1:D47",
-      "E1:E47",
-      "F1:F47",
-      "G1:G47",
-      "H1:H47",
-      "I1:I47",
-      "J1:J47",
-      "K1:K47"
-    ];
-
-    let rangeIndex = 0;
-
+    // use the info of uncertain cells
     for (let i = 0; i < this.cells.length; i++) {
       for (let r = 5; r < 18; r++) {
         let id = "R" + r + "C8";
         if (this.cells[i].id == id) {
-
-          this.cells[i].spreadRange = ranges[rangeIndex];
-          rangeIndex++;
+          this.cells[i].variance = this.cells[i + 2].value;
         }
       }
     }
   }
 
+  createNormalDistributions() {
+
+    this.addVarianceInfo();
+    Excel.run(async (context) => {
+      const cheatsheet = context.workbook.worksheets.add("CheatSheet");
+      let rowIndex = -1;
+
+      this.cells.forEach((cell: CellProperties) => {
+
+        if (cell.isUncertain) {
+          cell.samples = new Array<number>();
+          rowIndex++;
+
+          for (let i = cell.value - cell.variance * 2; i <= cell.value + cell.variance * 2; i++) {
+            cell.samples.push(jstat.normal.pdf(i, cell.value, cell.variance));
+          }
+          var range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, cell.samples.length);
+          range.values = [cell.samples];
+          cell.spreadRange = range;
+          console.log(cell.spreadRange);
+        }
+      })
+      return context.sync();
+    });
+  }
+
   addSpread(focusCell: CellProperties) {
 
-    this.addSpreadInfo();
     this.drawLineChart(focusCell);
 
     focusCell.inputCells.forEach((cell: CellProperties) => {
@@ -356,16 +349,16 @@ export default class CellOperations {
   private drawLineChart(cell: CellProperties) {
 
     console.log(cell, cell.spreadRange);
-    if (cell.spreadRange == "") {
+    if (cell.spreadRange == null) {
       return;
     }
 
     Excel.run((context) => {
 
       const sheet = context.workbook.worksheets.getItem("Probability");
-      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-      const dataRange = cheatSheet.getRange(cell.spreadRange);
-      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+      // const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+      // const dataRange = cheatSheet.getRange(cell.spreadRange);
+      let chart = sheet.charts.add("Line", cell.spreadRange, Excel.ChartSeriesBy.auto);
 
       chart.setPosition(cell.address, cell.address);
       chart.left = cell.left + 0.2 * cell.width;
