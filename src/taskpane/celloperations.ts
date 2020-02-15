@@ -307,33 +307,48 @@ export default class CellOperations {
     }
   }
 
-  createNormalDistributions() {
+  async createNormalDistributions() {
 
     this.addVarianceInfo();
-    Excel.run(async (context) => {
+    await Excel.run(async (context) => {
+
       const cheatsheet = context.workbook.worksheets.add("CheatSheet");
       let rowIndex = -1;
 
-      this.cells.forEach((cell: CellProperties) => {
+      for (let c = 0; c < this.cells.length; c++) {
 
-        if (cell.isUncertain) {
-          cell.samples = new Array<number>();
+        if (this.cells[c].isUncertain) {
+
+          this.cells[c].samples = new Array<number>();
           rowIndex++;
 
-          for (let i = cell.value - cell.variance * 2; i <= cell.value + cell.variance * 2; i++) {
-            cell.samples.push(jstat.normal.pdf(i, cell.value, cell.variance));
+          let mean = this.cells[c].value;
+          let variance = this.cells[c].variance
+          let min = mean - variance * 2;
+          let max = mean + variance * 2;
+          let sampleSize = (variance * 2) / 50;
+
+          for (let i = min; i <= max; i = i + sampleSize) {
+            this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
           }
-          var range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, cell.samples.length);
-          range.values = [cell.samples];
-          cell.spreadRange = range;
-          console.log(cell.spreadRange);
+
+          console.log("Length: " + this.cells[c].samples.length);
+
+          var range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
+          range.values = [this.cells[c].samples];
+          range.load('address');
+          await context.sync();
+          this.cells[c].spreadRange = range.address;
         }
-      })
-      return context.sync();
+      }
+
+      await context.sync();
     });
   }
 
-  addSpread(focusCell: CellProperties) {
+  async addSpread(focusCell: CellProperties) {
+
+    await this.createNormalDistributions();
 
     this.drawLineChart(focusCell);
 
@@ -356,16 +371,16 @@ export default class CellOperations {
     Excel.run((context) => {
 
       const sheet = context.workbook.worksheets.getItem("Probability");
-      // const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-      // const dataRange = cheatSheet.getRange(cell.spreadRange);
-      let chart = sheet.charts.add("Line", cell.spreadRange, Excel.ChartSeriesBy.auto);
+      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+      const dataRange = cheatSheet.getRange(cell.spreadRange);
+      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
 
       chart.setPosition(cell.address, cell.address);
       chart.left = cell.left + 0.2 * cell.width;
       chart.title.visible = false;
       chart.legend.visible = false;
       chart.axes.valueAxis.minimum = 0;
-      chart.axes.valueAxis.maximum = 0.21;
+      // chart.axes.valueAxis.maximum = 0.21;
       chart.dataLabels.showValue = false;
       chart.axes.valueAxis.visible = false;
       chart.axes.categoryAxis.visible = false;

@@ -73,11 +73,11 @@ async function likelihood() {
   }
 }
 
-function spread() {
+async function spread() {
   try {
 
-    cellOp.createNormalDistributions();
-    // cellOp.addSpread(focusCell);
+    // cellOp.createNormalDistributions();
+    await cellOp.addSpread(focusCell);
   } catch (error) {
     console.error(error);
   }

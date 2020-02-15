@@ -16,7 +16,7 @@ export default class CellProperties {
   public degreeToFocus: number;
   public formula: any;
   public likelihood: number = 100;
-  public spreadRange: Excel.Range;
+  public spreadRange: string;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public isUncertain: boolean = false;
@@ -36,7 +36,7 @@ export default class CellProperties {
     this.likelihood = 100;
     this.degreeToFocus = -1;
     this.formula = "";
-    this.spreadRange = null;
+    this.spreadRange = "";
     this.isUncertain = false;
   }
 
