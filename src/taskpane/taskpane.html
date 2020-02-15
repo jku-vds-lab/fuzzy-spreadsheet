@@ -1,6 +1,3 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
-<!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
-
 <!DOCTYPE html>
 <html>
 
@@ -46,9 +43,21 @@
             <img width="50" height="30" src="../../assets/spread.png" alt="Contoso" title="Spread" />
             <span class="ms-Button-label">Spread</span>
         </div>
+        <div role="button" id="relationship" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+            <span class="ms-Button-label">Relationship</span>
+        </div>
         <div role="button" id="removeAll" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
             <img width="30" height="30" src="../../assets/bin.png" alt="Contoso" title="Remove" />
             <span class="ms-Button-label">Remove All</span>
+        </div>
+        <div id="neighbour" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+
+            <p>Choose Degree: </p>
+            <select id="list" name="dropdown" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
         </div>
     </main>
 </body>

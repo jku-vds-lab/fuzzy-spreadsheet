@@ -1,3 +1,5 @@
+import CellOperations from "./celloperations";
+
 /* global console, Excel */
 
 // Find a way to figure out which cells are uncertain so that we dont have to use their column index anymore
@@ -14,9 +16,12 @@ export default class CellProperties {
   public degreeToFocus: number;
   public formula: any;
   public likelihood: number = 100;
-  public spreadRange: string = "";
+  public spreadRange: string;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
+  public isUncertain: boolean = false;
+  public variance: number = 0;
+  public samples: number[];
 
 
   CellProperties() {
@@ -32,6 +37,7 @@ export default class CellProperties {
     this.degreeToFocus = -1;
     this.formula = "";
     this.spreadRange = "";
+    this.isUncertain = false;
   }
 
   async getCellsProperties(cells = new Array<CellProperties>()) {
@@ -85,6 +91,39 @@ export default class CellProperties {
     return cells;
   }
 
+
+  private checkMeanValues(cells: CellProperties[]) {
+    let isUncertain = false;
+    cells.forEach((cell: CellProperties) => {
+      if (cell.formula.includes("GEOMEAN")) {
+        cell.isUncertain = true;
+        isUncertain = true;
+      }
+    })
+    return isUncertain;
+  }
+
+  checkUncertainty(cells: CellProperties[]) {
+    this.checkMeanValues(cells);
+    cells.forEach((cell: CellProperties) => {
+      if (cell.formula.includes("SUM")) {
+        cell.isUncertain = this.checkMeanValues(cell.inputCells);
+      }
+
+      if (cell.formula.includes("-")) {
+        let result = this.checkMeanValues(cell.inputCells);
+
+        if (!result) {
+          cell.inputCells.forEach((iCell: CellProperties) => {
+            result = this.checkMeanValues(iCell.inputCells);
+          })
+        }
+        cell.isUncertain = result;
+      }
+    })
+  }
+
+  // add arrows on hover
   async getRelationshipOfCells(cells: CellProperties[]) {
 
     try {
@@ -167,9 +206,13 @@ export default class CellProperties {
       let i = formula.indexOf("SUM");
       rangeAddress.push(formula.slice(i + 3));
     }
-    if (formula.includes("MEDIAN")) {
-      let i = formula.indexOf("MEDIAN");
-      rangeAddress.push(formula.slice(i + 6));
+    if (formula.includes("GEOMEAN")) {
+      let i = formula.indexOf("GEOMEAN");
+      rangeAddress.push(formula.slice(i + 7));
+    }
+
+    if (formula.includes("-")) {
+      rangeAddress = formula.split('-');
     }
 
     return rangeAddress;

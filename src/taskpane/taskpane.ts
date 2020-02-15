@@ -14,9 +14,16 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
+  document.getElementById("relationship").onclick = showArrows;
   document.getElementById("removeAll").onclick = removeAll;
+  document.getElementById("neighbour").onchange = callMe;
 }
 
+function callMe() {
+
+  var e = document.getElementById("list") as HTMLSelectElement;
+  console.log(e.options[e.selectedIndex].value);
+}
 
 var cellOp = new CellOperations();
 var cellProp = new CellProperties();
@@ -39,10 +46,12 @@ async function markAsFocusCell() {
     cellOp = new CellOperations();
     cellProp = new CellProperties();
     cells = await cellProp.getCellsProperties();
+
     await cellProp.getRelationshipOfCells(cells);
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
-
+    cellProp.checkUncertainty(cells);
+    // console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
   }
@@ -66,7 +75,9 @@ async function likelihood() {
 
 async function spread() {
   try {
-    cellOp.addSpread(focusCell);
+
+    // cellOp.createNormalDistributions();
+    await cellOp.addSpread(focusCell);
   } catch (error) {
     console.error(error);
   }
@@ -75,7 +86,8 @@ async function spread() {
 async function removeAll() {
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getItem("Probability");
-
+    const range = sheet.getUsedRange(true);
+    range.format.font.color = "black";
     if (focusCell != null) {
       if (focusCell.address != null) {
         const cell = sheet.getRange(focusCell.address);
@@ -92,6 +104,42 @@ async function removeAll() {
       return context.sync();
     });
   });
+}
+
+function showArrows() {
+  try {
+    blurBackground();
+    cellOp.addInArrows(focusCell, focusCell.inputCells);
+    cellOp.addOutArrows(focusCell, focusCell.outputCells);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function blurBackground() {
+  try {
+    Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      const range = sheet.getUsedRange(true);
+      range.format.font.color = "lightgrey";
+
+      let specialRange = sheet.getRange(focusCell.address);
+      specialRange.format.font.color = "black";
+
+      focusCell.inputCells.forEach((cell: CellProperties) => {
+        specialRange = sheet.getRange(cell.address);
+        specialRange.format.font.color = "black";
+      })
+
+      focusCell.outputCells.forEach((cell: CellProperties) => {
+        specialRange = sheet.getRange(cell.address);
+        specialRange.format.font.color = "black";
+      })
+      return context.sync();
+    })
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 // async function removeDistributions() {
