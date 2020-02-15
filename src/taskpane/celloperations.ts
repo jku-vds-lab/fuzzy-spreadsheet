@@ -1,5 +1,5 @@
 /* global console, Excel */
-import { std } from 'mathjs';
+import { std, ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
@@ -15,30 +15,6 @@ export default class CellOperations {
 
   setCells(cells: CellProperties[]) {
     this.cells = cells;
-  }
-
-  // Creating cheat sheet
-  async addCheatSheet() {
-    await Excel.run(async (context) => {
-      const cheatsheet = context.workbook.worksheets.add("CheatSheet");
-      let data: number[][] = new Array<Array<number>>();
-
-      let means = [32, 13, 7, 12, 26.6, 0.6, 1, 9, 9, 7, 5.4]; // make it dynamic
-      let stdDev = [6.38, 2.5, 2.9, 1.8, 4.8, 0.2, 0.4, 2.7, 2.2, 1.34, 5.84]; // make it dynamic
-      for (let i = 0; i < 47; i++) {
-        let row = new Array<number>();
-        for (let j = 0; j < 11; j++) {
-          var normalVal = context.workbook.functions.norm_Dist(i + 1, means[j], stdDev[j], false);
-          normalVal.load("value");
-          await context.sync();
-          row.push(normalVal.value);
-        }
-        data.push(row);
-      }
-      var range = cheatsheet.getRange("A1:K47");
-      range.values = data;
-      await context.sync();
-    });
   }
 
   private addImpactInfo(focusCell: CellProperties) {
@@ -312,34 +288,60 @@ export default class CellOperations {
     this.addVarianceInfo();
     await Excel.run(async (context) => {
 
-      const cheatsheet = context.workbook.worksheets.add("CheatSheet");
+      let cheatsheet = context.workbook.worksheets.getItemOrNullObject("CheatSheet");
+      await context.sync();
+
+      if (!cheatsheet.isNullObject) {
+        cheatsheet.delete();
+      }
+
+      cheatsheet = context.workbook.worksheets.add("CheatSheet");
       let rowIndex = -1;
+      // let min = mean - variance * 2;
+      // let max = mean + variance * 2;
 
       for (let c = 0; c < this.cells.length; c++) {
 
-        if (this.cells[c].isUncertain) {
+        this.cells[c].samples = new Array<number>();
 
-          this.cells[c].samples = new Array<number>();
+
+        let overallMin = -10;
+        let overallMax = 40;
+        let mean = this.cells[c].value;
+
+
+        let variance = this.cells[c].variance
+
+        if (variance > 0) {
           rowIndex++;
-
-          let mean = this.cells[c].value;
-          let variance = this.cells[c].variance
-          let min = mean - variance * 2;
-          let max = mean + variance * 2;
           let sampleSize = (variance * 2) / 50;
 
-          for (let i = min; i <= max; i = i + sampleSize) {
+          for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
             this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
           }
-
-          console.log("Length: " + this.cells[c].samples.length);
-
-          var range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
-          range.values = [this.cells[c].samples];
-          range.load('address');
-          await context.sync();
-          this.cells[c].spreadRange = range.address;
         }
+        else {
+          rowIndex++;
+          if (this.cells[c].degreeToFocus >= 0) {
+            for (let i = overallMin; i <= overallMax; i++) {
+              if (i == ceil(this.cells[c].value)) {
+                this.cells[c].samples.push(1);
+              } else {
+                this.cells[c].samples.push(0);
+              }
+            }
+          }
+        }
+
+        if (this.cells[c].samples.length == 0) {
+          continue;
+        }
+
+        let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
+        range.values = [this.cells[c].samples];
+        range.load('address');
+        await context.sync();
+        this.cells[c].spreadRange = range.address;
       }
 
       await context.sync();
@@ -349,6 +351,8 @@ export default class CellOperations {
   async addSpread(focusCell: CellProperties) {
 
     await this.createNormalDistributions();
+
+
 
     this.drawLineChart(focusCell);
 
