@@ -70,8 +70,7 @@ async function impact() {
 
 async function likelihood() {
   try {
-    // Office.context.ui.displayDialogAsync('https://localhost:3000/taskpane.html');
-    // await cellOp.addLikelihood();
+    await cellOp.addLikelihood(focusCell);
   } catch (error) {
     console.error(error);
   }

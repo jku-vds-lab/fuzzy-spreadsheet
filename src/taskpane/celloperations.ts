@@ -82,10 +82,17 @@ export default class CellOperations {
   }
 
   async addImpact(focusCell: CellProperties) {
-    this.addImpactInfo(focusCell);
 
+    if (this.customShapes != null) {
+      this.deleteCustomShapes();
+    }
+    this.addImpactInfo(focusCell);
+    this.drawCustomShapes();
+  }
+
+  private drawCustomShapes() {
     try {
-      Excel.run(async (context) => {
+      Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getItem("Probability");
         let i = 0;
@@ -93,6 +100,7 @@ export default class CellOperations {
         this.customShapes.forEach((customShape: CustomShape) => {
           customShape.shape = sheet.shapes.addGeometricShape("Rectangle");
           customShape.shape.name = "Impact" + i;
+          console.log(customShape.shape.name);
           customShape.shape.left = customShape.cell.left + 2;
           customShape.shape.top = customShape.cell.top + customShape.cell.height / 4;
           customShape.shape.height = 5;
@@ -105,6 +113,28 @@ export default class CellOperations {
           i++;
         })
 
+        // createImpactLegend().then(function () { });
+        return context.sync();
+      });
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  private deleteCustomShapes() {
+    try {
+      Excel.run(async (context) => {
+
+        const sheet = context.workbook.worksheets.getItem("Probability");
+        let i = 0;
+
+        this.customShapes.forEach((customShape: CustomShape) => {
+          customShape.shape = sheet.shapes.getItem("Impact" + i)
+          customShape.shape.delete();
+          i++;
+
+        })
         // createImpactLegend().then(function () { });
         await context.sync();
       });
@@ -270,33 +300,59 @@ export default class CellOperations {
   }
 
   // // Not possible without impact yet
-  async addLikelihood() {
+  async addLikelihood(focusCell: CellProperties) {
 
     this.addLikelihoodInfo();
+    let k = 0;
+    try {
 
-    await Excel.run(async (context) => {
+      if (this.customShapes == null) {
 
-      for (let i = 0; i < this.customShapes.length; i++) {
+        this.customShapes = new Array<CustomShape>();
 
-        const sheet = context.workbook.worksheets.getItem("Probability");
+        focusCell.inputCells.forEach((inCell: CellProperties) => {
+          let customShape: CustomShape = { cell: inCell, shape: null, color: 'gray', transparency: 0 }
+          this.customShapes.push(customShape);
+        });
 
-        let shape = sheet.shapes.getItem("Impact" + i);
-        shape.load(["height", "width", "top"]);
+        focusCell.outputCells.forEach((outCell: CellProperties) => {
+          let customShape: CustomShape = { cell: outCell, shape: null, color: 'gray', transparency: 0 }
+          this.customShapes.push(customShape);
+        });
 
-        await context.sync();
-
-        let likelihood = this.customShapes[i].cell.likelihood / 10;
-
-        if (likelihood == 10) {
-          likelihood = this.cells[15].height;
-          shape.top = shape.top - 4;
-        }
-        shape.height = likelihood;
-        shape.width = likelihood;
+        this.drawCustomShapes();
       }
-      // createLikelihoodLegend().then(function () { });
-      await context.sync();
-    });
+
+      await Excel.run(async (context) => {
+
+        for (let i = 0; i < this.customShapes.length; i++) {
+
+          const sheet = context.workbook.worksheets.getItem("Probability");
+          let key = "Impact" + i;
+          let shape = sheet.shapes.getItem(key);
+          k++;
+          shape.load(["height", "width", "top"]);
+
+          await context.sync();
+
+          let likelihood = this.customShapes[i].cell.likelihood / 10;
+
+          if (likelihood == 10) {
+            likelihood = this.cells[i].height;
+            shape.top = shape.top - 4;
+          }
+          shape.height = likelihood;
+          shape.width = likelihood;
+        }
+
+        // createLikelihoodLegend().then(function () { });
+        await context.sync();
+      });
+    } catch (error) {
+      console.log("Didn't work for " + k);
+      console.error(error);
+    }
+
   }
 
   private addVarianceInfo() {
