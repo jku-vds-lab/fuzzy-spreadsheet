@@ -33,13 +33,14 @@ var focusCell: CellProperties;
 async function markAsFocusCell() {
   try {
 
-    let range;
+    let range:Excel.Range;
+    // let test:Excel.CellBorder;
 
     Excel.run(async context => {
 
       range = context.workbook.getSelectedRange();
       range.load("address");
-      range.format.fill.color = "yellow";
+      range.format.fill.color = "lightgrey";
       await context.sync();
     });
 
@@ -121,7 +122,7 @@ function blurBackground() {
     Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getItem("Probability");
       const range = sheet.getUsedRange(true);
-      range.format.font.color = "lightgrey";
+      range.format.font.color = "grey";
 
       let specialRange = sheet.getRange(focusCell.address);
       specialRange.format.font.color = "black";
