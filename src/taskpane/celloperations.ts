@@ -32,7 +32,7 @@ export default class CellOperations {
       })
     }
 
-    if (focusCell.formula.includes("SUM") || focusCell.formula.includes('-')) {
+    if (focusCell.formula.includes("SUM")) {
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
@@ -42,6 +42,32 @@ export default class CellOperations {
         let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
       })
+    }
+
+    if (focusCell.formula.includes('-')) {
+
+      let formula: string = focusCell.formula;
+      let idx = formula.indexOf('-');
+      let subtrahend = formula.substring(idx + 1, formula.length);
+
+      console.log(subtrahend);
+
+      focusCell.inputCells.forEach((inCell: CellProperties) => {
+        let isSubtrahend = false;
+
+        if (inCell.address.includes(subtrahend)) {
+          isSubtrahend = true;
+          console.log(inCell.address);
+        }
+
+        let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells, isSubtrahend);
+
+        console.log("SUM: " + colorProperties.transparency);
+
+        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        this.customShapes.push(customShape);
+
+      });
     }
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
@@ -88,16 +114,19 @@ export default class CellOperations {
     }
   }
 
-  private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false) {
 
     let color = "green";
 
 
-    if (focusCellValue > 0 && cellValue < 0) {
-      color = "red";
+    if (isSubtrahend) {
+      if (cellValue > 0) {
+        color = "red";
+      }
+      return color;
     }
 
-    if (focusCellValue < 0 && cellValue > 0) { // because of the negative sign, the smaller the number the higher it is
+    if (focusCellValue > 0 && cellValue < 0) {
       color = "red";
     }
 
@@ -117,10 +146,10 @@ export default class CellOperations {
     return color;
   }
 
-  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false) {
 
     let transparency = 0;
-    const color = this.computeColor(cellValue, focusCellValue, cells);
+    const color = this.computeColor(cellValue, focusCellValue, cells, isSubtrahend);
 
     // Make both values positive
     if (cellValue < 0) {
@@ -352,12 +381,12 @@ export default class CellOperations {
 
     await this.createNormalDistributions();
 
-
-
     this.drawLineChart(focusCell);
+    this.drawCompleteLineChart(focusCell);
 
     focusCell.inputCells.forEach((cell: CellProperties) => {
       this.drawLineChart(cell);
+
     })
 
     focusCell.outputCells.forEach((cell: CellProperties) => {
@@ -398,6 +427,78 @@ export default class CellOperations {
       return context.sync();
     });
   }
+
+  private drawCompleteLineChart(cell: CellProperties) {
+
+    if (cell.spreadRange == null) {
+      return;
+    }
+
+    Excel.run((context) => {
+
+      const sheet = context.workbook.worksheets.getItem("Probability");
+      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+
+      let MARGIN = 2 * cell.width;
+      let TEXTMARGIN = 50;
+      let TOPMARGIN = 3 * cell.height;
+
+      let impact = sheet.shapes.addGeometricShape("Rectangle");
+      impact.left = cell.left + MARGIN;
+      impact.top = cell.top + cell.height;
+      impact.height = 5;
+      impact.width = 5;
+      impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
+      impact.fill.setSolidColor('green');
+      impact.lineFormat.weight = 0;
+      impact.lineFormat.color = 'green';
+
+      let textbox = sheet.shapes.addTextBox('50 % Positive Impact');
+      textbox.left = cell.left + MARGIN + TEXTMARGIN;
+      textbox.top = cell.top;
+
+      let likelihood = sheet.shapes.addGeometricShape("Rectangle");
+      likelihood.left = cell.left + MARGIN;
+      likelihood.top = cell.top + TOPMARGIN;
+      likelihood.height = 20;
+      likelihood.width = 20;
+      likelihood.geometricShapeType = Excel.GeometricShapeType.rectangle;
+      likelihood.fill.setSolidColor('gray');
+      likelihood.lineFormat.weight = 0;
+      likelihood.lineFormat.color = 'gray';
+
+      let textbox2 = sheet.shapes.addTextBox('100 % Likelihood');
+      textbox2.left = cell.left + MARGIN + TEXTMARGIN
+      textbox2.top = cell.top + TOPMARGIN;
+
+      const dataRange = cheatSheet.getRange(cell.spreadRange);
+      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+      chart.setPosition(cell.address);
+      chart.left = cell.left + MARGIN;
+      chart.top = cell.top + 2 * TOPMARGIN;
+      chart.title.visible = false;
+      chart.format.fill.clear();
+      chart.format.border.clear();
+
+      let textbox3 = sheet.shapes.addTextBox('Mean and Variance');
+      textbox3.left = cell.left + MARGIN;
+      textbox3.top = cell.top + 2 * TOPMARGIN + 250;
+
+      let shape1 = sheet.shapes.addGeometricShape("Rectangle");
+      // shape.name = "Impact" + i;
+      shape1.left = cell.left + cell.width;
+      shape1.top = cell.top - cell.height;
+      shape1.height = 400;
+      shape1.width = 500;
+      shape1.geometricShapeType = Excel.GeometricShapeType.rectangle;
+      shape1.fill.setSolidColor('ADD8E6');
+      shape1.lineFormat.weight = 0;
+      shape1.lineFormat.color = 'ADD8E6';
+      shape1.setZOrder(Excel.ShapeZOrder.sendToBack);
+      return context.sync();
+    });
+  }
+
 
   addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
 

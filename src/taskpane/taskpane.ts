@@ -19,6 +19,8 @@ Office.initialize = () => {
   document.getElementById("neighbour").onchange = callMe;
 }
 
+
+
 function callMe() {
 
   var e = document.getElementById("list") as HTMLSelectElement;
@@ -33,14 +35,15 @@ var focusCell: CellProperties;
 async function markAsFocusCell() {
   try {
 
-    let range;
-
+    let range: Excel.Range;
     Excel.run(async context => {
 
       range = context.workbook.getSelectedRange();
       range.load("address");
       range.format.fill.color = "yellow";
       await context.sync();
+
+
     });
 
     cellOp = new CellOperations();
@@ -67,7 +70,8 @@ async function impact() {
 
 async function likelihood() {
   try {
-    await cellOp.addLikelihood();
+    // Office.context.ui.displayDialogAsync('https://localhost:3000/taskpane.html');
+    // await cellOp.addLikelihood();
   } catch (error) {
     console.error(error);
   }
