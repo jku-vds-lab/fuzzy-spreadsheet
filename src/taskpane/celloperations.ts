@@ -519,6 +519,7 @@ export default class CellOperations {
 
   showPopUpWindow(address: string) {
     this.removePopUps();
+
     this.cells.forEach((cell: CellProperties) => {
       if (cell.address.includes(address)) {
         if (cell.spreadRange == null) {
@@ -531,11 +532,23 @@ export default class CellOperations {
           const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
 
           let MARGIN = 2 * cell.width;
-          let TEXTMARGIN = 50;
-          let TOPMARGIN = 3 * cell.height;
-          console.log("Likelihood: " + cell.isLikelihood + " Impact: " + cell.isImpact);
+          let TEXTMARGIN = 20;
+          let TOPMARGIN = cell.height;
+
+
+          let shape1 = sheet.shapes.addGeometricShape("Rectangle");
+          shape1.name = "Pop7";
+          shape1.left = cell.left + cell.width;
+          shape1.top = cell.top - cell.height;
+          shape1.height = 250;
+          shape1.width = 300;
+          shape1.geometricShapeType = Excel.GeometricShapeType.rectangle;
+          shape1.fill.setSolidColor('ADD8E6');
+          shape1.lineFormat.weight = 0;
+          shape1.lineFormat.color = 'ADD8E6';
+
           if (cell.isImpact) {
-            //contains impact
+
             this.customShapes.forEach((cShape: CustomShape) => {
 
               if (cShape.cell == cell) {
@@ -543,13 +556,14 @@ export default class CellOperations {
                 let impact = sheet.shapes.addGeometricShape("Rectangle");
                 impact.name = "Pop1";
                 impact.left = cell.left + MARGIN;
-                impact.top = cell.top + cell.height;
+                impact.top = cell.top + TOPMARGIN;
                 impact.height = 5;
                 impact.width = 5;
                 impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
                 impact.fill.setSolidColor(cShape.color);
                 impact.lineFormat.weight = 0;
                 impact.lineFormat.color = cShape.color;
+                impact.setZOrder(Excel.ShapeZOrder.bringForward);
 
                 let text = (Math.ceil((1 - cShape.transparency) * 100)) + '%';
 
@@ -563,30 +577,37 @@ export default class CellOperations {
                 textbox.name = "Pop2";
                 textbox.left = cell.left + MARGIN + TEXTMARGIN;
                 textbox.top = cell.top;
+                textbox.height = 20;
+                textbox.width = 150;
+
+                textbox.setZOrder(Excel.ShapeZOrder.bringForward);
               }
             })
           }
 
           if (cell.isLikelihood) {
-            //contains likelihood
 
             let likelihood = sheet.shapes.addGeometricShape("Rectangle");
             likelihood.name = "Pop3";
             likelihood.left = cell.left + MARGIN;
-            likelihood.top = cell.top + TOPMARGIN;
+            likelihood.top = cell.top + 2 * TOPMARGIN;
             likelihood.height = cell.likelihood / 10;
             likelihood.width = cell.likelihood / 10;
             likelihood.geometricShapeType = Excel.GeometricShapeType.rectangle;
             likelihood.fill.setSolidColor('gray');
             likelihood.lineFormat.weight = 0;
             likelihood.lineFormat.color = 'gray';
+            likelihood.setZOrder(Excel.ShapeZOrder.bringForward);
 
             let text = cell.likelihood + '% Likelihood';
 
             let textbox2 = sheet.shapes.addTextBox(text);
             textbox2.name = "Pop4";
             textbox2.left = cell.left + MARGIN + TEXTMARGIN
-            textbox2.top = cell.top + TOPMARGIN;
+            textbox2.top = cell.top + 2 * TOPMARGIN;
+            textbox2.height = 20;
+            textbox2.width = 150;
+            textbox2.setZOrder(Excel.ShapeZOrder.bringForward);
           }
 
           const dataRange = cheatSheet.getRange(cell.spreadRange);
@@ -594,28 +615,23 @@ export default class CellOperations {
           chart.name = "Pop5";
           chart.setPosition(cell.address);
           chart.left = cell.left + MARGIN;
-          chart.top = cell.top + 2 * TOPMARGIN;
+          chart.top = cell.top + 3 * TOPMARGIN;
+          chart.height = 180;
+          chart.width = 210;
+          // chart.axes.valueAxis.minimum = -10;
+          // chart.axes.valueAxis.maximum = 40;
+          // chart.axes.valueAxis.tickLabelSpacing = 1;
+          chart.axes.categoryAxis.visible = false;
+          chart.axes.valueAxis.majorGridlines.visible = false;
           chart.title.visible = false;
           chart.format.fill.clear();
           chart.format.border.clear();
 
-          let textbox3 = sheet.shapes.addTextBox('Mean and Variance');
-          textbox3.name = "Pop6";
-          textbox3.left = cell.left + MARGIN;
-          textbox3.top = cell.top + 2 * TOPMARGIN + 250;
-
-          let shape1 = sheet.shapes.addGeometricShape("Rectangle");
-          shape1.name = "Pop7";
-          // shape.name = "Impact" + i;
-          shape1.left = cell.left + cell.width;
-          shape1.top = cell.top - cell.height;
-          shape1.height = 400;
-          shape1.width = 500;
-          shape1.geometricShapeType = Excel.GeometricShapeType.rectangle;
-          shape1.fill.setSolidColor('ADD8E6');
-          shape1.lineFormat.weight = 0;
-          shape1.lineFormat.color = 'ADD8E6';
-          shape1.setZOrder(Excel.ShapeZOrder.sendToBack);
+          // let textbox3 = sheet.shapes.addTextBox('Mean and Variance');
+          // textbox3.name = "Pop6";
+          // textbox3.left = cell.left + MARGIN;
+          // textbox3.top = cell.top + 180;
+          // textbox3.setZOrder(Excel.ShapeZOrder.bringForward);
           return context.sync();
         });
       }
