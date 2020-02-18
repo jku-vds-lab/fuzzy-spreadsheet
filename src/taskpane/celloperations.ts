@@ -74,13 +74,37 @@ export default class CellOperations {
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.isImpact = true;
+      let isSubtrahend: boolean = false;
+      let isMinuend: boolean = false;
 
-      let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells);
+      if (outCell.formula.includes('-')) {
+        //figure out whether the focus cell is minuend or subtrahend to the outcell
+        let formula: string = outCell.formula;
+        formula = formula.replace('=', '').replace(' ', '');
+        let idx = formula.indexOf('-');
+        let subtrahend = formula.substring(idx + 1, formula.length);
+        let minuend = formula.substring(0, idx);
+        console.log('Subtrahend: ' + subtrahend);
+        console.log('Minuend: ' + minuend);
+
+
+        if (focusCell.address.includes(subtrahend)) {
+          console.log('The focus cell is subtrahend with NEGATIVE impact ');
+          isSubtrahend = true;
+
+        } else {
+          console.log('The focus cell is minuend with POSITIVE impact');
+          isMinuend = true;
+        }
+      }
+
+      let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells, isSubtrahend, isMinuend);
 
       console.log("OUT: " + colorProperties.transparency);
 
       let customShape: CustomShape = { cell: outCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
       this.customShapes.push(customShape);
+
     })
   }
 
@@ -147,20 +171,22 @@ export default class CellOperations {
     }
   }
 
-  private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false) {
+  private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
 
     let color = "green";
 
 
     if (isSubtrahend) {
-      if (cellValue > 0) {
-        color = "red";
-      }
+      color = "red";
       return color;
     }
 
     if (focusCellValue > 0 && cellValue < 0) {
-      color = "red";
+      if (isMinuend) {
+        color = "green";
+      } else {
+        color = "red";
+      }
     }
 
     if (focusCellValue < 0 && cellValue < 0) { // because of the negative sign, the smaller the number the higher it is
@@ -179,10 +205,10 @@ export default class CellOperations {
     return color;
   }
 
-  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false) {
+  private inputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
 
     let transparency = 0;
-    const color = this.computeColor(cellValue, focusCellValue, cells, isSubtrahend);
+    const color = this.computeColor(cellValue, focusCellValue, cells, isSubtrahend, isMinuend);
 
     // Make both values positive
     if (cellValue < 0) {
@@ -249,10 +275,10 @@ export default class CellOperations {
   }
 
   // Fix color values for negative values
-  private outputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private outputColorProperties(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
 
     let transparency = 0;
-    const color = this.computeColor(cellValue, focusCellValue, cells);
+    const color = this.computeColor(cellValue, focusCellValue, cells, isSubtrahend, isMinuend);
 
     // Make both values positive
     if (cellValue < 0) {
