@@ -78,12 +78,13 @@ var isFocusCell: boolean = false;
 async function markAsFocusCell() {
   try {
 
+
     let range: Excel.Range;
     Excel.run(async context => {
 
       range = context.workbook.getSelectedRange();
       range.load("address");
-      range.format.fill.color = "yellow";
+      range.format.fill.color = "lightgrey";
       await context.sync();
 
 
@@ -169,7 +170,7 @@ function blurBackground() {
     Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       const range = sheet.getUsedRange(true);
-      range.format.font.color = "lightgrey";
+      range.format.font.color = "grey";
 
       let specialRange = sheet.getRange(focusCell.address);
       specialRange.format.font.color = "black";
