@@ -438,7 +438,7 @@ export default class CellOperations {
     await this.createNormalDistributions();
 
     this.drawLineChart(focusCell);
-    this.drawCompleteLineChart(focusCell);
+    // this.drawCompleteLineChart(focusCell);
 
     focusCell.inputCells.forEach((cell: CellProperties) => {
       this.drawLineChart(cell);
@@ -484,7 +484,7 @@ export default class CellOperations {
     });
   }
 
-  private drawCompleteLineChart(cell: CellProperties) {
+  private showPopUpWindow(cell: CellProperties) {
 
     if (cell.spreadRange == null) {
       return;
