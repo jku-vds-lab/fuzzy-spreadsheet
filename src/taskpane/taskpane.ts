@@ -99,7 +99,7 @@ async function markAsFocusCell() {
     cellOp.setCells(cells);
     cellProp.checkUncertainty(cells);
     isFocusCell = true;
-    // console.log("Cells: ", cells);
+    console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
   }
