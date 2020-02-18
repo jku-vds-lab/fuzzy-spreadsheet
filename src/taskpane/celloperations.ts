@@ -22,7 +22,7 @@ export default class CellOperations {
 
     this.customShapes = new Array<CustomShape>();
 
-    if (focusCell.formula.includes("GEOMEAN")) {
+    if (focusCell.formula.includes("GEOMEAN") || focusCell.formula.includes("GEOMITTEL")) {
       console.log("Compute normalized euclidean distance");
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
@@ -484,6 +484,8 @@ export default class CellOperations {
   }
 
   private drawLineChart(cell: CellProperties) {
+
+    console.log('Draw line chart');
 
     console.log(cell, cell.spreadRange);
     if (cell.spreadRange == null) {
