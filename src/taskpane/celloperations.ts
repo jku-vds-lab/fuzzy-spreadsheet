@@ -97,7 +97,7 @@ export default class CellOperations {
     try {
       Excel.run((context) => {
 
-        const sheet = context.workbook.worksheets.getItem("Probability");
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
         let i = 0;
 
         this.customShapes.forEach((customShape: CustomShape) => {
@@ -129,7 +129,7 @@ export default class CellOperations {
     try {
       Excel.run(async (context) => {
 
-        const sheet = context.workbook.worksheets.getItem("Probability");
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
         let i = 0;
 
         this.customShapes.forEach((customShape: CustomShape) => {
@@ -334,7 +334,7 @@ export default class CellOperations {
 
         for (let i = 0; i < this.customShapes.length; i++) {
 
-          const sheet = context.workbook.worksheets.getItem("Probability");
+          const sheet = context.workbook.worksheets.getActiveWorksheet();
           let key = "Impact" + i;
           let shape = sheet.shapes.getItem(key);
           k++;
@@ -466,7 +466,7 @@ export default class CellOperations {
 
     Excel.run((context) => {
 
-      const sheet = context.workbook.worksheets.getItem("Probability");
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
       const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
       const dataRange = cheatSheet.getRange(cell.spreadRange);
       let chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
@@ -501,7 +501,7 @@ export default class CellOperations {
 
         Excel.run((context) => {
 
-          const sheet = context.workbook.worksheets.getItem("Probability");
+          const sheet = context.workbook.worksheets.getActiveWorksheet();
           const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
 
           let MARGIN = 2 * cell.width;
@@ -598,7 +598,7 @@ export default class CellOperations {
   async removePopUps() {
     // remove();
     await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getItem("Probability");
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
       var shapes = sheet.shapes;
       shapes.load("items/name");
 
@@ -622,7 +622,7 @@ export default class CellOperations {
       for (let i = 0; i < cells.length; i++) {
 
         let type: Excel.GeometricShapeType;
-        var shapes = context.workbook.worksheets.getItem("Probability").shapes;
+        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
         if (focusCell.top == cells[i].top) {
           // negative distance is not handled at the moment
@@ -677,7 +677,7 @@ export default class CellOperations {
       for (let i = 0; i < cells.length; i++) {
 
         let type: Excel.GeometricShapeType;
-        var shapes = context.workbook.worksheets.getItem("Probability").shapes;
+        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
         if (focusCell.top == cells[i].top) {
           // negative distance is not handled at the moment
