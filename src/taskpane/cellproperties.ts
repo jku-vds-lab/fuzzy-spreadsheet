@@ -20,6 +20,8 @@ export default class CellProperties {
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public isUncertain: boolean = false;
+  public isImpact: boolean = false;
+  public isLikelihood: boolean = false;
   public variance: number = 0;
   public samples: number[];
 
@@ -36,7 +38,7 @@ export default class CellProperties {
     this.likelihood = 100;
     this.degreeToFocus = -1;
     this.formula = "";
-    this.spreadRange = "";
+    this.spreadRange = null;
     this.isUncertain = false;
   }
 

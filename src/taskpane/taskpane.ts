@@ -19,6 +19,50 @@ Office.initialize = () => {
   document.getElementById("neighbour").onchange = callMe;
 }
 
+var eventResult;
+
+Excel.run(function (context) {
+  var worksheet = context.workbook.worksheets.getActiveWorksheet();
+  eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
+
+  return context.sync()
+    .then(function () {
+      console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+    });
+}).catch(errorHandlerFunction);
+
+function handleSelectionChange(event) {
+  return Excel.run(function (context) {
+    return context.sync()
+      .then(function () {
+        if (isFocusCell) {
+          cellOp.showPopUpWindow(event.address);
+        }
+        console.log("Address of current selection: " + event.address);
+      });
+  }).catch(errorHandlerFunction);
+}
+
+function remove() {
+  return Excel.run(eventResult.context, function (context) {
+    eventResult.remove();
+
+    return context.sync()
+      .then(function () {
+        eventResult = null;
+        console.log("Event handler successfully removed.");
+      });
+  }).catch(errorHandlerFunction);
+}
+
+function errorHandlerFunction(callback) {
+  try {
+    callback();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 function callMe() {
 
   var e = document.getElementById("list") as HTMLSelectElement;
@@ -29,18 +73,20 @@ var cellOp = new CellOperations();
 var cellProp = new CellProperties();
 var cells: CellProperties[];
 var focusCell: CellProperties;
+var isFocusCell: boolean = false;
 
 async function markAsFocusCell() {
   try {
 
-    let range;
-
+    let range: Excel.Range;
     Excel.run(async context => {
 
       range = context.workbook.getSelectedRange();
       range.load("address");
       range.format.fill.color = "yellow";
       await context.sync();
+
+
     });
 
     cellOp = new CellOperations();
@@ -51,6 +97,7 @@ async function markAsFocusCell() {
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
     cellProp.checkUncertainty(cells);
+    isFocusCell = true;
     // console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
@@ -67,7 +114,7 @@ async function impact() {
 
 async function likelihood() {
   try {
-    await cellOp.addLikelihood();
+    await cellOp.addLikelihood(focusCell);
   } catch (error) {
     console.error(error);
   }
@@ -84,8 +131,9 @@ async function spread() {
 }
 
 async function removeAll() {
+  // remove();
   await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getItem("Probability");
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
     range.format.font.color = "black";
     if (focusCell != null) {
@@ -119,7 +167,7 @@ function showArrows() {
 function blurBackground() {
   try {
     Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getItem("Probability");
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
       const range = sheet.getUsedRange(true);
       range.format.font.color = "lightgrey";
 
@@ -144,7 +192,7 @@ function blurBackground() {
 
 // async function removeDistributions() {
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     var charts = sheet.charts;
 //     charts.load("items/$none");
 //     return context.sync().then(function () {
@@ -158,7 +206,7 @@ function blurBackground() {
 
 // async function protectSheet() {
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     sheet.load("protection/protected");
 //     await context.sync().then(function () {
 //       if (!sheet.protection.protected) {
@@ -169,7 +217,7 @@ function blurBackground() {
 // }
 // async function unprotectSheet() {
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     sheet.load("protection/protected");
 //     await context.sync().then(function () {
 //       if (sheet.protection.protected) {
@@ -181,7 +229,7 @@ function blurBackground() {
 // async function removeLikelihood() {
 //   // To be fixed
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     const count = sheet.shapes.getCount();
 //     await context.sync();
 //     for (let i = 0; i < count.value; i++) {
@@ -198,7 +246,7 @@ function blurBackground() {
 // }
 // async function createLikelihoodLegend() {
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     const textRange = ["    < 50", "    <= 80", "    <= 100"];
 //     const sizeRange = [5, 7, 9];
 //     let color = "gray";
@@ -224,7 +272,7 @@ function blurBackground() {
 // }
 // async function createImpactLegend() {
 //   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getItem("Probability");
+//     const sheet = context.workbook.worksheets.getActiveWorksheet();
 //     const textRange = ["    > 20", "    >= 9 & < 20", "    < 9", "    < 9", "    >= 9 & < 20", "    > 20"];
 //     const transparencyRange = [0, 0.4, 0.7, 0.7, 0.4, 0];
 //     let color = "green";
