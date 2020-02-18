@@ -3,6 +3,7 @@ import { std, ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
+import { add } from 'src/functions/functions';
 
 export default class CellOperations {
   chartType: string;
@@ -25,6 +26,7 @@ export default class CellOperations {
       console.log("Compute normalized euclidean distance");
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
+        inCell.isImpact = true;
         let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, focusCell.inputCells);
 
         let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
@@ -34,7 +36,7 @@ export default class CellOperations {
 
     if (focusCell.formula.includes("SUM")) {
       focusCell.inputCells.forEach((inCell: CellProperties) => {
-
+        inCell.isImpact = true;
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
 
         console.log("SUM: " + colorProperties.transparency);
@@ -45,7 +47,6 @@ export default class CellOperations {
     }
 
     if (focusCell.formula.includes('-')) {
-
       let formula: string = focusCell.formula;
       let idx = formula.indexOf('-');
       let subtrahend = formula.substring(idx + 1, formula.length);
@@ -54,6 +55,7 @@ export default class CellOperations {
 
       focusCell.inputCells.forEach((inCell: CellProperties) => {
         let isSubtrahend = false;
+        inCell.isImpact = true;
 
         if (inCell.address.includes(subtrahend)) {
           isSubtrahend = true;
@@ -71,6 +73,7 @@ export default class CellOperations {
     }
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
+      outCell.isImpact = true;
 
       let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells);
 
@@ -311,11 +314,15 @@ export default class CellOperations {
         this.customShapes = new Array<CustomShape>();
 
         focusCell.inputCells.forEach((inCell: CellProperties) => {
+          inCell.isLikelihood = true;
+          console.log("Incell likelihood: " + inCell.isLikelihood);
           let customShape: CustomShape = { cell: inCell, shape: null, color: 'gray', transparency: 0 }
           this.customShapes.push(customShape);
         });
 
         focusCell.outputCells.forEach((outCell: CellProperties) => {
+          outCell.isLikelihood = true;
+          console.log("Outcell likelihood: " + outCell.isLikelihood);
           let customShape: CustomShape = { cell: outCell, shape: null, color: 'gray', transparency: 0 }
           this.customShapes.push(customShape);
         });
@@ -336,7 +343,7 @@ export default class CellOperations {
           await context.sync();
 
           let likelihood = this.customShapes[i].cell.likelihood / 10;
-
+          this.customShapes[i].cell.isLikelihood = true;
           if (likelihood == 10) {
             likelihood = this.cells[i].height;
             shape.top = shape.top - 4;
@@ -462,7 +469,7 @@ export default class CellOperations {
       const sheet = context.workbook.worksheets.getItem("Probability");
       const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
       const dataRange = cheatSheet.getRange(cell.spreadRange);
-      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
+      let chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
 
       chart.setPosition(cell.address, cell.address);
       chart.left = cell.left + 0.2 * cell.width;
@@ -484,77 +491,127 @@ export default class CellOperations {
     });
   }
 
-  private showPopUpWindow(cell: CellProperties) {
+  showPopUpWindow(address: string) {
+    this.removePopUps();
+    this.cells.forEach((cell: CellProperties) => {
+      if (cell.address.includes(address)) {
+        if (cell.spreadRange == null) {
+          return;
+        }
 
-    if (cell.spreadRange == null) {
-      return;
-    }
+        Excel.run((context) => {
 
-    Excel.run((context) => {
+          const sheet = context.workbook.worksheets.getItem("Probability");
+          const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
 
+          let MARGIN = 2 * cell.width;
+          let TEXTMARGIN = 50;
+          let TOPMARGIN = 3 * cell.height;
+          console.log("Likelihood: " + cell.isLikelihood + " Impact: " + cell.isImpact);
+          if (cell.isImpact) {
+            //contains impact
+            this.customShapes.forEach((cShape: CustomShape) => {
+
+              if (cShape.cell == cell) {
+
+                let impact = sheet.shapes.addGeometricShape("Rectangle");
+                impact.name = "Pop1";
+                impact.left = cell.left + MARGIN;
+                impact.top = cell.top + cell.height;
+                impact.height = 5;
+                impact.width = 5;
+                impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
+                impact.fill.setSolidColor(cShape.color);
+                impact.lineFormat.weight = 0;
+                impact.lineFormat.color = cShape.color;
+
+                let text = (Math.ceil((1 - cShape.transparency) * 100)) + '%';
+
+                if (cShape.color == 'green') {
+                  text += 'Positive Impact';
+                } else {
+                  text += 'Negative Impact';
+                }
+
+                let textbox = sheet.shapes.addTextBox(text);
+                textbox.name = "Pop2";
+                textbox.left = cell.left + MARGIN + TEXTMARGIN;
+                textbox.top = cell.top;
+              }
+            })
+          }
+
+          if (cell.isLikelihood) {
+            //contains likelihood
+
+            let likelihood = sheet.shapes.addGeometricShape("Rectangle");
+            likelihood.name = "Pop3";
+            likelihood.left = cell.left + MARGIN;
+            likelihood.top = cell.top + TOPMARGIN;
+            likelihood.height = cell.likelihood / 10;
+            likelihood.width = cell.likelihood / 10;
+            likelihood.geometricShapeType = Excel.GeometricShapeType.rectangle;
+            likelihood.fill.setSolidColor('gray');
+            likelihood.lineFormat.weight = 0;
+            likelihood.lineFormat.color = 'gray';
+
+            let text = cell.likelihood + '% Likelihood';
+
+            let textbox2 = sheet.shapes.addTextBox(text);
+            textbox2.name = "Pop4";
+            textbox2.left = cell.left + MARGIN + TEXTMARGIN
+            textbox2.top = cell.top + TOPMARGIN;
+          }
+
+          const dataRange = cheatSheet.getRange(cell.spreadRange);
+          let chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
+          chart.name = "Pop5";
+          chart.setPosition(cell.address);
+          chart.left = cell.left + MARGIN;
+          chart.top = cell.top + 2 * TOPMARGIN;
+          chart.title.visible = false;
+          chart.format.fill.clear();
+          chart.format.border.clear();
+
+          let textbox3 = sheet.shapes.addTextBox('Mean and Variance');
+          textbox3.name = "Pop6";
+          textbox3.left = cell.left + MARGIN;
+          textbox3.top = cell.top + 2 * TOPMARGIN + 250;
+
+          let shape1 = sheet.shapes.addGeometricShape("Rectangle");
+          shape1.name = "Pop7";
+          // shape.name = "Impact" + i;
+          shape1.left = cell.left + cell.width;
+          shape1.top = cell.top - cell.height;
+          shape1.height = 400;
+          shape1.width = 500;
+          shape1.geometricShapeType = Excel.GeometricShapeType.rectangle;
+          shape1.fill.setSolidColor('ADD8E6');
+          shape1.lineFormat.weight = 0;
+          shape1.lineFormat.color = 'ADD8E6';
+          shape1.setZOrder(Excel.ShapeZOrder.sendToBack);
+          return context.sync();
+        });
+      }
+    })
+  }
+  async removePopUps() {
+    // remove();
+    await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getItem("Probability");
-      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+      var shapes = sheet.shapes;
+      shapes.load("items/name");
 
-      let MARGIN = 2 * cell.width;
-      let TEXTMARGIN = 50;
-      let TOPMARGIN = 3 * cell.height;
-
-      let impact = sheet.shapes.addGeometricShape("Rectangle");
-      impact.left = cell.left + MARGIN;
-      impact.top = cell.top + cell.height;
-      impact.height = 5;
-      impact.width = 5;
-      impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
-      impact.fill.setSolidColor('green');
-      impact.lineFormat.weight = 0;
-      impact.lineFormat.color = 'green';
-
-      let textbox = sheet.shapes.addTextBox('50 % Positive Impact');
-      textbox.left = cell.left + MARGIN + TEXTMARGIN;
-      textbox.top = cell.top;
-
-      let likelihood = sheet.shapes.addGeometricShape("Rectangle");
-      likelihood.left = cell.left + MARGIN;
-      likelihood.top = cell.top + TOPMARGIN;
-      likelihood.height = 20;
-      likelihood.width = 20;
-      likelihood.geometricShapeType = Excel.GeometricShapeType.rectangle;
-      likelihood.fill.setSolidColor('gray');
-      likelihood.lineFormat.weight = 0;
-      likelihood.lineFormat.color = 'gray';
-
-      let textbox2 = sheet.shapes.addTextBox('100 % Likelihood');
-      textbox2.left = cell.left + MARGIN + TEXTMARGIN
-      textbox2.top = cell.top + TOPMARGIN;
-
-      const dataRange = cheatSheet.getRange(cell.spreadRange);
-      let chart = sheet.charts.add("Line", dataRange, Excel.ChartSeriesBy.auto);
-      chart.setPosition(cell.address);
-      chart.left = cell.left + MARGIN;
-      chart.top = cell.top + 2 * TOPMARGIN;
-      chart.title.visible = false;
-      chart.format.fill.clear();
-      chart.format.border.clear();
-
-      let textbox3 = sheet.shapes.addTextBox('Mean and Variance');
-      textbox3.left = cell.left + MARGIN;
-      textbox3.top = cell.top + 2 * TOPMARGIN + 250;
-
-      let shape1 = sheet.shapes.addGeometricShape("Rectangle");
-      // shape.name = "Impact" + i;
-      shape1.left = cell.left + cell.width;
-      shape1.top = cell.top - cell.height;
-      shape1.height = 400;
-      shape1.width = 500;
-      shape1.geometricShapeType = Excel.GeometricShapeType.rectangle;
-      shape1.fill.setSolidColor('ADD8E6');
-      shape1.lineFormat.weight = 0;
-      shape1.lineFormat.color = 'ADD8E6';
-      shape1.setZOrder(Excel.ShapeZOrder.sendToBack);
-      return context.sync();
+      return context.sync().then(function () {
+        shapes.items.forEach(function (shape) {
+          if (shape.name.includes('Pop')) {
+            shape.delete();
+          }
+        });
+        return context.sync();
+      });
     });
   }
-
 
   addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
 

@@ -19,7 +19,49 @@ Office.initialize = () => {
   document.getElementById("neighbour").onchange = callMe;
 }
 
+var eventResult;
 
+Excel.run(function (context) {
+  var worksheet = context.workbook.worksheets.getItem("Probability");
+  eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
+
+  return context.sync()
+    .then(function () {
+      console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+    });
+}).catch(errorHandlerFunction);
+
+function handleSelectionChange(event) {
+  return Excel.run(function (context) {
+    return context.sync()
+      .then(function () {
+        if (isFocusCell) {
+          cellOp.showPopUpWindow(event.address);
+        }
+        console.log("Address of current selection: " + event.address);
+      });
+  }).catch(errorHandlerFunction);
+}
+
+function remove() {
+  return Excel.run(eventResult.context, function (context) {
+    eventResult.remove();
+
+    return context.sync()
+      .then(function () {
+        eventResult = null;
+        console.log("Event handler successfully removed.");
+      });
+  }).catch(errorHandlerFunction);
+}
+
+function errorHandlerFunction(callback) {
+  try {
+    callback();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 function callMe() {
 
@@ -31,6 +73,7 @@ var cellOp = new CellOperations();
 var cellProp = new CellProperties();
 var cells: CellProperties[];
 var focusCell: CellProperties;
+var isFocusCell: boolean = false;
 
 async function markAsFocusCell() {
   try {
@@ -54,6 +97,7 @@ async function markAsFocusCell() {
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
     cellProp.checkUncertainty(cells);
+    isFocusCell = true;
     // console.log("Cells: ", cells);
   } catch (error) {
     console.error(error);
@@ -87,6 +131,7 @@ async function spread() {
 }
 
 async function removeAll() {
+  // remove();
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getItem("Probability");
     const range = sheet.getUsedRange(true);
