@@ -21,13 +21,15 @@ Office.initialize = () => {
 
 var eventResult;
 
+
+
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
   eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
 
   return context.sync()
     .then(function () {
-      console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+      console.log(eventResult);
     });
 }).catch(errorHandlerFunction);
 
@@ -38,7 +40,7 @@ function handleSelectionChange(event) {
         if (isFocusCell) {
           cellOp.showPopUpWindow(event.address);
         }
-        console.log("Address of current selection: " + event.address);
+        console.log("Address of current selection: ", event);
       });
   }).catch(errorHandlerFunction);
 }
@@ -123,7 +125,6 @@ async function likelihood() {
 
 async function spread() {
   try {
-
     // cellOp.createNormalDistributions();
     await cellOp.addSpread(focusCell);
   } catch (error) {
@@ -133,6 +134,7 @@ async function spread() {
 
 async function removeAll() {
   // remove();
+
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
@@ -205,28 +207,30 @@ function blurBackground() {
 //   });
 // }
 
-// async function protectSheet() {
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getActiveWorksheet();
-//     sheet.load("protection/protected");
-//     await context.sync().then(function () {
-//       if (!sheet.protection.protected) {
-//         sheet.protection.protect();
-//       }
-//     });
-//   });
-// }
-// async function unprotectSheet() {
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getActiveWorksheet();
-//     sheet.load("protection/protected");
-//     await context.sync().then(function () {
-//       if (sheet.protection.protected) {
-//         sheet.protection.unprotect();
-//       }
-//     });
-//   });
-// }
+function protectSheet() {
+  return Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    sheet.load("protection/protected");
+    return context.sync().then(function () {
+      if (!sheet.protection.protected) {
+        console.log("Protecting the sheet");
+        sheet.protection.protect();
+      }
+    });
+  });
+}
+function unprotectSheet() {
+  return Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    sheet.load("protection/protected");
+    return context.sync().then(function () {
+      if (sheet.protection.protected) {
+        console.log("Unprotecting the sheet");
+        sheet.protection.unprotect();
+      }
+    });
+  });
+}
 // async function removeLikelihood() {
 //   // To be fixed
 //   await Excel.run(async (context) => {

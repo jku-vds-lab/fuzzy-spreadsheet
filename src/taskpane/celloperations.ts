@@ -319,7 +319,7 @@ export default class CellOperations {
 
     // use the info of uncertain cells
     for (let i = 0; i < this.cells.length; i++) {
-      for (let r = 5; r < 18; r++) {
+      for (let r = 5; r < 22; r++) {
         let id = "R" + r + "C8";
         if (this.cells[i].id == id) {
           this.cells[i].likelihood = this.cells[i + 1].value;
@@ -392,10 +392,11 @@ export default class CellOperations {
 
     // use the info of uncertain cells
     for (let i = 0; i < this.cells.length; i++) {
-      for (let r = 5; r < 18; r++) {
+      for (let r = 5; r < 22; r++) {
         let id = "R" + r + "C8";
         if (this.cells[i].id == id) {
           this.cells[i].variance = this.cells[i + 2].value;
+          console.log('Variance:' + this.cells[i].variance);
         }
       }
     }
@@ -533,11 +534,11 @@ export default class CellOperations {
           const sheet = context.workbook.worksheets.getActiveWorksheet();
           const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
 
-          let MARGIN = 2 * cell.width;
+          let MARGIN = 120
           let TEXTMARGIN = 20;
-          let TOPMARGIN = cell.height;
+          let TOPMARGIN = 15;
 
-
+          console.log("MArgin: " + MARGIN + " TOP MARGIN: " + TOPMARGIN);
           let shape1 = sheet.shapes.addGeometricShape("Rectangle");
           shape1.name = "Pop7";
           shape1.left = cell.left + cell.width;
