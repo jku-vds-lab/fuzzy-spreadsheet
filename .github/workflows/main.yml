@@ -39,3 +39,4 @@ jobs:
           build_dir: dist
         env:
           GITHUB_PAT: ${{ secrets.KLAUS_GITHUB_PAT }}
+
