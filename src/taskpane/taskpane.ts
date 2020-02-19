@@ -16,7 +16,9 @@ Office.initialize = () => {
   document.getElementById("spread").onclick = spread;
   document.getElementById("relationship").onclick = showArrows;
   document.getElementById("removeAll").onclick = removeAll;
-  document.getElementById("neighbour").onchange = callMe;
+  document.getElementById("first").onchange = first;
+  document.getElementById("second").onchange = second;
+  document.getElementById("third").onchange = third;
 }
 
 var eventResult;
@@ -63,10 +65,18 @@ function errorHandlerFunction(callback) {
   }
 }
 
-function callMe() {
+function first() {
+  console.log('first');
+}
 
-  var e = document.getElementById("list") as HTMLSelectElement;
-  console.log(e.options[e.selectedIndex].value);
+
+function second() {
+  console.log('second');
+}
+
+
+function third() {
+  console.log('third');
 }
 
 var cellOp = new CellOperations();

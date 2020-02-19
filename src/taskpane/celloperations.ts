@@ -18,18 +18,15 @@ export default class CellOperations {
     this.cells = cells;
   }
 
-  private addImpactInfo(focusCell: CellProperties) {
-
-    this.customShapes = new Array<CustomShape>();
+  private addImpactInfo(focusCell: CellProperties, color: string = null) {
 
     if (focusCell.formula.includes("GEOMEAN") || focusCell.formula.includes("GEOMITTEL")) {
-      console.log("Compute normalized euclidean distance");
       focusCell.inputCells.forEach((inCell: CellProperties) => {
 
         inCell.isImpact = true;
         let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, focusCell.inputCells);
 
-        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
       })
     }
@@ -38,10 +35,7 @@ export default class CellOperations {
       focusCell.inputCells.forEach((inCell: CellProperties) => {
         inCell.isImpact = true;
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
-
-        console.log("SUM: " + colorProperties.transparency);
-
-        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
       })
     }
@@ -51,22 +45,16 @@ export default class CellOperations {
       let idx = formula.indexOf('-');
       let subtrahend = formula.substring(idx + 1, formula.length);
 
-      console.log(subtrahend);
-
       focusCell.inputCells.forEach((inCell: CellProperties) => {
         let isSubtrahend = false;
         inCell.isImpact = true;
 
         if (inCell.address.includes(subtrahend)) {
           isSubtrahend = true;
-          console.log(inCell.address);
         }
 
         let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells, isSubtrahend);
-
-        console.log("SUM: " + colorProperties.transparency);
-
-        let customShape: CustomShape = { cell: inCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
+        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
         this.customShapes.push(customShape);
 
       });
@@ -83,37 +71,39 @@ export default class CellOperations {
         formula = formula.replace('=', '').replace(' ', '');
         let idx = formula.indexOf('-');
         let subtrahend = formula.substring(idx + 1, formula.length);
-        let minuend = formula.substring(0, idx);
-        console.log('Subtrahend: ' + subtrahend);
-        console.log('Minuend: ' + minuend);
-
 
         if (focusCell.address.includes(subtrahend)) {
-          console.log('The focus cell is subtrahend with NEGATIVE impact ');
           isSubtrahend = true;
-
         } else {
-          console.log('The focus cell is minuend with POSITIVE impact');
           isMinuend = true;
         }
       }
 
       let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells, isSubtrahend, isMinuend);
 
-      console.log("OUT: " + colorProperties.transparency);
-
       let customShape: CustomShape = { cell: outCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
       this.customShapes.push(customShape);
-
     })
   }
 
-  async addImpact(focusCell: CellProperties) {
+  async addImpact(focusCell: CellProperties, n: number = 2) {
 
     if (this.customShapes != null) {
       this.deleteCustomShapes();
     }
+    this.customShapes = new Array<CustomShape>();
     this.addImpactInfo(focusCell);
+
+    // if (n == 2) {
+    //   focusCell.inputCells.forEach((inCell: CellProperties) => {
+    //     console.log(inCell.formula);
+    //     this.addImpactInfo(inCell);
+    //   })
+
+    //   // focusCell.outputCells.forEach((outCell: CellProperties) => {
+    //   //   this.addImpactInfo(outCell);
+    //   // })
+    // }
     this.drawCustomShapes();
   }
 
@@ -174,7 +164,6 @@ export default class CellOperations {
   private computeColor(cellValue: number, focusCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
 
     let color = "green";
-
 
     if (isSubtrahend) {
       color = "red";
@@ -258,8 +247,6 @@ export default class CellOperations {
 
     let stdDev = std(values);
 
-    console.log(" Stddev: " + stdDev);
-
     transparency = (focusCellValue - cellValue) / (2 * stdDev);
 
     if (transparency < 0) {
@@ -270,7 +257,6 @@ export default class CellOperations {
       transparency = 1;
     }
 
-    console.log(" Transparency: " + transparency);
     return { color: "green", transparency: transparency }
   }
 
@@ -501,10 +487,10 @@ export default class CellOperations {
 
         if (cell.isLineChart) {
           console.log("Line chart");
-          chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.auto);
+          chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
         } else {
           console.log("Column chart");
-          chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
+          chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
         }
 
         chart.setPosition(cell.address, cell.address);
