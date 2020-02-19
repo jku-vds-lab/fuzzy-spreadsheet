@@ -95,10 +95,12 @@ async function markAsFocusCell() {
     cellOp = new CellOperations();
     cellProp = new CellProperties();
     cells = await cellProp.getCellsProperties();
-
+    console.log('Getting relationship of cells');
     await cellProp.getRelationshipOfCells(cells);
+    console.log('Getting neighbouring cells');
     focusCell = cellProp.getNeighbouringCells(cells, range.address);
     cellOp.setCells(cells);
+    console.log('Checking Uncertain cells');
     cellProp.checkUncertainty(cells);
     isFocusCell = true;
     console.log("Cells: ", cells);
