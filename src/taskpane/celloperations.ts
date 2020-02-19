@@ -574,6 +574,7 @@ export default class CellOperations {
                 impact.width = 5;
                 impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
                 impact.fill.setSolidColor(cShape.color);
+                impact.fill.transparency = cShape.transparency;
                 impact.lineFormat.weight = 0;
                 impact.lineFormat.color = cShape.color;
                 impact.setZOrder(Excel.ShapeZOrder.bringForward);
