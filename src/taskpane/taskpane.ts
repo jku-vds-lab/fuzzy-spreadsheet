@@ -21,8 +21,6 @@ Office.initialize = () => {
 
 var eventResult;
 
-
-
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
   eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
@@ -112,6 +110,7 @@ async function markAsFocusCell() {
 
 async function impact() {
   try {
+    document.getElementById("impact").style.backgroundColor = "yellow";
     await cellOp.addImpact(focusCell);
   } catch (error) {
     console.error(error);
@@ -120,6 +119,7 @@ async function impact() {
 
 async function likelihood() {
   try {
+    document.getElementById("likelihood").style.backgroundColor = "yellow";
     await cellOp.addLikelihood(focusCell);
   } catch (error) {
     console.error(error);
@@ -128,7 +128,7 @@ async function likelihood() {
 
 async function spread() {
   try {
-    // cellOp.createNormalDistributions();
+    document.getElementById("spread").style.backgroundColor = "yellow";
     await cellOp.addSpread(focusCell);
   } catch (error) {
     console.error(error);
@@ -137,6 +137,10 @@ async function spread() {
 
 async function removeAll() {
   // remove();
+  document.getElementById("relationship").style.backgroundColor = "white";
+  document.getElementById("spread").style.backgroundColor = "white";
+  document.getElementById("likelihood").style.backgroundColor = "white";
+  document.getElementById("impact").style.backgroundColor = "white";
   isFocusCell = false;
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
@@ -162,6 +166,7 @@ async function removeAll() {
 
 function showArrows() {
   try {
+    document.getElementById("relationship").style.backgroundColor = "yellow";
     blurBackground();
     cellOp.addInArrows(focusCell, focusCell.inputCells);
     cellOp.addOutArrows(focusCell, focusCell.outputCells);
