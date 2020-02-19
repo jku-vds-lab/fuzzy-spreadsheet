@@ -123,12 +123,12 @@ export default class CellOperations {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         let i = 0;
-
+        let MARGIN = 5;
         this.customShapes.forEach((customShape: CustomShape) => {
           customShape.shape = sheet.shapes.addGeometricShape("Rectangle");
           customShape.shape.name = "Impact" + i;
           console.log(customShape.shape.name);
-          customShape.shape.left = customShape.cell.left + 2;
+          customShape.shape.left = customShape.cell.left + MARGIN;
           customShape.shape.top = customShape.cell.top + customShape.cell.height / 4;
           customShape.shape.height = 5;
           customShape.shape.width = 5;
@@ -437,6 +437,7 @@ export default class CellOperations {
 
           for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
             this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
+            this.cells[c].isLineChart = true;
           }
         }
         else {
@@ -486,9 +487,6 @@ export default class CellOperations {
 
   private drawLineChart(cell: CellProperties) {
 
-    console.log('Draw line chart');
-
-    console.log(cell, cell.spreadRange);
     if (cell.spreadRange == null) {
       return;
     }
@@ -498,7 +496,16 @@ export default class CellOperations {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
       const dataRange = cheatSheet.getRange(cell.spreadRange);
-      let chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
+
+      let chart: Excel.Chart;
+
+      if (cell.isLineChart) {
+        console.log("Line chart");
+        chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.auto);
+      } else {
+        console.log("Column chart");
+        chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
+      }
 
       chart.setPosition(cell.address, cell.address);
       chart.left = cell.left + 0.2 * cell.width;
@@ -660,8 +667,6 @@ export default class CellOperations {
 
   addInArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
-    let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
-
     Excel.run(async (context) => {
 
       for (let i = 0; i < cells.length; i++) {
@@ -669,117 +674,42 @@ export default class CellOperations {
         let type: Excel.GeometricShapeType;
         var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-        if (focusCell.top == cells[i].top) {
-          // negative distance is not handled at the moment
-          distance = (focusCell.left - cells[i].left);
-          type = Excel.GeometricShapeType.curvedDownArrow;
-
-          let arrow = shapes.addGeometricShape(type);
-          arrow.width = distance + focusCell.width + (i + 1);
-          arrow.left = cells[i].left;
-          arrow.top = cells[i].top + 10;
-          arrow.height = 10 * (cells.length - i); // 10 is to be replaced by something dynamic, depending on the samples
-          arrow.incrementTop(-10 * (cells.length - i));
-          arrow.fill.setSolidColor("orange");
-          // arrow.fill.transparency = 0.9;
-          arrow.lineFormat.visible = false;
-          arrow.name = "arrow";
-          // arrow.rotation = rotation;
-
-        }
-
-        if (focusCell.left == cells[i].left) {
-          distance = (focusCell.top - cells[i].top);
-          type = Excel.GeometricShapeType.curvedLeftArrow;
-          let arrow = shapes.addGeometricShape(type);
-
-          if (distance < 0) {
-            distance = -distance;
-          }
-
-          arrow.width = 10;
-          arrow.left = cells[i].left;
-          arrow.top = cells[i].top;
-          arrow.height = distance;
-          arrow.incrementTop(-10 * (i + 1));
-          arrow.fill.setSolidColor("orange");
-          // arrow.fill.transparency = 0.7;
-          arrow.lineFormat.visible = false;
-          arrow.name = "arrow";
-          arrow.rotation = 180;
-        }
-
-        await context.sync();
+        type = Excel.GeometricShapeType.triangle;
+        let triangle = shapes.addGeometricShape(type);
+        triangle.rotation = 90;
+        triangle.left = cells[i].left;
+        triangle.top = cells[i].top + cells[i].height / 4;
+        triangle.height = 3;
+        triangle.width = 6;
+        triangle.lineFormat.weight = 0;
+        triangle.lineFormat.color = 'black';
+        triangle.fill.setSolidColor('black');
       }
+
+      await context.sync();
     })
   }
-  addOutArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
-    let distance: number = 0; // distance should contain info : top, left, up , down, as well as height
+  addOutArrows(focusCell: CellProperties, cells: CellProperties[]) {
 
     Excel.run(async (context) => {
 
       for (let i = 0; i < cells.length; i++) {
-
         let type: Excel.GeometricShapeType;
         var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-        if (focusCell.top == cells[i].top) {
-          // negative distance is not handled at the moment
-          distance = (focusCell.left - cells[i].left);
-          type = Excel.GeometricShapeType.curvedDownArrow;
-
-          if (distance < 0) {
-            console.log("Top: ", distance);
-          }
-
-          let arrow = shapes.addGeometricShape(type);
-          arrow.width = distance + focusCell.width + (i + 1);
-          arrow.left = focusCell.left;
-          arrow.top = focusCell.top + 10;
-          arrow.height = 10 * (cells.length - i); // 10 is to be replaced by something dynamic, depending on the samples
-          arrow.incrementTop(-10 * (cells.length - i));
-          arrow.fill.setSolidColor("blue");
-          arrow.fill.transparency = 0.5;
-          arrow.lineFormat.visible = false;
-          arrow.name = "arrow";
-          // arrow.rotation = rotation;
-
-        }
-
-        if (focusCell.left == cells[i].left) {
-          distance = (focusCell.top - cells[i].top);
-          type = Excel.GeometricShapeType.curvedRightArrow;
-          let arrow = shapes.addGeometricShape(type);
-          let incrementLeft = 0;
-
-          if (distance > 0) {
-            console.log("Incrementing: " + focusCell.width);
-            incrementLeft = focusCell.width;
-          }
-
-          if (distance < 0) {
-            console.log("Left: ", distance);
-            distance = -distance;
-            let rotation = 0;
-          }
-
-          arrow.width = 10;
-          arrow.left = focusCell.left;
-          arrow.incrementLeft(incrementLeft);
-          arrow.top = focusCell.top;
-          arrow.height = distance;
-          arrow.incrementTop(10 * (i + 1));
-          arrow.fill.setSolidColor("blue");
-          arrow.fill.transparency = 0.5;
-          arrow.lineFormat.visible = false;
-          arrow.name = "arrow";
-          // arrow.rotation = rotation;
-
-        }
-
-        await context.sync();
+        type = Excel.GeometricShapeType.triangle;
+        let triangle = shapes.addGeometricShape(type);
+        triangle.rotation = 270;
+        triangle.left = cells[i].left;
+        triangle.top = cells[i].top + cells[i].height / 4;
+        triangle.height = 3;
+        triangle.width = 6;
+        triangle.lineFormat.weight = 0;
+        triangle.lineFormat.color = 'black';
+        triangle.fill.setSolidColor('black');
       }
+      await context.sync();
     })
   }
 }

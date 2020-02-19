@@ -24,6 +24,7 @@ export default class CellProperties {
   public isLikelihood: boolean = false;
   public variance: number = 0;
   public samples: number[];
+  public isLineChart: boolean = false;
 
 
   CellProperties() {
