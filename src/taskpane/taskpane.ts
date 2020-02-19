@@ -134,7 +134,7 @@ async function spread() {
 
 async function removeAll() {
   // remove();
-
+  isFocusCell = false;
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
