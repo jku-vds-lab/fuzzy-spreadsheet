@@ -136,7 +136,6 @@ async function spread() {
 }
 
 async function removeAll() {
-  // remove();
   document.getElementById("relationship").style.backgroundColor = "white";
   document.getElementById("spread").style.backgroundColor = "white";
   document.getElementById("likelihood").style.backgroundColor = "white";
