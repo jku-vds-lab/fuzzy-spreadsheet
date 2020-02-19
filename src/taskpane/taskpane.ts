@@ -94,6 +94,7 @@ async function markAsFocusCell() {
 
     cellOp = new CellOperations();
     cellProp = new CellProperties();
+    console.log('Getting properties of cells');
     cells = await cellProp.getCellsProperties();
     console.log('Getting relationship of cells');
     await cellProp.getRelationshipOfCells(cells);

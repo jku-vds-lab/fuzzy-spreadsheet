@@ -490,41 +490,44 @@ export default class CellOperations {
     if (cell.spreadRange == null) {
       return;
     }
+    try {
+      Excel.run((context) => {
 
-    Excel.run((context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+        const dataRange = cheatSheet.getRange(cell.spreadRange);
 
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-      const dataRange = cheatSheet.getRange(cell.spreadRange);
+        let chart: Excel.Chart;
 
-      let chart: Excel.Chart;
+        if (cell.isLineChart) {
+          console.log("Line chart");
+          chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.auto);
+        } else {
+          console.log("Column chart");
+          chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
+        }
 
-      if (cell.isLineChart) {
-        console.log("Line chart");
-        chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.auto);
-      } else {
-        console.log("Column chart");
-        chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.auto);
-      }
-
-      chart.setPosition(cell.address, cell.address);
-      chart.left = cell.left + 0.2 * cell.width;
-      chart.title.visible = false;
-      chart.legend.visible = false;
-      chart.axes.valueAxis.minimum = 0;
-      // chart.axes.valueAxis.maximum = 0.21;
-      chart.dataLabels.showValue = false;
-      chart.axes.valueAxis.visible = false;
-      chart.axes.categoryAxis.visible = false;
-      chart.axes.valueAxis.majorGridlines.visible = false;
-      chart.plotArea.top = 0;
-      chart.plotArea.left = 0;
-      chart.plotArea.width = cell.width - 0.4 * cell.width;
-      chart.plotArea.height = 100;
-      chart.format.fill.clear();
-      chart.format.border.clear();
-      return context.sync();
-    });
+        chart.setPosition(cell.address, cell.address);
+        chart.left = cell.left + 0.2 * cell.width;
+        chart.title.visible = false;
+        chart.legend.visible = false;
+        chart.axes.valueAxis.minimum = 0;
+        // chart.axes.valueAxis.maximum = 0.21;
+        chart.dataLabels.showValue = false;
+        chart.axes.valueAxis.visible = false;
+        chart.axes.categoryAxis.visible = false;
+        chart.axes.valueAxis.majorGridlines.visible = false;
+        chart.plotArea.top = 0;
+        chart.plotArea.left = 0;
+        chart.plotArea.width = cell.width - 0.4 * cell.width;
+        chart.plotArea.height = 100;
+        chart.format.fill.clear();
+        chart.format.border.clear();
+        return context.sync();
+      });
+    } catch (error) {
+      console.log('Could not draw chart because of the following error', error);
+    }
   }
 
   showPopUpWindow(address: string) {
