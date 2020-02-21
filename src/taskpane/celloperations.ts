@@ -314,7 +314,6 @@ export default class CellOperations {
     }
   }
 
-  // // Not possible without impact yet
   async addLikelihood(focusCell: CellProperties) {
 
     this.addLikelihoodInfo();
