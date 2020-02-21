@@ -70,6 +70,7 @@ async function markAsFocusCell() {
 
 function disableInputs() {
 
+  document.getElementById('loading').hidden = false;
   (<HTMLInputElement>document.getElementById("impact")).disabled = true;
   (<HTMLInputElement>document.getElementById("likelihood")).disabled = true;
   (<HTMLInputElement>document.getElementById("spread")).disabled = true;
@@ -83,7 +84,7 @@ function disableInputs() {
 }
 
 function enableInputs() {
-
+  document.getElementById('loading').hidden = true;
   (<HTMLInputElement>document.getElementById("impact")).disabled = false;
   (<HTMLInputElement>document.getElementById("likelihood")).disabled = false;
   (<HTMLInputElement>document.getElementById("spread")).disabled = false;
