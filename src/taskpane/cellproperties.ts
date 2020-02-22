@@ -28,10 +28,14 @@ export default class CellProperties {
   public variance: number = 0;
   public samples: number[];
   public isLineChart: boolean = false;
-  public shape: Excel.Shape;
-  public color: string;
-  public transparency: number;
-
+  // for impact and likelihood
+  public rect: Excel.Shape;
+  public rectColor: string;
+  public rectTransparency: number;
+  //for relationship
+  public triangle: Excel.Shape;
+  public triangleColor: string;
+  public triangleTransparency: number;
 
 
   CellProperties() {
@@ -101,8 +105,85 @@ export default class CellProperties {
     return cells;
   }
 
-  async getRelationshipOfCells(cells: CellProperties[]) {
+  async getRangeAttributes(rangeAddress: string) {
+    let range: Excel.Range;
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      range = sheet.getRange(rangeAddress);
+      range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
+      await context.sync();
+    }).catch(this.errorHandlerFunction);
+    return {
+      rowIndex: range.rowIndex,
+      colIndex: range.columnIndex,
+      rowCount: range.rowCount,
+      colCount: range.columnCount
+    }
+  }
 
+  errorHandlerFunction(callback) {
+    try {
+      callback();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  getCellsInRange(cells: CellProperties[]) {
+    console.log('Enter get cells in range');
+    cells.forEach((cell: CellProperties) => {
+      // eslint-disable-next-line no-empty
+      if (cell.formula == "") {
+
+      } else {
+
+        let rangeAddresses = this.getRangeFromFormula(cell.formula);
+        let cellRanges = new Array<string>();
+
+        rangeAddresses.forEach((range: string) => {
+          range = range.replace('(', '').replace(')', '').replace('=', '');
+          console.log('Range: ' + range); // Step1: check for empty ranges
+          if (range.includes(':')) {
+            //
+            let ranges = range.split(':');
+            if (ranges.length > 1) {
+              let rangeStart = ranges[0];
+              let rangeEnd = ranges[1];
+
+              let colStartArray = rangeStart.match(/\d+/g);
+              let colEndArray = rangeEnd.match(/\d+/g);
+              let colStart = '';
+              let colEnd = '';
+
+              if (colStartArray != null) {
+                colStart = colStartArray[0];
+              }
+              if (colEndArray != null) {
+                colEnd = colEndArray[0];
+              }
+
+              let rowStart = rangeStart.replace(colStart, '');
+              let rowEnd = rangeEnd.replace(colEnd, '');
+
+              if (rowStart == rowEnd) {
+                for (let i = Number(colStart); i <= Number(colEnd); i++) {
+                  cellRanges.push(rowStart + i);
+                }
+              }
+              else {
+                console.log('Cols are similar'); // Step 2: Check for different columns
+              }
+              cellRanges.forEach((cr: string) => {
+                console.log(cr);
+              })
+            }
+          }
+        })
+      }
+    })
+  }
+
+  async getRelationshipOfCells(cells: CellProperties[]) {
     try {
       for (let i = 0; i < cells.length; i++) {
 
@@ -110,38 +191,35 @@ export default class CellProperties {
           continue;
         }
 
+        console.log("Finding range: " + cells[i].formula);
         let rangeAddress = this.getRangeFromFormula(cells[i].formula);
+        console.log(rangeAddress);
 
-        await Excel.run(async (context) => {
-          const sheet = context.workbook.worksheets.getActiveWorksheet();
+        for (let r = 0; r < rangeAddress.length; r++) {
 
-          for (let rangeIndex = 0; rangeIndex < rangeAddress.length; rangeIndex++) {
+          const rangeAttributes = await this.getRangeAttributes(rangeAddress[r]);
 
-            const range = sheet.getRange(rangeAddress[rangeIndex]);
-            range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
-            await context.sync();
+          const rowIndex = rangeAttributes.rowIndex;
+          const colIndex = rangeAttributes.colIndex;
+          const rowCount = rangeAttributes.rowCount;
+          const colCount = rangeAttributes.colCount;
 
-            const rowIndex = range.rowIndex;
-            const colIndex = range.columnIndex;
-            const rowCount = range.rowCount;
-            const colCount = range.columnCount;
+          for (let r = rowIndex; r < rowIndex + rowCount; r++) {
+            for (let c = colIndex; c < colIndex + colCount; c++) {
+              const id = "R" + r + "C" + c;
 
-            for (let r = rowIndex; r < rowIndex + rowCount; r++) {
-              for (let c = colIndex; c < colIndex + colCount; c++) {
-                const id = "R" + r + "C" + c;
+              cells.forEach((cell: CellProperties) => {
 
-                cells.forEach((cell: CellProperties) => {
+                if (cell.id == id) {
 
-                  if (cell.id == id) {
-
-                    cells[i].inputCells.push(cell);
-                    cell.outputCells.push(cells[i]);
-                  }
-                })
-              }
+                  cells[i].inputCells.push(cell);
+                  cell.outputCells.push(cells[i]);
+                }
+              })
             }
           }
-        });
+        }
+
       }
     } catch (error) {
       console.error(error);
@@ -221,7 +299,14 @@ export default class CellProperties {
     }
     if (formula.includes("AVERAGE")) {
       let i = formula.indexOf("AVERAGE");
-      rangeAddress.push(formula.slice(i + 7));
+      formula = formula.slice(i + 7);
+      formula = formula.replace('(', '').replace(')', '');
+
+      if (rangeAddress.includes(',')) {
+        rangeAddress = formula.split(',');
+      } else {
+        rangeAddress.push(formula.slice(i + 7));
+      }
     }
 
     if (formula.includes("-")) {

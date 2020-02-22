@@ -3,7 +3,6 @@ import { std, ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from './cellproperties';
 import CustomShape from './customshape';
-import { add } from 'src/functions/functions';
 
 export default class CellOperations {
   chartType: string;
@@ -18,34 +17,43 @@ export default class CellOperations {
     this.cells = cells;
   }
 
+  async addImpact(focusCell: CellProperties) {
+    this.addImpactInfo(focusCell);
+    this.drawRectangles(focusCell.inputCells);
+    this.drawRectangles(focusCell.outputCells);
+  }
+
   private addImpactInfo(focusCell: CellProperties, color: string = null) {
 
-    if (focusCell.formula.includes("GEOMEAN") || focusCell.formula.includes("GEOMITTEL")) {
-      focusCell.inputCells.forEach((inCell: CellProperties) => {
+    this.addImpactInfoToInputCells(focusCell, color);
+    this.addImpactInfoOutputCells(focusCell);
 
-        inCell.isImpact = true;
-        let colorProperties = this.inputColorPropertiesMedian(inCell.value, focusCell.value, focusCell.inputCells);
+  }
 
-        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
-        this.customShapes.push(customShape);
-      })
-    }
+  private addImpactInfoToInputCells(focusCell: CellProperties, color: string = null) {
 
-    if (focusCell.formula.includes("SUM")) {
-      focusCell.inputCells.forEach((inCell: CellProperties) => {
-        inCell.isImpact = true;
-        let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
-        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
-        this.customShapes.push(customShape);
-      })
-    }
+    const isFocusCellAverage = focusCell.formula.includes("AVERAGE") || focusCell.formula.includes("MITTELWERT");
+    const isFocusCellSum = focusCell.formula.includes("SUM");
+    const isFocusCellDiff = focusCell.formula.includes('-');
+    let subtrahend = null;
 
-    if (focusCell.formula.includes('-')) {
+    if (isFocusCellDiff) {
       let formula: string = focusCell.formula;
       let idx = formula.indexOf('-');
-      let subtrahend = formula.substring(idx + 1, formula.length);
+      subtrahend = formula.substring(idx + 1, formula.length);
+    }
 
-      focusCell.inputCells.forEach((inCell: CellProperties) => {
+    focusCell.inputCells.forEach((inCell: CellProperties) => {
+
+      let colorProperties;
+
+      if (isFocusCellAverage) {
+        colorProperties = this.inputColorPropertiesAverage(inCell.value, focusCell.value, focusCell.inputCells);
+      }
+      else if (isFocusCellSum) {
+        colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells);
+      }
+      else if (isFocusCellDiff) {
         let isSubtrahend = false;
         inCell.isImpact = true;
 
@@ -53,15 +61,19 @@ export default class CellOperations {
           isSubtrahend = true;
         }
 
-        let colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells, isSubtrahend);
-        let customShape: CustomShape = { cell: inCell, shape: null, color: color ? color : colorProperties.color, transparency: colorProperties.transparency }
-        this.customShapes.push(customShape);
+        colorProperties = this.inputColorProperties(inCell.value, focusCell.value, focusCell.inputCells, isSubtrahend);
+      }
 
-      });
-    }
+      inCell.isImpact = true;
+      inCell.rectColor = color ? color : colorProperties.color;
+      inCell.rectTransparency = colorProperties.transparency;
+    })
+  }
+
+  private addImpactInfoOutputCells(focusCell: CellProperties) {
 
     focusCell.outputCells.forEach((outCell: CellProperties) => {
-      outCell.isImpact = true;
+
       let isSubtrahend: boolean = false;
       let isMinuend: boolean = false;
 
@@ -80,57 +92,35 @@ export default class CellOperations {
       }
 
       let colorProperties = this.outputColorProperties(outCell.value, focusCell.value, outCell.inputCells, isSubtrahend, isMinuend);
-
-      let customShape: CustomShape = { cell: outCell, shape: null, color: colorProperties.color, transparency: colorProperties.transparency }
-      this.customShapes.push(customShape);
+      outCell.isImpact = true;
+      outCell.rectColor = colorProperties.color;
+      outCell.rectTransparency = colorProperties.transparency;
     })
   }
 
-  async addImpact(focusCell: CellProperties, n: number = 2) {
-
-    if (this.customShapes != null) {
-      this.deleteCustomShapes();
-    }
-    this.customShapes = new Array<CustomShape>();
-    this.addImpactInfo(focusCell);
-
-    // if (n == 2) {
-    //   focusCell.inputCells.forEach((inCell: CellProperties) => {
-    //     console.log(inCell.formula);
-    //     this.addImpactInfo(inCell);
-    //   })
-
-    //   // focusCell.outputCells.forEach((outCell: CellProperties) => {
-    //   //   this.addImpactInfo(outCell);
-    //   // })
-    // }
-    this.drawCustomShapes();
-  }
-
-  private drawCustomShapes() {
+  private drawRectangles(cells: CellProperties[]) {
     try {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         let i = 0;
         let MARGIN = 5;
-        this.customShapes.forEach((customShape: CustomShape) => {
-          customShape.shape = sheet.shapes.addGeometricShape("Rectangle");
-          customShape.shape.name = "Impact" + i;
-          console.log(customShape.shape.name);
-          customShape.shape.left = customShape.cell.left + MARGIN;
-          customShape.shape.top = customShape.cell.top + customShape.cell.height / 4;
-          customShape.shape.height = 5;
-          customShape.shape.width = 5;
-          customShape.shape.geometricShapeType = Excel.GeometricShapeType.rectangle;
-          customShape.shape.fill.setSolidColor(customShape.color);
-          customShape.shape.fill.transparency = customShape.transparency;
-          customShape.shape.lineFormat.weight = 0;
-          customShape.shape.lineFormat.color = customShape.color;
+
+        cells.forEach((cell: CellProperties) => {
+          cell.rect = sheet.shapes.addGeometricShape("Rectangle");
+          cell.rect.name = "Impact" + i;
+
+          cell.rect.left = cell.left + MARGIN;
+          cell.rect.top = cell.top + cell.height / 4;
+          cell.rect.height = 5;
+          cell.rect.width = 5;
+          cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
+          cell.rect.fill.setSolidColor(cell.rectColor);
+          cell.rect.fill.transparency = cell.rectTransparency;
+          cell.rect.lineFormat.weight = 0;
+          cell.rect.lineFormat.color = cell.rectColor;
           i++;
         })
-
-        // createImpactLegend().then(function () { });
         return context.sync();
       });
 
@@ -152,7 +142,6 @@ export default class CellOperations {
           i++;
 
         })
-        // createImpactLegend().then(function () { });
         await context.sync();
       });
 
@@ -235,7 +224,7 @@ export default class CellOperations {
     return { color: color, transparency: transparency };
   }
 
-  private inputColorPropertiesMedian(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
+  private inputColorPropertiesAverage(cellValue: number, focusCellValue: number, cells: CellProperties[]) {
 
     let transparency = 0;
     let values: number[] = new Array<number>();
@@ -303,13 +292,10 @@ export default class CellOperations {
 
   private addLikelihoodInfo() {
 
-    // use the info of uncertain cells
     for (let i = 0; i < this.cells.length; i++) {
-      for (let r = 5; r < 22; r++) {
-        let id = "R" + r + "C8";
-        if (this.cells[i].id == id) {
-          this.cells[i].likelihood = this.cells[i + 1].value;
-        }
+      if (this.cells[i].isUncertain) {
+        this.cells[i].likelihood = this.cells[i + 2].value;
+        console.log(this.cells[i].value + " has " + this.cells[i].likelihood);
       }
     }
   }
@@ -338,7 +324,7 @@ export default class CellOperations {
           this.customShapes.push(customShape);
         });
 
-        this.drawCustomShapes();
+        // this.drawRectangles();
       }
 
       await Excel.run(async (context) => {

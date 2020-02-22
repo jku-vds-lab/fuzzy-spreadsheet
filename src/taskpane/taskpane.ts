@@ -53,14 +53,14 @@ async function markAsFocusCell() {
     console.log('Getting properties of cells');
     cells = await cellProp.getCellsProperties(); // needs to be optimised
     console.log('Getting relationship of cells');
-    await cellProp.getRelationshipOfCells(cells); // already optimised
+    cellProp.getCellsInRange(cells); // already optimised
     console.log('Getting neighbouring cells');
-    focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
-    console.log('Checking Uncertain cells');
-    cellProp.checkUncertainty(cells); // alreadt optimised
-    cellOp.setCells(cells);
-    SheetProperties.isFocusCell = true;
-    console.log("Cells: ", cells);
+    // focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
+    // console.log('Checking Uncertain cells');
+    // cellProp.checkUncertainty(cells); // alreadt optimised
+    // cellOp.setCells(cells);
+    // SheetProperties.isFocusCell = true;
+    // console.log("Cells: ", cells);
     enableInputs();
   } catch (error) {
     console.error(error);
