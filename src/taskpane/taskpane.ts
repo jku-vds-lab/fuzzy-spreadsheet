@@ -32,7 +32,7 @@ var isSheetParsed = false;
 
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
-  eventResult = worksheet.onChanged.add(parseSheet);
+  eventResult = worksheet.onChanged.add(parseSheet); // improve logic for sheet parsing
 
   return context.sync()
     .then(function () {
