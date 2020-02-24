@@ -5,6 +5,6 @@ export default class SheetProperties {
   static isImpact: boolean;
   static isLikelihood: boolean;
   static isSpread: boolean;
-  static isFocusCell: boolean;
+  static isReferenceCell: boolean;
   static degreeOfNeighbourhood: number = 1;
 }

@@ -20,7 +20,13 @@ export default class Likelihood {
     this.addLikelihoodInfo();
 
     try {
-      let commonOps = new CommonOperations();
+
+      const commonOps = new CommonOperations();
+
+      if (SheetProperties.isImpact) {
+        commonOps.deleteRectangles();
+      }
+
       commonOps.drawRectangles(this.referenceCell.inputCells);
       commonOps.drawRectangles(this.referenceCell.outputCells);
 
@@ -55,7 +61,7 @@ export default class Likelihood {
             this.cells[i].rectTransparency = 0;
           }
 
-          this.cells[i].likelihood = this.cells[i + 2].value;
+          this.cells[i].likelihood = this.cells[i + 2].value / 10;
 
           console.log(this.cells[i].value + " has " + this.cells[i].likelihood);
         }

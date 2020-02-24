@@ -16,6 +16,11 @@ export default class Impact {
 
     this.addImpactInfo();
     const commonOps = new CommonOperations();
+
+    if (SheetProperties.isLikelihood) {
+      commonOps.deleteRectangles();
+    }
+
     commonOps.drawRectangles(this.referenceCell.inputCells);
     commonOps.drawRectangles(this.referenceCell.outputCells);
   }

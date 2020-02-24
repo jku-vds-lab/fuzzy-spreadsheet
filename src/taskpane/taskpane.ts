@@ -68,6 +68,10 @@ async function markAsReferenceCell() {
       await parseSheet();
     }
 
+    if (SheetProperties.isReferenceCell) {
+      removeAll();
+    }
+
     let range: Excel.Range;
     Excel.run(async context => {
 
@@ -82,15 +86,25 @@ async function markAsReferenceCell() {
       referenceCell = cellProp.getReferenceAndNeighbouringCells(cells, range.address);
       cellProp.checkUncertainty(cells);
       cellOp = new CellOperations(cells, referenceCell, 1);
-      SheetProperties.isFocusCell = true;
+      SheetProperties.isReferenceCell = true;
 
       console.log('Done Marking a reference cell');
       enableInputs();
+      displayOptions();
     });
 
   } catch (error) {
     console.error(error);
     enableInputs();
+  }
+}
+
+function displayOptions() {
+  if (SheetProperties.isImpact) {
+    impact();
+  }
+  if (SheetProperties.isLikelihood) {
+    likelihood();
   }
 }
 
@@ -130,6 +144,7 @@ function impact() {
       SheetProperties.isImpact = true;
       cellOp.showImpact();
     } else {
+      SheetProperties.isImpact = false;
       cellOp.removeImpact();
     }
   } catch (error) {
@@ -146,6 +161,7 @@ function likelihood() {
       SheetProperties.isLikelihood = true;
       cellOp.showLikelihood();
     } else {
+      SheetProperties.isLikelihood = false;
       cellOp.removeLikelihood();
     }
   } catch (error) {
@@ -163,7 +179,7 @@ async function spread() {
 }
 
 async function removeAll() {
-  SheetProperties.isFocusCell = false;
+  SheetProperties.isReferenceCell = false;
   SheetProperties.isImpact = false;
   SheetProperties.isLikelihood = false;
   SheetProperties.isSpread = false;
@@ -311,7 +327,7 @@ function handleSelectionChange(event) {
   return Excel.run(function (context) {
     return context.sync()
       .then(function () {
-        if (SheetProperties.isFocusCell) {
+        if (SheetProperties.isReferenceCell) {
           cellOp.showPopUpWindow(event.address);
         }
         console.log("Address of current selection: ", event);
