@@ -28,10 +28,14 @@ export default class CellProperties {
   public variance: number = 0;
   public samples: number[];
   public isLineChart: boolean = false;
-  public shape: Excel.Shape;
-  public color: string;
-  public transparency: number;
-
+  // for impact and likelihood
+  public rect: Excel.Shape;
+  public rectColor: string;
+  public rectTransparency: number;
+  //for relationship
+  public triangle: Excel.Shape;
+  public triangleColor: string;
+  public triangleTransparency: number;
 
 
   CellProperties() {
@@ -101,52 +105,100 @@ export default class CellProperties {
     return cells;
   }
 
-  async getRelationshipOfCells(cells: CellProperties[]) {
-
+  errorHandlerFunction(callback) {
     try {
-      for (let i = 0; i < cells.length; i++) {
+      callback();
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-        if (cells[i].formula == "") {
-          continue;
-        }
+  getRelationshipOfCells(cells: CellProperties[]) {
 
-        let rangeAddress = this.getRangeFromFormula(cells[i].formula);
+    cells.forEach((cell: CellProperties) => {
+      // eslint-disable-next-line no-empty
+      if (cell.formula == "") {
 
-        await Excel.run(async (context) => {
-          const sheet = context.workbook.worksheets.getActiveWorksheet();
+      } else {
 
-          for (let rangeIndex = 0; rangeIndex < rangeAddress.length; rangeIndex++) {
+        let rangeAddresses: string[] = this.getRangeFromFormula(cell.formula);
+        let cellRangeAddresses = new Array<string>();
 
-            const range = sheet.getRange(rangeAddress[rangeIndex]);
-            range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
-            await context.sync();
+        rangeAddresses.forEach((rangeAddress: string) => {
+          rangeAddress = rangeAddress.trim();
+          if (rangeAddress.includes(':')) {
 
-            const rowIndex = range.rowIndex;
-            const colIndex = range.columnIndex;
-            const rowCount = range.rowCount;
-            const colCount = range.columnCount;
+            cellRangeAddresses = new Array<string>();
 
-            for (let r = rowIndex; r < rowIndex + rowCount; r++) {
-              for (let c = colIndex; c < colIndex + colCount; c++) {
-                const id = "R" + r + "C" + c;
+            let ranges = rangeAddress.split(':');
+            if (ranges.length > 1) {
+              let rangeStart = ranges[0];
+              let rangeEnd = ranges[1];
 
-                cells.forEach((cell: CellProperties) => {
+              let colStartArray = rangeStart.match(/\d+/g);
+              let colEndArray = rangeEnd.match(/\d+/g);
+              let colStart = '';
+              let colEnd = '';
 
-                  if (cell.id == id) {
+              if (colStartArray != null) {
+                colStart = colStartArray[0];
+              }
+              if (colEndArray != null) {
+                colEnd = colEndArray[0];
+              }
 
-                    cells[i].inputCells.push(cell);
-                    cell.outputCells.push(cells[i]);
-                  }
-                })
+              let rowStart = rangeStart.replace(colStart, '');
+              let rowEnd = rangeEnd.replace(colEnd, '');
+
+              if (rowStart == rowEnd) {
+                for (let i = Number(colStart); i <= Number(colEnd); i++) {
+                  cellRangeAddresses.push(rowStart + i);
+                }
+              }
+              else {
+                let startIndex = rowStart.charCodeAt(0);
+                let endIndex = rowEnd.charCodeAt(0);
+                for (let i = startIndex; i <= endIndex; i++) {
+                  const rowChar = String.fromCharCode(i);
+                  cellRangeAddresses.push(rowChar + colStart);
+                }
               }
             }
+
           }
-        });
+          else {
+            cellRangeAddresses = new Array<string>();
+            cellRangeAddresses.push(rangeAddress);
+          }
+
+          const cellsFromRange = this.getCellsFromRangeAddress(cells, cellRangeAddresses);
+
+
+          cellsFromRange.forEach((cellInRange: CellProperties) => {
+            cell.inputCells.push(cellInRange);
+            cellInRange.outputCells.push(cell);
+          })
+        })
       }
-    } catch (error) {
-      console.error(error);
+    })
+  }
+
+  // can be optimised further
+  private getCellsFromRangeAddress(cells: CellProperties[], cellRangeAddresses: string[]) {
+
+    let cellsInRange = new Array<CellProperties>();
+
+    for (let i = 0; i < cellRangeAddresses.length; i++) {
+      for (let j = 0; j < cells.length; j++) {
+
+        if (cells[j].address.includes(cellRangeAddresses[i])) {
+          cellsInRange.push(cells[j]);
+          break;
+        }
+      }
     }
-    return cells;
+
+    return cellsInRange;
   }
 
   getFocusAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
@@ -207,21 +259,28 @@ export default class CellProperties {
     if (formula == "") {
       return;
     }
-    if (formula.includes("SUM") && formula.includes(',')) {
+
+    formula = formula.replace('(', '').replace(')', '').replace('=', '');
+
+    if (formula.includes("SUM")) {
       let i = formula.indexOf("SUM");
       formula = formula.slice(i + 3);
-      formula = formula.replace('(', '');
-      formula = formula.replace(')', '');
-      rangeAddress = formula.split(',');
-    }
 
-    if (formula.includes("SUM") && formula.includes(":")) {
-      let i = formula.indexOf("SUM");
-      rangeAddress.push(formula.slice(i + 3));
+      if (formula.includes(':')) {
+        rangeAddress.push(formula);
+      } else if (formula.includes(',')) {
+        rangeAddress = formula.split(',');
+      }
     }
     if (formula.includes("AVERAGE")) {
       let i = formula.indexOf("AVERAGE");
-      rangeAddress.push(formula.slice(i + 7));
+      formula = formula.slice(i + 7);
+
+      if (rangeAddress.includes(':')) {
+        rangeAddress.push(formula);
+      } else if (formula.includes(',')) {
+        rangeAddress = formula.split(',');
+      }
     }
 
     if (formula.includes("-")) {

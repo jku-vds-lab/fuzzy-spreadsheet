@@ -11,6 +11,7 @@ import SheetProperties from './sheetproperties';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
+  document.getElementById("parseSheet").onclick = parseSheet;
   document.getElementById("focusCell").onclick = markAsFocusCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -23,17 +24,49 @@ Office.initialize = () => {
   document.getElementById("third").onchange = third;
 }
 
-
-
-
 var cellOp = new CellOperations();
 var cellProp = new CellProperties();
 var cells: CellProperties[];
 var focusCell: CellProperties;
+var isSheetParsed = false;
+
+Excel.run(function (context) {
+  var worksheet = context.workbook.worksheets.getActiveWorksheet();
+  eventResult = worksheet.onChanged.add(parseSheet); // improve logic for sheet parsing
+
+  return context.sync()
+    .then(function () {
+      console.log(eventResult);
+    });
+}).catch(errorHandlerFunction);
+
+
+async function parseSheet() {
+
+  isSheetParsed = true;
+
+  try {
+    disableInputs();
+    cellOp = new CellOperations();
+    cellProp = new CellProperties();
+    console.log('Getting properties of cells');
+    cells = await cellProp.getCellsProperties(); // needs to be optimised
+    console.log('Getting relationship of cells');
+    cellProp.getRelationshipOfCells(cells);
+    console.log('Done parsing sheet');
+    enableInputs();
+  } catch (error) {
+    console.error(error);
+    enableInputs();
+  }
+}
 
 async function markAsFocusCell() {
   try {
 
+    if (!isSheetParsed) {
+      await parseSheet();
+    }
 
     let range: Excel.Range;
     Excel.run(async context => {
@@ -42,26 +75,16 @@ async function markAsFocusCell() {
       range.load("address");
       range.format.fill.color = "lightgrey";
       await context.sync();
-
-
+      disableInputs();
+      focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
+      console.log('Checking Uncertain cells');
+      cellProp.checkUncertainty(cells); // alreadt optimised
+      cellOp.setCells(cells);
+      SheetProperties.isFocusCell = true;
+      console.log("Cells: ", cells);
+      enableInputs();
     });
 
-    disableInputs();
-
-    cellOp = new CellOperations();
-    cellProp = new CellProperties();
-    console.log('Getting properties of cells');
-    cells = await cellProp.getCellsProperties(); // needs to be optimised
-    console.log('Getting relationship of cells');
-    await cellProp.getRelationshipOfCells(cells); // already optimised
-    console.log('Getting neighbouring cells');
-    focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
-    console.log('Checking Uncertain cells');
-    cellProp.checkUncertainty(cells); // alreadt optimised
-    cellOp.setCells(cells);
-    SheetProperties.isFocusCell = true;
-    console.log("Cells: ", cells);
-    enableInputs();
   } catch (error) {
     console.error(error);
     enableInputs();
