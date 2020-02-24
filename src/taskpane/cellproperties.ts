@@ -19,9 +19,6 @@ export default class CellProperties {
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public likelihood: number = 100;
-  public isLikelihood: boolean = false;
-  public isImpact: boolean = false;
-  public isSpread: boolean = false;
   public isInputRelationship: boolean;
   public isOutputRelationship: boolean;
   public spreadRange: string;
@@ -201,7 +198,7 @@ export default class CellProperties {
     return cellsInRange;
   }
 
-  getFocusAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
+  getReferenceAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
     let focusCell = new CellProperties();
 
     cells.forEach((cell: CellProperties) => {

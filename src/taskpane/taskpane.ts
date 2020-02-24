@@ -12,7 +12,7 @@ Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
   document.getElementById("parseSheet").onclick = parseSheet;
-  document.getElementById("focusCell").onclick = markAsFocusCell;
+  document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
@@ -24,10 +24,10 @@ Office.initialize = () => {
   document.getElementById("third").onchange = third;
 }
 
-var cellOp = new CellOperations();
+var cellOp: CellOperations;
 var cellProp = new CellProperties();
 var cells: CellProperties[];
-var focusCell: CellProperties;
+var referenceCell: CellProperties;
 var isSheetParsed = false;
 
 Excel.run(function (context) {
@@ -47,21 +47,21 @@ async function parseSheet() {
 
   try {
     disableInputs();
-    cellOp = new CellOperations();
+    console.log("Start parsing the sheet");
+
     cellProp = new CellProperties();
-    console.log('Getting properties of cells');
     cells = await cellProp.getCellsProperties(); // needs to be optimised
-    console.log('Getting relationship of cells');
     cellProp.getRelationshipOfCells(cells);
-    console.log('Done parsing sheet');
+
+    console.log('Done parsing the sheet');
     enableInputs();
   } catch (error) {
-    console.error(error);
+    console.log(error);
     enableInputs();
   }
 }
 
-async function markAsFocusCell() {
+async function markAsReferenceCell() {
   try {
 
     if (!isSheetParsed) {
@@ -75,13 +75,16 @@ async function markAsFocusCell() {
       range.load("address");
       range.format.fill.color = "lightgrey";
       await context.sync();
+
       disableInputs();
-      focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
-      console.log('Checking Uncertain cells');
-      cellProp.checkUncertainty(cells); // alreadt optimised
-      cellOp.setCells(cells);
+      console.log('Marking a reference cell');
+
+      referenceCell = cellProp.getReferenceAndNeighbouringCells(cells, range.address);
+      cellProp.checkUncertainty(cells);
+      cellOp = new CellOperations(cells, referenceCell, 1);
       SheetProperties.isFocusCell = true;
-      console.log("Cells: ", cells);
+
+      console.log('Done Marking a reference cell');
       enableInputs();
     });
 
@@ -119,36 +122,32 @@ function enableInputs() {
   (<HTMLInputElement>document.getElementById("third")).disabled = false;
 }
 
-async function impact() {
+function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
+
     if (element.checked) {
       SheetProperties.isImpact = true;
-      await cellOp.addImpact(focusCell);
+      cellOp.showImpact();
     } else {
-      removeImpact();
+      cellOp.removeImpact();
     }
   } catch (error) {
     console.error(error);
   }
 }
 
-function removeImpact() {
-  try {
-    //remove impact
-    focusCell.inputCells.forEach((cell: CellProperties) => {
-      // remove focus cells
 
-    })
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function likelihood() {
+function likelihood() {
   try {
-    await cellOp.addLikelihood(focusCell);
-    SheetProperties.isLikelihood = true;
+    var element = <HTMLInputElement>document.getElementById("likelihood");
+
+    if (element.checked) {
+      SheetProperties.isLikelihood = true;
+      cellOp.showLikelihood();
+    } else {
+      cellOp.removeLikelihood();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -156,7 +155,7 @@ async function likelihood() {
 
 async function spread() {
   try {
-    await cellOp.addSpread(focusCell);
+    // await cellOp.addSpread(referenceCell);
     SheetProperties.isSpread = true;
   } catch (error) {
     console.error(error);
@@ -175,9 +174,9 @@ async function removeAll() {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
     range.format.font.color = "black";
-    if (focusCell != null) {
-      if (focusCell.address != null) {
-        const cell = sheet.getRange(focusCell.address);
+    if (referenceCell != null) {
+      if (referenceCell.address != null) {
+        const cell = sheet.getRange(referenceCell.address);
         cell.format.fill.clear();
       }
     }
@@ -196,7 +195,7 @@ async function removeAll() {
 function showInputRelationship() {
   try {
     blurBackground();
-    cellOp.addInArrows(focusCell, focusCell.inputCells);
+    // cellOp.addInArrows(referenceCell, referenceCell.inputCells);
     SheetProperties.isInputRelationship = true;
   } catch (error) {
     console.error(error);
@@ -206,7 +205,7 @@ function showInputRelationship() {
 function showOutputRelationship() {
   try {
     blurBackground();
-    cellOp.addOutArrows(focusCell, focusCell.outputCells);
+    // cellOp.addOutArrows(referenceCell, referenceCell.outputCells);
     SheetProperties.isOutputRelationship = true;
   } catch (error) {
     console.error(error);
@@ -220,15 +219,15 @@ function blurBackground() {
       const range = sheet.getUsedRange(true);
       range.format.font.color = "grey";
 
-      let specialRange = sheet.getRange(focusCell.address);
+      let specialRange = sheet.getRange(referenceCell.address);
       specialRange.format.font.color = "black";
 
-      focusCell.inputCells.forEach((cell: CellProperties) => {
+      referenceCell.inputCells.forEach((cell: CellProperties) => {
         specialRange = sheet.getRange(cell.address);
         specialRange.format.font.color = "black";
       })
 
-      focusCell.outputCells.forEach((cell: CellProperties) => {
+      referenceCell.outputCells.forEach((cell: CellProperties) => {
         specialRange = sheet.getRange(cell.address);
         specialRange.format.font.color = "black";
       })
