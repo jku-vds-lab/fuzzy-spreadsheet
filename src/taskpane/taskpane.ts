@@ -179,12 +179,6 @@ async function spread() {
 }
 
 async function removeAll() {
-  SheetProperties.isReferenceCell = false;
-  SheetProperties.isImpact = false;
-  SheetProperties.isLikelihood = false;
-  SheetProperties.isSpread = false;
-  SheetProperties.isInputRelationship = false;
-  SheetProperties.isOutputRelationship = false;
 
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
