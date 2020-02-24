@@ -2,6 +2,7 @@
 import CellProperties from './cellproperties';
 import Impact from './operations/impact';
 import Likelihood from './operations/likelihood';
+import Spread from './operations/spread';
 
 export default class CellOperations {
 
@@ -10,6 +11,7 @@ export default class CellOperations {
   private degreeOfNeighbourhood: number = 1;
   private impact: Impact;
   private likelihood: Likelihood;
+  private spread: Spread;
 
   constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
     this.cells = cells;
@@ -17,6 +19,7 @@ export default class CellOperations {
     this.degreeOfNeighbourhood = n;
     this.impact = new Impact(this.referenceCell);
     this.likelihood = new Likelihood(this.cells, this.referenceCell);
+    this.spread = new Spread(this.cells, this.referenceCell);
   }
 
   getCells() {
@@ -27,20 +30,32 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
+  async createCheatSheet() {
+    await this.spread.createCheatSheet();
+  }
+
   showImpact() {
     this.impact.showImpact();
   }
 
-  removeImpact() {
-    this.impact.removeImpact();
+  async removeImpact() {
+    await this.impact.removeImpact();
   }
 
   showLikelihood() {
     this.likelihood.addLikelihood();
   }
 
-  removeLikelihood() {
-    this.likelihood.removeLikelihood();
+  async removeLikelihood() {
+    await this.likelihood.removeLikelihood();
+  }
+
+  showSpread() {
+    this.spread.showSpread();
+  }
+
+  async removeSpread() {
+    await this.spread.removeSpread();
   }
 
   showPopUpWindow(address: string) {

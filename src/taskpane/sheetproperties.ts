@@ -7,4 +7,5 @@ export default class SheetProperties {
   static isSpread: boolean;
   static isReferenceCell: boolean;
   static degreeOfNeighbourhood: number = 1;
+  static isCheatSheetExist: boolean = false;
 }

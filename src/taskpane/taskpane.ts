@@ -106,6 +106,9 @@ function displayOptions() {
   if (SheetProperties.isLikelihood) {
     likelihood();
   }
+  if (SheetProperties.isSpread) {
+    spread();
+  }
 }
 
 function disableInputs() {
@@ -136,7 +139,7 @@ function enableInputs() {
   (<HTMLInputElement>document.getElementById("third")).disabled = false;
 }
 
-function impact() {
+async function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
 
@@ -145,7 +148,7 @@ function impact() {
       cellOp.showImpact();
     } else {
       SheetProperties.isImpact = false;
-      cellOp.removeImpact();
+      await cellOp.removeImpact();
     }
   } catch (error) {
     console.error(error);
@@ -153,7 +156,7 @@ function impact() {
 }
 
 
-function likelihood() {
+async function likelihood() {
   try {
     var element = <HTMLInputElement>document.getElementById("likelihood");
 
@@ -162,7 +165,7 @@ function likelihood() {
       cellOp.showLikelihood();
     } else {
       SheetProperties.isLikelihood = false;
-      cellOp.removeLikelihood();
+      await cellOp.removeLikelihood();
     }
   } catch (error) {
     console.error(error);
@@ -171,8 +174,22 @@ function likelihood() {
 
 async function spread() {
   try {
-    // await cellOp.addSpread(referenceCell);
-    SheetProperties.isSpread = true;
+
+    if (!SheetProperties.isCheatSheetExist) {
+      await cellOp.createCheatSheet(); // but create it just once
+    }
+
+    var element = <HTMLInputElement>document.getElementById("spread");
+
+    if (element.checked) {
+      // eslint-disable-next-line require-atomic-updates
+      SheetProperties.isSpread = true;
+      cellOp.showSpread();
+    } else {
+      // eslint-disable-next-line require-atomic-updates
+      SheetProperties.isSpread = false;
+      await cellOp.removeSpread();
+    }
   } catch (error) {
     console.error(error);
   }

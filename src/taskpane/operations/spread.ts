@@ -1,148 +1,164 @@
-// /* global console, Excel */
-// import * as jstat from 'jstat';
-// export default class Spread {
-//   chartType: string;
+/* global console, Excel */
+import { ceil } from 'mathjs';
+import * as jstat from 'jstat';
+import CellProperties from '../cellproperties';
+import SheetProperties from '../sheetproperties';
+export default class Spread {
+  private chartType: string;
+  private cells: CellProperties[];
+  private referenceCell: CellProperties;
 
-//   private addVarianceInfo() {
+  constructor(cells: CellProperties[], referenceCell: CellProperties) {
+    this.cells = cells;
+    this.referenceCell = referenceCell;
+  }
 
-//     // use the info of uncertain cells
-//     for (let i = 0; i < this.cells.length; i++) {
-//       for (let r = 5; r < 22; r++) {
-//         let id = "R" + r + "C8";
-//         if (this.cells[i].id == id) {
-//           this.cells[i].variance = this.cells[i + 2].value;
-//           console.log('Variance:' + this.cells[i].variance);
-//         }
-//       }
-//     }
-//   }
+  public showSpread() {
 
-//   async createNormalDistributions() {
+    this.drawLineChart(this.referenceCell);
 
-//     this.addVarianceInfo();
-//     await Excel.run(async (context) => {
+    this.referenceCell.inputCells.forEach((cell: CellProperties) => {
+      this.drawLineChart(cell);
 
-//       let cheatsheet = context.workbook.worksheets.getItemOrNullObject("CheatSheet");
-//       await context.sync();
+    })
 
-//       if (!cheatsheet.isNullObject) {
-//         cheatsheet.delete();
-//       }
+    this.referenceCell.outputCells.forEach((cell: CellProperties) => {
+      this.drawLineChart(cell);
+    })
+  }
 
-//       cheatsheet = context.workbook.worksheets.add("CheatSheet");
-//       let rowIndex = -1;
-//       // let min = mean - variance * 2;
-//       // let max = mean + variance * 2;
+  public async removeSpread() {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      var charts = sheet.charts;
+      charts.load("items/$none");
+      return context.sync().then(function () {
+        charts.items.forEach(function (chart) {
+          chart.delete();
+        });
+        return context.sync();
+      });
+    });
+  }
 
-//       for (let c = 0; c < this.cells.length; c++) {
+  public async createCheatSheet() {
 
-//         this.cells[c].samples = new Array<number>();
+    this.addVarianceInfo();
+    await Excel.run(async (context) => {
 
+      let cheatsheet = context.workbook.worksheets.getItemOrNullObject("CheatSheet");
+      await context.sync();
 
-//         let overallMin = -10;
-//         let overallMax = 40;
-//         let mean = this.cells[c].value;
+      if (!cheatsheet.isNullObject) {
+        cheatsheet.delete();
+      }
 
+      SheetProperties.isCheatSheetExist = true;
 
-//         let variance = this.cells[c].variance
+      cheatsheet = context.workbook.worksheets.add("CheatSheet");
+      let rowIndex = -1;
+      // let min = mean - variance * 2;
+      // let max = mean + variance * 2;
 
-//         if (variance > 0) {
-//           rowIndex++;
-//           let sampleSize = (variance * 2) / 50;
+      for (let c = 0; c < this.cells.length; c++) {
 
-//           for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
-//             this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
-//             this.cells[c].isLineChart = true;
-//           }
-//         }
-//         else {
-//           rowIndex++;
-//           if (this.cells[c].degreeToFocus >= 0) {
-//             for (let i = overallMin; i <= overallMax; i++) {
-//               if (i == ceil(this.cells[c].value)) {
-//                 this.cells[c].samples.push(1);
-//               } else {
-//                 this.cells[c].samples.push(0);
-//               }
-//             }
-//           }
-//         }
+        this.cells[c].samples = new Array<number>();
 
-//         if (this.cells[c].samples.length == 0) {
-//           continue;
-//         }
+        let overallMin = -10;
+        let overallMax = 40;
+        let mean = this.cells[c].value;
 
-//         let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
-//         range.values = [this.cells[c].samples];
-//         range.load('address');
-//         await context.sync();
-//         this.cells[c].spreadRange = range.address;
-//       }
+        let variance = this.cells[c].variance
 
-//       await context.sync();
-//     });
-//   }
+        if (variance > 0) {
+          rowIndex++;
+          let sampleSize = (variance * 2) / 50;
 
-//   async addSpread(focusCell: CellProperties) {
+          for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
+            this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
+            this.cells[c].isLineChart = true;
+          }
+        }
+        else {
+          rowIndex++;
+          if (this.cells[c].degreeToFocus >= 0) {
+            for (let i = overallMin; i <= overallMax; i++) {
+              if (i == ceil(this.cells[c].value)) {
+                this.cells[c].samples.push(1);
+              } else {
+                this.cells[c].samples.push(0);
+              }
+            }
+          }
+        }
 
-//     await this.createNormalDistributions();
+        if (this.cells[c].samples.length == 0) {
+          continue;
+        }
 
-//     this.drawLineChart(focusCell);
-//     // this.drawCompleteLineChart(focusCell);
+        let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
+        range.values = [this.cells[c].samples];
+        range.load('address');
+        await context.sync();
+        this.cells[c].spreadRange = range.address;
+      }
 
-//     focusCell.inputCells.forEach((cell: CellProperties) => {
-//       this.drawLineChart(cell);
+      await context.sync();
+    });
+  }
 
-//     })
+  private addVarianceInfo() {
 
-//     focusCell.outputCells.forEach((cell: CellProperties) => {
-//       this.drawLineChart(cell);
-//     })
-//   }
+    for (let i = 0; i < this.cells.length; i++) {
+      if (this.cells[i].isUncertain) {
+        this.cells[i].variance = this.cells[i + 1].value;
+      }
+    }
+  }
 
-//   private drawLineChart(cell: CellProperties) {
+  private drawLineChart(cell: CellProperties) {
 
-//     if (cell.spreadRange == null) {
-//       return;
-//     }
-//     try {
-//       Excel.run((context) => {
+    if (cell.spreadRange == null) {
+      return;
+    }
 
-//         const sheet = context.workbook.worksheets.getActiveWorksheet();
-//         const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
-//         const dataRange = cheatSheet.getRange(cell.spreadRange);
+    try {
+      Excel.run((context) => {
 
-//         let chart: Excel.Chart;
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+        const dataRange = cheatSheet.getRange(cell.spreadRange);
 
-//         if (cell.isLineChart) {
-//           console.log("Line chart");
-//           chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
-//         } else {
-//           console.log("Column chart");
-//           chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
-//         }
+        let chart: Excel.Chart;
 
-//         chart.setPosition(cell.address, cell.address);
-//         chart.left = cell.left + 0.2 * cell.width;
-//         chart.title.visible = false;
-//         chart.legend.visible = false;
-//         chart.axes.valueAxis.minimum = 0;
-//         // chart.axes.valueAxis.maximum = 0.21;
-//         chart.dataLabels.showValue = false;
-//         chart.axes.valueAxis.visible = false;
-//         chart.axes.categoryAxis.visible = false;
-//         chart.axes.valueAxis.majorGridlines.visible = false;
-//         chart.plotArea.top = 0;
-//         chart.plotArea.left = 0;
-//         chart.plotArea.width = cell.width - 0.4 * cell.width;
-//         chart.plotArea.height = 100;
-//         chart.format.fill.clear();
-//         chart.format.border.clear();
-//         return context.sync();
-//       });
-//     } catch (error) {
-//       console.log('Could not draw chart because of the following error', error);
-//     }
-//   }
+        if (cell.isLineChart) {
+          console.log("Line chart");
+          chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
+        } else {
+          console.log("Column chart");
+          chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
+        }
 
-// }
+        chart.setPosition(cell.address, cell.address);
+        chart.left = cell.left + 0.2 * cell.width;
+        chart.title.visible = false;
+        chart.legend.visible = false;
+        chart.axes.valueAxis.minimum = 0;
+        // chart.axes.valueAxis.maximum = 0.21;
+        chart.dataLabels.showValue = false;
+        chart.axes.valueAxis.visible = false;
+        chart.axes.categoryAxis.visible = false;
+        chart.axes.valueAxis.majorGridlines.visible = false;
+        chart.plotArea.top = 0;
+        chart.plotArea.left = 0;
+        chart.plotArea.width = cell.width - 0.4 * cell.width;
+        chart.plotArea.height = 100;
+        chart.format.fill.clear();
+        chart.format.border.clear();
+        return context.sync();
+      });
+    } catch (error) {
+      console.log('Could not draw chart because of the following error', error);
+    }
+  }
+}
