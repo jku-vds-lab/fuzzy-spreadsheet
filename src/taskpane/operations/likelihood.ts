@@ -14,6 +14,7 @@ export default class Likelihood {
   constructor(cells: CellProperties[], referenceCell: CellProperties) {
     this.cells = cells;
     this.referenceCell = referenceCell;
+    this.commonOps = new CommonOperations();
   }
 
   // at the moment it will be overwriting
@@ -29,7 +30,7 @@ export default class Likelihood {
         commonOps.deleteRectangles();
       }
       commonOps.drawRectangles(this.referenceCell.inputCells);
-      // this.showInputLikelihood(this.referenceCell, n);
+      this.showInputLikelihood(this.referenceCell, n);
       // this.commonOps.drawRectangles(this.referenceCell.inputCells);
       // this.commonOps.drawRectangles(this.referenceCell.outputCells);
 
@@ -55,7 +56,7 @@ export default class Likelihood {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
       console.log(inCell.address);
-      this.commonOps.drawRectangles(cell.inputCells);
+      this.commonOps.drawRectangles(inCell.inputCells);
     })
   }
 
