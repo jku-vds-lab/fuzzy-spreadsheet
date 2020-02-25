@@ -1,4 +1,5 @@
 import CellOperations from "./celloperations";
+import SheetProperties from "./sheetproperties";
 
 /* global console, Excel */
 
@@ -65,11 +66,16 @@ export default class CellProperties {
     let indices = this.convertIdToIndices(referenceCell.id);
     let rowIndex = indices.rowIndex;
     let colIndex = indices.colIndex;
+    let oldValue = referenceCell.value;
 
     if (referenceCell.value == newValues[rowIndex][colIndex] && referenceCell.formula == newFormulas[rowIndex][colIndex]) {
       // perform no updates
       return;
     }
+
+    let newValue = newValues[rowIndex][colIndex];
+
+    SheetProperties.temp = newValue - oldValue;
 
     // otherwise perform an update
     cells.forEach((cell: CellProperties) => {
@@ -80,8 +86,10 @@ export default class CellProperties {
 
       cell.value = newValues[rowIndex][colIndex];
       cell.formula = newFormulas[rowIndex][colIndex];
+      if (cell.formula == cell.value) {
+        cell.formula = "";
+      }
     })
-    console.log(cells);
   }
 
   private convertIdToIndices(id: string) {
@@ -90,7 +98,6 @@ export default class CellProperties {
     let c = id.indexOf('C');
     let rowIndex = id.substring(0, c);
     let colIndex = id.substring(c + 1);
-    console.log(rowIndex + ' & ' + colIndex);
 
     return { rowIndex: rowIndex, colIndex: colIndex };
   }

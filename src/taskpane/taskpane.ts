@@ -32,7 +32,7 @@ var isSheetParsed = false;
 
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
-  eventResult = worksheet.onChanged.add(() => cellProp.getRangeProperties(referenceCell, cells));
+  eventResult = worksheet.onChanged.add(handleDataChanged);
 
   return context.sync()
     .then(function () {
@@ -41,6 +41,39 @@ Excel.run(function (context) {
 
     });
 }).catch(errorHandlerFunction);
+
+
+async function handleDataChanged() {
+
+  if (referenceCell != null) {
+    console.log('Address of reference cell: ' + referenceCell.address);
+  }
+
+  await cellProp.getRangeProperties(referenceCell, cells); // get the increase here and draw a glyph on it
+  let updatedValue = SheetProperties.temp;
+
+  if (updatedValue == 0) {
+    // no change
+    console.log("NO CHANGE Updated Value: " + updatedValue);
+  } else {
+    console.log("CHANGE Updated Value: " + updatedValue);
+    Excel.run(function (context) {
+
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      const cell = sheet.getRange(referenceCell.address);
+      let color = 'grey';
+      if (updatedValue < 0) {
+        color = 'red';
+      } else {
+        color = 'green';
+      }
+      cell.format.fill.color = color;
+      return context.sync();
+    });
+  }
+  displayOptions(); // at the moment it is overwriting this value
+  SheetProperties.temp = 0;
+}
 
 
 async function parseSheet() {

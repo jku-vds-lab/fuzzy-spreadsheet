@@ -8,4 +8,5 @@ export default class SheetProperties {
   static isReferenceCell: boolean;
   static degreeOfNeighbourhood: number = 1;
   static isCheatSheetExist: boolean = false;
+  static temp: number = 0;
 }
