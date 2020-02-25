@@ -53,16 +53,16 @@ export default class Relationship {
         var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
         type = Excel.GeometricShapeType.triangle;
-        cells[i].triangle = shapes.addGeometricShape(type);
-        cells[i].triangle.name = "Input" + i;
-        cells[i].triangle.rotation = 90;
-        cells[i].triangle.left = cells[i].left;
-        cells[i].triangle.top = cells[i].top + cells[i].height / 4;
-        cells[i].triangle.height = 3;
-        cells[i].triangle.width = 6;
-        cells[i].triangle.lineFormat.weight = 0;
-        cells[i].triangle.lineFormat.color = 'black';
-        cells[i].triangle.fill.setSolidColor('black');
+        let triangle = shapes.addGeometricShape(type);
+        triangle.name = "Input" + i;
+        triangle.rotation = 90;
+        triangle.left = cells[i].left;
+        triangle.top = cells[i].top + cells[i].height / 4;
+        triangle.height = 3;
+        triangle.width = 6;
+        triangle.lineFormat.weight = 0;
+        triangle.lineFormat.color = 'black';
+        triangle.fill.setSolidColor('black');
       }
 
       await context.sync();
@@ -78,16 +78,16 @@ export default class Relationship {
         var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
         type = Excel.GeometricShapeType.triangle;
-        cells[i].triangle = shapes.addGeometricShape(type);
-        cells[i].triangle.name = "Output" + i;
-        cells[i].triangle.rotation = 270;
-        cells[i].triangle.left = cells[i].left;
-        cells[i].triangle.top = cells[i].top + cells[i].height / 4;
-        cells[i].triangle.height = 3;
-        cells[i].triangle.width = 6;
-        cells[i].triangle.lineFormat.weight = 0;
-        cells[i].triangle.lineFormat.color = 'black';
-        cells[i].triangle.fill.setSolidColor('black');
+        let triangle = shapes.addGeometricShape(type);
+        triangle.name = "Output" + i;
+        triangle.rotation = 270;
+        triangle.left = cells[i].left;
+        triangle.top = cells[i].top + cells[i].height / 4;
+        triangle.height = 3;
+        triangle.width = 6;
+        triangle.lineFormat.weight = 0;
+        triangle.lineFormat.color = 'black';
+        triangle.fill.setSolidColor('black');
       }
       await context.sync();
     })

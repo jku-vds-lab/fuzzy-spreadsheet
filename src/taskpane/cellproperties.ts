@@ -29,11 +29,6 @@ export default class CellProperties {
   public rect: Excel.Shape;
   public rectColor: string;
   public rectTransparency: number;
-  //for relationship
-  public triangle: Excel.Shape;
-  public triangleColor: string;
-  public triangleTransparency: number;
-
 
   CellProperties() {
     this.id = "";
