@@ -14,7 +14,6 @@ export default class CommonOperations {
         let MARGIN = 5;
 
         cells.forEach((cell: CellProperties) => {
-          console.log('Likelihood for: ' + cell.address);
           let height = 5;
           let width = 5;
 

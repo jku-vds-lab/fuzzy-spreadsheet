@@ -257,22 +257,22 @@ export default class CellProperties {
       let i = formula.indexOf("SUM");
       formula = formula.slice(i + 3);
 
-      if (formula.includes(':')) {
-        rangeAddress.push(formula);
-      } else if (formula.includes(',')) {
+      if (formula.includes(',')) {
         rangeAddress = formula.split(',');
+      } else if (formula.includes(':')) {
+        rangeAddress.push(formula);
       }
     }
+
     if (formula.includes("AVERAGE")) {
-      console.log('This formula includes AVERAGE: ' + formula);
       let i = formula.indexOf("AVERAGE");
       formula = formula.slice(i + 7);
 
-      if (formula.includes(':')) {
-        console.log('Pushing AVERAGE: ' + formula);
-        rangeAddress.push(formula);
-      } else if (formula.includes(',')) {
+      if (formula.includes(',')) {
         rangeAddress = formula.split(',');
+
+      } else if (formula.includes(':')) {
+        rangeAddress.push(formula);
       }
     }
 

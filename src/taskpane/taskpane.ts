@@ -89,7 +89,6 @@ async function markAsReferenceCell() {
       SheetProperties.isReferenceCell = true;
 
       console.log('Done Marking a reference cell');
-      console.log(referenceCell);
       enableInputs();
       displayOptions();
     });
@@ -152,7 +151,7 @@ async function impact() {
 
     if (element.checked) {
       SheetProperties.isImpact = true;
-      cellOp.showImpact();
+      cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isImpact = false;
       await cellOp.removeImpact();
@@ -169,7 +168,7 @@ async function likelihood() {
 
     if (element.checked) {
       SheetProperties.isLikelihood = true;
-      cellOp.showLikelihood(2); // should be available on click
+      cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
       await cellOp.removeLikelihood();
@@ -388,15 +387,21 @@ function errorHandlerFunction(callback) {
 }
 
 function first() {
-  console.log('first');
+  SheetProperties.degreeOfNeighbourhood = 1;
+  removeShapesFromReferenceCell();
+  displayOptions();
 }
 
 
 function second() {
-  console.log('second');
+  SheetProperties.degreeOfNeighbourhood = 2;
+  removeShapesFromReferenceCell();
+  displayOptions();
 }
 
 
 function third() {
-  console.log('third');
+  SheetProperties.degreeOfNeighbourhood = 3;
+  removeShapesFromReferenceCell();
+  displayOptions();
 }

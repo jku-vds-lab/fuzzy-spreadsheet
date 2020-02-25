@@ -7,12 +7,14 @@ import SheetProperties from '../sheetproperties';
 export default class Impact {
 
   private referenceCell: CellProperties;
+  private commonOps: CommonOperations;
 
   constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
+    this.commonOps = new CommonOperations();
   }
 
-  public showImpact() {
+  public showImpact(n: number = 1) {
 
     this.addImpactInfo();
     const commonOps = new CommonOperations();
@@ -21,22 +23,46 @@ export default class Impact {
       commonOps.deleteRectangles();
     }
 
-    commonOps.drawRectangles(this.referenceCell.inputCells);
-    commonOps.drawRectangles(this.referenceCell.outputCells);
+    this.showInputImpact(this.referenceCell, n);
+    this.showOutputImpact(this.referenceCell, n);
   }
 
   public async removeImpact() {
 
     this.removeImpactInfo();
-    const commonOps = new CommonOperations();
 
-    await commonOps.deleteRectangles();
+    await this.commonOps.deleteRectangles();
 
     if (SheetProperties.isLikelihood) {
 
-      commonOps.drawRectangles(this.referenceCell.inputCells);
-      commonOps.drawRectangles(this.referenceCell.outputCells);
+      this.commonOps.drawRectangles(this.referenceCell.inputCells);
+      this.commonOps.drawRectangles(this.referenceCell.outputCells);
     }
+  }
+
+  private showInputImpact(cell: CellProperties, i: number) {
+
+    this.commonOps.drawRectangles(cell.inputCells);
+
+    if (i == 1) {
+      return;
+    }
+
+    cell.inputCells.forEach((inCell: CellProperties) => {
+      this.showInputImpact(inCell, i - 1);
+    })
+  }
+
+  private showOutputImpact(cell: CellProperties, i: number) {
+    this.commonOps.drawRectangles(cell.outputCells);
+
+    if (i == 1) {
+      return;
+    }
+
+    cell.outputCells.forEach((outCell: CellProperties) => {
+      this.showOutputImpact(outCell, i - 1);
+    })
   }
 
   private removeImpactInfo() {

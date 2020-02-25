@@ -17,22 +17,19 @@ export default class Likelihood {
     this.commonOps = new CommonOperations();
   }
 
-  // at the moment it will be overwriting
+
   public showLikelihood(n: number = 1) {
 
     this.addLikelihoodInfo();
 
     try {
 
-      const commonOps = new CommonOperations();
-
       if (SheetProperties.isImpact) {
-        commonOps.deleteRectangles();
+        this.commonOps.deleteRectangles();
       }
-      commonOps.drawRectangles(this.referenceCell.inputCells);
+
       this.showInputLikelihood(this.referenceCell, n);
-      // this.commonOps.drawRectangles(this.referenceCell.inputCells);
-      // this.commonOps.drawRectangles(this.referenceCell.outputCells);
+      this.showOutputLikelihood(this.referenceCell, n);
 
     } catch (error) {
       console.log(error);
@@ -41,22 +38,37 @@ export default class Likelihood {
 
   public async removeLikelihood() {
 
-    const commonOps = new CommonOperations();
-
-    await commonOps.deleteRectangles();
+    await this.commonOps.deleteRectangles();
 
     if (SheetProperties.isImpact) {
 
-      commonOps.drawRectangles(this.referenceCell.inputCells);
-      commonOps.drawRectangles(this.referenceCell.outputCells);
+      this.commonOps.drawRectangles(this.referenceCell.inputCells);
+      this.commonOps.drawRectangles(this.referenceCell.outputCells);
     }
   }
 
   private showInputLikelihood(cell: CellProperties, i: number) {
 
+    this.commonOps.drawRectangles(cell.inputCells);
+
+    if (i == 1) {
+      return;
+    }
+
     cell.inputCells.forEach((inCell: CellProperties) => {
-      console.log(inCell.address);
-      this.commonOps.drawRectangles(inCell.inputCells);
+      this.showInputLikelihood(inCell, i - 1);
+    })
+  }
+
+  private showOutputLikelihood(cell: CellProperties, i: number) {
+    this.commonOps.drawRectangles(cell.outputCells);
+
+    if (i == 1) {
+      return;
+    }
+
+    cell.outputCells.forEach((outCell: CellProperties) => {
+      this.showOutputLikelihood(outCell, i - 1);
     })
   }
 

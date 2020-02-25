@@ -37,15 +37,15 @@ export default class CellOperations {
     await this.spread.createCheatSheet();
   }
 
-  showImpact() {
-    this.impact.showImpact();
+  showImpact(n: number) {
+    this.impact.showImpact(n);
   }
 
   async removeImpact() {
     await this.impact.removeImpact();
   }
 
-  showLikelihood(n: number = 1) {
+  showLikelihood(n: number) {
     this.likelihood.showLikelihood(n);
   }
 
