@@ -3,6 +3,7 @@ import CellProperties from './cellproperties';
 import Impact from './operations/impact';
 import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
+import Relationship from './operations/relationship';
 
 export default class CellOperations {
 
@@ -12,6 +13,7 @@ export default class CellOperations {
   private impact: Impact;
   private likelihood: Likelihood;
   private spread: Spread;
+  private relationship: Relationship;
 
   constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
     this.cells = cells;
@@ -20,6 +22,7 @@ export default class CellOperations {
     this.impact = new Impact(this.referenceCell);
     this.likelihood = new Likelihood(this.cells, this.referenceCell);
     this.spread = new Spread(this.cells, this.referenceCell);
+    this.relationship = new Relationship(this.referenceCell);
   }
 
   getCells() {
@@ -56,6 +59,22 @@ export default class CellOperations {
 
   async removeSpread() {
     await this.spread.removeSpread();
+  }
+
+  showInputRelationship() {
+    this.relationship.showInputRelationship();
+  }
+
+  removeInputRelationship() {
+    this.relationship.removeInputRelationship();
+  }
+
+  showOutputRelationship() {
+    this.relationship.showOutputRelationship();
+  }
+
+  removeOutputRelationship() {
+    this.relationship.removeOutputRelationship();
   }
 
   showPopUpWindow(address: string) {
