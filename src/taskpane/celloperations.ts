@@ -45,8 +45,8 @@ export default class CellOperations {
     await this.impact.removeImpact();
   }
 
-  showLikelihood() {
-    this.likelihood.addLikelihood();
+  showLikelihood(n: number = 1) {
+    this.likelihood.showLikelihood(n);
   }
 
   async removeLikelihood() {

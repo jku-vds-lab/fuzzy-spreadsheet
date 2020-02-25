@@ -89,6 +89,7 @@ async function markAsReferenceCell() {
       SheetProperties.isReferenceCell = true;
 
       console.log('Done Marking a reference cell');
+      console.log(referenceCell);
       enableInputs();
       displayOptions();
     });
@@ -168,7 +169,7 @@ async function likelihood() {
 
     if (element.checked) {
       SheetProperties.isLikelihood = true;
-      cellOp.showLikelihood();
+      cellOp.showLikelihood(2); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
       await cellOp.removeLikelihood();
@@ -315,19 +316,6 @@ function unblurBackground() {
   })
 }
 
-// async function removeDistributions() {
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getActiveWorksheet();
-//     var charts = sheet.charts;
-//     charts.load("items/$none");
-//     return context.sync().then(function () {
-//       charts.items.forEach(function (chart) {
-//         chart.delete();
-//       });
-//       return context.sync();
-//     });
-//   });
-// }
 
 function protectSheet() {
   return Excel.run(async (context) => {
@@ -353,24 +341,7 @@ function unprotectSheet() {
     });
   });
 }
-// async function removeLikelihood() {
-//   // To be fixed
-//   await Excel.run(async (context) => {
-//     const sheet = context.workbook.worksheets.getActiveWorksheet();
-//     const count = sheet.shapes.getCount();
-//     await context.sync();
-//     for (let i = 0; i < count.value; i++) {
-//       var shape = sheet.shapes.getItemAt(i);
-//       shape.load(["geometricShapeType", "width", "height"]);
-//       await context.sync();
-//       if (shape.geometricShapeType == Excel.GeometricShapeType.rectangle) {
-//         shape.width = 7;
-//         shape.height = 7;
-//       }
-//     }
-//     await context.sync();
-//   });
-// }
+
 
 var eventResult;
 

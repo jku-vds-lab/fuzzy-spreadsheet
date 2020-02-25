@@ -119,7 +119,6 @@ export default class CellProperties {
         rangeAddresses.forEach((rangeAddress: string) => {
           rangeAddress = rangeAddress.trim();
           if (rangeAddress.includes(':')) {
-
             cellRangeAddresses = new Array<string>();
 
             let ranges = rangeAddress.split(':');
@@ -265,10 +264,12 @@ export default class CellProperties {
       }
     }
     if (formula.includes("AVERAGE")) {
+      console.log('This formula includes AVERAGE: ' + formula);
       let i = formula.indexOf("AVERAGE");
       formula = formula.slice(i + 7);
 
-      if (rangeAddress.includes(':')) {
+      if (formula.includes(':')) {
+        console.log('Pushing AVERAGE: ' + formula);
         rangeAddress.push(formula);
       } else if (formula.includes(',')) {
         rangeAddress = formula.split(',');
