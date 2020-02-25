@@ -27,16 +27,18 @@ Office.initialize = () => {
 var cellOp: CellOperations;
 var cellProp = new CellProperties();
 var cells: CellProperties[];
-var referenceCell: CellProperties;
+var referenceCell: CellProperties = null;
 var isSheetParsed = false;
 
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
-  eventResult = worksheet.onChanged.add(parseSheet); // improve logic for sheet parsing
+  eventResult = worksheet.onChanged.add(() => cellProp.getRangeProperties(referenceCell, cells));
 
   return context.sync()
     .then(function () {
       console.log(eventResult);
+      console.log('Got the range properties');
+
     });
 }).catch(errorHandlerFunction);
 

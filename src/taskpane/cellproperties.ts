@@ -46,22 +46,65 @@ export default class CellProperties {
     this.isUncertain = false;
   }
 
+  async getRangeProperties(referenceCell: CellProperties, cells: CellProperties[]) {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      const range = sheet.getUsedRange(true);
+      range.load(['formulas', 'values']);
+      await context.sync();
+      this.performLazyUpdate(referenceCell, cells, range.values, range.formulas);
+    });
+  }
+
+  private performLazyUpdate(referenceCell: CellProperties, cells: CellProperties[], newValues: any[][], newFormulas: any[][]) {
+
+    if (referenceCell == null) {
+      return;
+    }
+
+    let indices = this.convertIdToIndices(referenceCell.id);
+    let rowIndex = indices.rowIndex;
+    let colIndex = indices.colIndex;
+
+    if (referenceCell.value == newValues[rowIndex][colIndex] && referenceCell.formula == newFormulas[rowIndex][colIndex]) {
+      // perform no updates
+      return;
+    }
+
+    // otherwise perform an update
+    cells.forEach((cell: CellProperties) => {
+
+      indices = this.convertIdToIndices(cell.id);
+      rowIndex = indices.rowIndex;
+      colIndex = indices.colIndex;
+
+      cell.value = newValues[rowIndex][colIndex];
+      cell.formula = newFormulas[rowIndex][colIndex];
+    })
+    console.log(cells);
+  }
+
+  private convertIdToIndices(id: string) {
+
+    id = id.replace('R', '');
+    let c = id.indexOf('C');
+    let rowIndex = id.substring(0, c);
+    let colIndex = id.substring(c + 1);
+    console.log(rowIndex + ' & ' + colIndex);
+
+    return { rowIndex: rowIndex, colIndex: colIndex };
+  }
+
   async getCellsProperties(cells = new Array<CellProperties>()) {
 
     await Excel.run(async (context) => {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const range = sheet.getUsedRange(true);
-      range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
-      await context.sync();
 
-      const rowIndex = range.rowIndex;
-      const colIndex = range.columnIndex;
-      const rowCount = range.rowCount;
-      const colCount = range.columnCount;
+      // range.load(["formulas", "values"]);
 
-      for (let i = rowIndex; i < rowIndex + rowCount; i++) {
-        for (let j = colIndex; j < colIndex + colCount; j++) {
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 18; j++) {
 
           let cell = sheet.getCell(i, j);
           cell.load(["formulas", "top", "left", "height", "width", "address", "values"]);
