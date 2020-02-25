@@ -12,7 +12,7 @@ Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
   document.getElementById("parseSheet").onclick = parseSheet;
-  document.getElementById("focusCell").onclick = markAsFocusCell;
+  document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
@@ -24,10 +24,10 @@ Office.initialize = () => {
   document.getElementById("third").onchange = third;
 }
 
-var cellOp = new CellOperations();
+var cellOp: CellOperations;
 var cellProp = new CellProperties();
 var cells: CellProperties[];
-var focusCell: CellProperties;
+var referenceCell: CellProperties;
 var isSheetParsed = false;
 
 Excel.run(function (context) {
@@ -47,25 +47,29 @@ async function parseSheet() {
 
   try {
     disableInputs();
-    cellOp = new CellOperations();
+    console.log("Start parsing the sheet");
+
     cellProp = new CellProperties();
-    console.log('Getting properties of cells');
     cells = await cellProp.getCellsProperties(); // needs to be optimised
-    console.log('Getting relationship of cells');
     cellProp.getRelationshipOfCells(cells);
-    console.log('Done parsing sheet');
+
+    console.log('Done parsing the sheet');
     enableInputs();
   } catch (error) {
-    console.error(error);
+    console.log(error);
     enableInputs();
   }
 }
 
-async function markAsFocusCell() {
+async function markAsReferenceCell() {
   try {
 
     if (!isSheetParsed) {
       await parseSheet();
+    }
+
+    if (SheetProperties.isReferenceCell) {
+      removeAll();
     }
 
     let range: Excel.Range;
@@ -75,19 +79,41 @@ async function markAsFocusCell() {
       range.load("address");
       range.format.fill.color = "lightgrey";
       await context.sync();
+
       disableInputs();
-      focusCell = cellProp.getFocusAndNeighbouringCells(cells, range.address);
-      console.log('Checking Uncertain cells');
-      cellProp.checkUncertainty(cells); // alreadt optimised
-      cellOp.setCells(cells);
-      SheetProperties.isFocusCell = true;
-      console.log("Cells: ", cells);
+      console.log('Marking a reference cell');
+
+      referenceCell = cellProp.getReferenceAndNeighbouringCells(cells, range.address);
+      cellProp.checkUncertainty(cells);
+      cellOp = new CellOperations(cells, referenceCell, 1);
+      SheetProperties.isReferenceCell = true;
+
+      console.log('Done Marking a reference cell');
       enableInputs();
+      displayOptions();
     });
 
   } catch (error) {
     console.error(error);
     enableInputs();
+  }
+}
+
+function displayOptions() {
+  if (SheetProperties.isImpact) {
+    impact();
+  }
+  if (SheetProperties.isLikelihood) {
+    likelihood();
+  }
+  if (SheetProperties.isSpread) {
+    spread();
+  }
+  if (SheetProperties.isInputRelationship) {
+    showInputRelationship();
+  }
+  if (SheetProperties.isOutputRelationship) {
+    showOutputRelationship();
   }
 }
 
@@ -122,33 +148,31 @@ function enableInputs() {
 async function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
+
     if (element.checked) {
       SheetProperties.isImpact = true;
-      await cellOp.addImpact(focusCell);
+      cellOp.showImpact();
     } else {
-      removeImpact();
+      SheetProperties.isImpact = false;
+      await cellOp.removeImpact();
     }
   } catch (error) {
     console.error(error);
   }
 }
 
-function removeImpact() {
-  try {
-    //remove impact
-    focusCell.inputCells.forEach((cell: CellProperties) => {
-      // remove focus cells
-
-    })
-  } catch (error) {
-    console.error(error);
-  }
-}
 
 async function likelihood() {
   try {
-    await cellOp.addLikelihood(focusCell);
-    SheetProperties.isLikelihood = true;
+    var element = <HTMLInputElement>document.getElementById("likelihood");
+
+    if (element.checked) {
+      SheetProperties.isLikelihood = true;
+      cellOp.showLikelihood();
+    } else {
+      SheetProperties.isLikelihood = false;
+      await cellOp.removeLikelihood();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -156,28 +180,48 @@ async function likelihood() {
 
 async function spread() {
   try {
-    await cellOp.addSpread(focusCell);
-    SheetProperties.isSpread = true;
+
+    if (!SheetProperties.isCheatSheetExist) {
+      await cellOp.createCheatSheet(); // but create it just once
+    }
+
+    var element = <HTMLInputElement>document.getElementById("spread");
+
+    if (element.checked) {
+      // eslint-disable-next-line require-atomic-updates
+      SheetProperties.isSpread = true;
+      cellOp.showSpread();
+    } else {
+      // eslint-disable-next-line require-atomic-updates
+      SheetProperties.isSpread = false;
+      await cellOp.removeSpread();
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
 async function removeAll() {
-  SheetProperties.isFocusCell = false;
-  SheetProperties.isImpact = false;
-  SheetProperties.isLikelihood = false;
-  SheetProperties.isSpread = false;
-  SheetProperties.isInputRelationship = false;
-  SheetProperties.isOutputRelationship = false;
+
+  var element1 = <HTMLInputElement>document.getElementById("impact");
+  var element2 = <HTMLInputElement>document.getElementById("likelihood");
+  var element3 = <HTMLInputElement>document.getElementById("spread");
+  var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
+  var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
+
+  element1.checked = false;
+  element2.checked = false;
+  element3.checked = false;
+  element4.checked = false;
+  element5.checked = false;
 
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
     range.format.font.color = "black";
-    if (focusCell != null) {
-      if (focusCell.address != null) {
-        const cell = sheet.getRange(focusCell.address);
+    if (referenceCell != null) {
+      if (referenceCell.address != null) {
+        const cell = sheet.getRange(referenceCell.address);
         cell.format.fill.clear();
       }
     }
@@ -195,9 +239,17 @@ async function removeAll() {
 
 function showInputRelationship() {
   try {
-    blurBackground();
-    cellOp.addInArrows(focusCell, focusCell.inputCells);
-    SheetProperties.isInputRelationship = true;
+    var element = <HTMLInputElement>document.getElementById("inputRelationship");
+
+    if (element.checked) {
+      blurBackground();
+      SheetProperties.isInputRelationship = true;
+      cellOp.showInputRelationship();
+    } else {
+      SheetProperties.isInputRelationship = false;
+      unblurBackground();
+      cellOp.removeInputRelationship();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -205,9 +257,17 @@ function showInputRelationship() {
 
 function showOutputRelationship() {
   try {
-    blurBackground();
-    cellOp.addOutArrows(focusCell, focusCell.outputCells);
-    SheetProperties.isOutputRelationship = true;
+    var element = <HTMLInputElement>document.getElementById("outputRelationship");
+
+    if (element.checked) {
+      blurBackground();
+      SheetProperties.isOutputRelationship = true;
+      cellOp.showOutputRelationship();
+    } else {
+      SheetProperties.isOutputRelationship = false;
+      unblurBackground();
+      cellOp.removeOutputRelationship();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -220,15 +280,15 @@ function blurBackground() {
       const range = sheet.getUsedRange(true);
       range.format.font.color = "grey";
 
-      let specialRange = sheet.getRange(focusCell.address);
+      let specialRange = sheet.getRange(referenceCell.address);
       specialRange.format.font.color = "black";
 
-      focusCell.inputCells.forEach((cell: CellProperties) => {
+      referenceCell.inputCells.forEach((cell: CellProperties) => {
         specialRange = sheet.getRange(cell.address);
         specialRange.format.font.color = "black";
       })
 
-      focusCell.outputCells.forEach((cell: CellProperties) => {
+      referenceCell.outputCells.forEach((cell: CellProperties) => {
         specialRange = sheet.getRange(cell.address);
         specialRange.format.font.color = "black";
       })
@@ -237,6 +297,18 @@ function blurBackground() {
   } catch (error) {
     console.error(error);
   }
+}
+
+function unblurBackground() {
+
+  Excel.run(function (context) {
+
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    const range = sheet.getUsedRange(true);
+    range.format.font.color = "black";
+
+    return context.sync();
+  })
 }
 
 // async function removeDistributions() {
@@ -312,7 +384,7 @@ function handleSelectionChange(event) {
   return Excel.run(function (context) {
     return context.sync()
       .then(function () {
-        if (SheetProperties.isFocusCell) {
+        if (SheetProperties.isReferenceCell) {
           cellOp.showPopUpWindow(event.address);
         }
         console.log("Address of current selection: ", event);

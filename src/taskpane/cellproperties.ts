@@ -18,10 +18,7 @@ export default class CellProperties {
   public degreeToFocus: number;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
-  public likelihood: number = 100;
-  public isLikelihood: boolean = false;
-  public isImpact: boolean = false;
-  public isSpread: boolean = false;
+  public likelihood: number = 10;
   public isInputRelationship: boolean;
   public isOutputRelationship: boolean;
   public spreadRange: string;
@@ -32,11 +29,6 @@ export default class CellProperties {
   public rect: Excel.Shape;
   public rectColor: string;
   public rectTransparency: number;
-  //for relationship
-  public triangle: Excel.Shape;
-  public triangleColor: string;
-  public triangleTransparency: number;
-
 
   CellProperties() {
     this.id = "";
@@ -201,7 +193,7 @@ export default class CellProperties {
     return cellsInRange;
   }
 
-  getFocusAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
+  getReferenceAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
     let focusCell = new CellProperties();
 
     cells.forEach((cell: CellProperties) => {
