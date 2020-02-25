@@ -69,7 +69,7 @@ async function markAsReferenceCell() {
     }
 
     if (SheetProperties.isReferenceCell) {
-      removeAll();
+      removeShapesFromReferenceCell();
     }
 
     let range: Excel.Range;
@@ -201,20 +201,7 @@ async function spread() {
   }
 }
 
-async function removeAll() {
-
-  var element1 = <HTMLInputElement>document.getElementById("impact");
-  var element2 = <HTMLInputElement>document.getElementById("likelihood");
-  var element3 = <HTMLInputElement>document.getElementById("spread");
-  var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
-  var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
-
-  element1.checked = false;
-  element2.checked = false;
-  element3.checked = false;
-  element4.checked = false;
-  element5.checked = false;
-
+async function removeShapesFromReferenceCell() {
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
     const range = sheet.getUsedRange(true);
@@ -235,6 +222,23 @@ async function removeAll() {
       return context.sync();
     });
   });
+}
+
+async function removeAll() {
+
+  var element1 = <HTMLInputElement>document.getElementById("impact");
+  var element2 = <HTMLInputElement>document.getElementById("likelihood");
+  var element3 = <HTMLInputElement>document.getElementById("spread");
+  var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
+  var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
+
+  element1.checked = false;
+  element2.checked = false;
+  element3.checked = false;
+  element4.checked = false;
+  element5.checked = false;
+  await removeShapesFromReferenceCell();
+
 }
 
 function showInputRelationship() {
