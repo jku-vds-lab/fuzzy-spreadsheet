@@ -190,7 +190,7 @@ async function spread() {
     if (element.checked) {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
-      cellOp.showSpread();
+      cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;
