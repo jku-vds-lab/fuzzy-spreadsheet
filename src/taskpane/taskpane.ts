@@ -16,6 +16,7 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
+  document.getElementById("relationship").onclick = showRelationship;
   document.getElementById("inputRelationship").onclick = showInputRelationship;
   document.getElementById("outputRelationship").onclick = showOutputRelationship;
   document.getElementById("removeAll").onclick = removeAll;
@@ -54,9 +55,8 @@ async function handleDataChanged() {
 
   if (updatedValue == 0) {
     // no change
-    console.log("NO CHANGE Updated Value: " + updatedValue);
   } else {
-    console.log("CHANGE Updated Value: " + updatedValue);
+    console.log("CHANGE: " + updatedValue);
     Excel.run(function (context) {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
@@ -158,6 +158,7 @@ function disableInputs() {
   (<HTMLInputElement>document.getElementById("impact")).disabled = true;
   (<HTMLInputElement>document.getElementById("likelihood")).disabled = true;
   (<HTMLInputElement>document.getElementById("spread")).disabled = true;
+  (<HTMLInputElement>document.getElementById("relationship")).disabled = true;
   (<HTMLInputElement>document.getElementById("inputRelationship")).disabled = true;
   (<HTMLInputElement>document.getElementById("outputRelationship")).disabled = true;
   (<HTMLInputElement>document.getElementById("removeAll")).disabled = true;
@@ -172,6 +173,7 @@ function enableInputs() {
   (<HTMLInputElement>document.getElementById("impact")).disabled = false;
   (<HTMLInputElement>document.getElementById("likelihood")).disabled = false;
   (<HTMLInputElement>document.getElementById("spread")).disabled = false;
+  (<HTMLInputElement>document.getElementById("relationship")).disabled = false;
   (<HTMLInputElement>document.getElementById("inputRelationship")).disabled = false;
   (<HTMLInputElement>document.getElementById("outputRelationship")).disabled = false;
   (<HTMLInputElement>document.getElementById("removeAll")).disabled = false;
@@ -266,13 +268,53 @@ async function removeAll() {
   var element3 = <HTMLInputElement>document.getElementById("spread");
   var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
   var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
+  var element6 = <HTMLInputElement>document.getElementById("relationship");
 
   element1.checked = false;
   element2.checked = false;
   element3.checked = false;
   element4.checked = false;
   element5.checked = false;
+  element6.checked = false;
   await removeShapesFromReferenceCell();
+
+}
+
+function showRelationship() {
+
+  var element = <HTMLInputElement>document.getElementById("relationship");
+  var element1 = <HTMLInputElement>document.getElementById("inputRelationship");
+  var element2 = <HTMLInputElement>document.getElementById("outputRelationship");
+
+  if (element.checked) {
+
+    console.log('Relationship');
+    console.log('SheetProperties.isInputRelationship' + SheetProperties.isInputRelationship);
+    console.log('SheetProperties.isOutputRelationship' + SheetProperties.isOutputRelationship);
+
+    if (SheetProperties.isInputRelationship == false) {
+      console.log('Input Relationship');
+      element1.checked = true;
+      showInputRelationship();
+    }
+
+    if (SheetProperties.isOutputRelationship == false) {
+      console.log('Output Relationship');
+      element2.checked = true;
+      showOutputRelationship();
+    }
+  } else {
+    console.log('Unchecked');
+    if (SheetProperties.isInputRelationship == true) {
+      element1.checked = false;
+      showInputRelationship();
+    }
+
+    if (SheetProperties.isOutputRelationship == true) {
+      element2.checked = false;
+      showOutputRelationship();
+    }
+  }
 
 }
 

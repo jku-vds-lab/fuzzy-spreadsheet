@@ -69,8 +69,18 @@ export default class CellProperties {
     let oldValue = referenceCell.value;
 
     if (referenceCell.value == newValues[rowIndex][colIndex] && referenceCell.formula == newFormulas[rowIndex][colIndex]) {
-      // perform no updates
-      return;
+
+      if (referenceCell.variance == newValues[rowIndex][colIndex + 1]) {
+        // perform no updates
+        return;
+      } else {
+        console.log('Variance has changed');
+        // Check if Spread is selected
+        // recalculate samples of spread
+        // check if cheat sheet exist
+        // write them in the CheatSheet new range
+        // draw the new graph with a different color
+      }
     }
 
     let newValue = newValues[rowIndex][colIndex];
