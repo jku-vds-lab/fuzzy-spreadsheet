@@ -1,8 +1,16 @@
 /* global console, Excel */
+
+// TO-DO's
+
+// fix the red issue
+// work on output
+// remove duplicates
+
 import { std, abs } from 'mathjs';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
+import { increment } from 'src/functions/functions';
 
 export default class Impact {
 
@@ -16,7 +24,7 @@ export default class Impact {
 
   public showImpact(n: number = 1) {
 
-    this.addImpactInfo(null, n);
+    this.addImpactInfo(n);
     const commonOps = new CommonOperations();
 
     if (SheetProperties.isLikelihood) {
@@ -85,23 +93,18 @@ export default class Impact {
     })
   }
 
-  // Test properly for the input cells
-  // Average values must be calculated properly
-  // fix the red issue
-  // work on output
   private addImpactInfo(n: number = 1) {
-    const inputCells = this.referenceCell.inputCells;
-    const divisor = this.parseInputImpactandGetDivisor();
 
-    this.addImpactInfoInputCells(inputCells, divisor, n);
+    this.addImpactInfoInputCells(n);
     this.addImpactInfoOutputCells();
   }
 
-  private addImpactInfoInputCells(inputCells: CellProperties[], divisor: number, n: number = 1) {
+  private addImpactInfoInputCells(n: number = 1) {
 
     const isreferenceCellAverage = this.referenceCell.formula.includes("AVERAGE") || this.referenceCell.formula.includes("MITTELWERT");
     const isreferenceCellSum = this.referenceCell.formula.includes("SUM");
     const isreferenceCellDiff = this.referenceCell.formula.includes('-');
+    const divisor = this.getDivisor();
     let subtrahend = null;
 
 
@@ -110,25 +113,32 @@ export default class Impact {
       let idx = formula.indexOf('-');
       subtrahend = formula.substring(idx + 1, formula.length);
     }
+    let color = 'green';
+    const inputCells = this.referenceCell.inputCells;
+
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      // fix color issue here
+      if (isreferenceCellDiff) {
+        color = 'green';
+        if (inCell.address.includes(subtrahend)) {
+          color = 'red';
+        }
+      }
+
+      console.log('Incell Address: ' + inCell.address + ' with color: ' + color);
+      this.addInputImpactInfoRecursively(inputCells, n, color, divisor);
+
+    })
+  }
+
+  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, color: string, divisor: number) {
+
+    console.log('color I am here with: ' + color);
 
     inputCells.forEach((inCell: CellProperties) => {
-
-      if (isreferenceCellAverage) {
-        inCell.rectColor = 'green';
-        inCell.rectTransparency = abs(this.referenceCell.value - inCell.value / divisor);
-
-      }
-      else if (isreferenceCellSum) {
-        inCell.rectColor = 'green';
-        inCell.rectTransparency = abs(1 - (inCell.value / divisor));
-      }
-      else if (isreferenceCellDiff) {
-        inCell.rectColor = 'green';
-        if (inCell.address.includes(subtrahend)) {
-          inCell.rectColor = 'red';
-        }
-        inCell.rectTransparency = abs(1 - (inCell.value / divisor));
-      }
+      inCell.rectColor = color;
+      console.log(inCell.rectColor);
+      inCell.rectTransparency = abs(1 - (inCell.value / divisor));
     })
 
     if (n == 1) {
@@ -138,7 +148,7 @@ export default class Impact {
     n = n - 1;
 
     inputCells.forEach((inCell: CellProperties) => {
-      this.addImpactInfoInputCells(inCell.inputCells, divisor, n);
+      this.addInputImpactInfoRecursively(inCell.inputCells, n, color, divisor);
     })
   }
 
@@ -243,46 +253,12 @@ export default class Impact {
     return { color: color, transparency: transparency };
   }
 
-  private parseInputImpactandGetDivisor() {
-    const isreferenceCellAverage = this.referenceCell.formula.includes("AVERAGE") || this.referenceCell.formula.includes("MITTELWERT");
-    const isreferenceCellSum = this.referenceCell.formula.includes("SUM");
-    const isreferenceCellDiff = this.referenceCell.formula.includes('-');
-
+  private getDivisor() {
     let divisor = 1;
 
-    if (isreferenceCellAverage) {
-      divisor = this.computeDivisor(this.referenceCell.inputCells, true);
-
-    }
-    else if (isreferenceCellSum || isreferenceCellDiff) {
-      divisor = this.computeDivisor(this.referenceCell.inputCells);
-
-    }
-
+    this.referenceCell.inputCells.forEach((c: CellProperties) => {
+      divisor += c.value;
+    })
     return divisor;
   }
-
-  private computeDivisor(inputCells: CellProperties[], isAverage: boolean = false) {
-
-    let divisor = 1;
-
-    if (isAverage) {
-
-      let values: number[] = new Array<number>();
-
-      inputCells.forEach((cell: CellProperties) => {
-        values.push(cell.value);
-      });
-
-      divisor = 2 * std(values);
-    } else {
-
-      inputCells.forEach((c: CellProperties) => {
-        divisor += c.value;
-      })
-    }
-
-    return divisor;
-  }
-
 }
