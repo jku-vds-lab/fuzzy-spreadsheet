@@ -51,7 +51,7 @@ async function handleDataChanged() {
   }
 
   await cellProp.getRangeProperties(referenceCell, cells); // get the increase here and draw a glyph on it
-  let updatedValue = SheetProperties.temp;
+  let updatedValue = referenceCell.whatIf.value;
 
   if (updatedValue == 0) {
     // no change

@@ -1,5 +1,6 @@
 import CellOperations from "./celloperations";
 import SheetProperties from "./sheetproperties";
+import WhatIf from "./operations/whatif";
 
 /* global console, Excel */
 
@@ -36,6 +37,8 @@ export default class CellProperties {
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
 
+  public whatIf: WhatIf;
+
   CellProperties() {
     this.id = "";
     this.address = "";
@@ -50,6 +53,7 @@ export default class CellProperties {
     this.formula = "";
     this.spreadRange = null;
     this.isUncertain = false;
+    this.whatIf = new WhatIf();
   }
 
   async getRangeProperties(referenceCell: CellProperties, cells: CellProperties[]) {
@@ -90,7 +94,7 @@ export default class CellProperties {
 
     let newValue = newValues[rowIndex][colIndex];
 
-    SheetProperties.temp = newValue - oldValue;
+    referenceCell.whatIf.value = newValue - oldValue;
 
     // otherwise perform an update
     cells.forEach((cell: CellProperties) => {
