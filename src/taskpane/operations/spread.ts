@@ -22,6 +22,11 @@ export default class Spread {
   }
 
   public async removeSpread() {
+
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isSpread = false;
+    })
+
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       var charts = sheet.charts;
@@ -102,24 +107,37 @@ export default class Spread {
   private showInputSpread(cells: CellProperties[], i: number) {
 
     cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        console.log(cell.address + ' already has a spread');
+        return;
+      }
+
+      cell.isSpread = true;
       this.drawLineChart(cell);
+
       if (i == 1) {
         return;
-      } else {
-        this.showInputSpread(cell.inputCells, i - 1);
       }
+      this.showInputSpread(cell.inputCells, i - 1);
     })
   }
 
   private showOutputSpread(cells: CellProperties[], i: number) {
 
     cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        return;
+      }
+
+      cell.isSpread = true;
+
       this.drawLineChart(cell);
       if (i == 1) {
         return;
-      } else {
-        this.showOutputSpread(cell.outputCells, i - 1);
       }
+      this.showOutputSpread(cell.outputCells, i - 1);
     })
   }
 
@@ -149,10 +167,8 @@ export default class Spread {
         let chart: Excel.Chart;
 
         if (cell.isLineChart) {
-          console.log("Line chart");
           chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
         } else {
-          console.log("Column chart");
           chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
         }
 
@@ -172,7 +188,8 @@ export default class Spread {
         chart.plotArea.height = 100;
         chart.format.fill.clear();
         chart.format.border.clear();
-        return context.sync();
+        return context.sync().then(() => { console.log('Finished drawing the chart') }).
+          catch(() => console.log('Failed to draw a chart'));
       });
     } catch (error) {
       console.log('Could not draw chart because of the following error', error);

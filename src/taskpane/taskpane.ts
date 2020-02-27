@@ -261,11 +261,17 @@ async function removeShapesFromReferenceCell() {
     // }
 
     var shapes = sheet.shapes;
+    var charts = sheet.charts;
     shapes.load("items/$none");
+    charts.load("items/$none");
     return context.sync().then(function () {
       shapes.items.forEach(function (shape) {
         shape.delete();
       });
+      charts.items.forEach(function (chart) {
+        chart.delete();
+      });
+
       return context.sync();
     });
   });
