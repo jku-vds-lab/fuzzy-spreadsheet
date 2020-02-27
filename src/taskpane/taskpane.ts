@@ -191,7 +191,7 @@ async function impact() {
       cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isImpact = false;
-      await cellOp.removeImpact();
+      await cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
@@ -208,7 +208,7 @@ async function likelihood() {
       cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
-      await cellOp.removeLikelihood();
+      await cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);

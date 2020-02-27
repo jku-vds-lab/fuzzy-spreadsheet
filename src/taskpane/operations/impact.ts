@@ -1,11 +1,4 @@
 /* global console, Excel */
-
-// TO-DO's
-
-// fix the red issue
-// work on output
-// remove duplicates
-
 import { abs, round } from 'mathjs';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
@@ -24,89 +17,66 @@ export default class Impact {
     this.cells = cells;
   }
 
-  public showImpact(n: number = 1) {
+  public showImpact(n: number) {
 
     this.addImpactInfo(n);
-    const commonOps = new CommonOperations();
 
     if (SheetProperties.isLikelihood) {
-      commonOps.deleteRectangles();
+      this.commonOps.deleteRectangles(this.cells);
     }
 
     this.showInputImpact(this.referenceCell, n);
     this.showOutputImpact(this.referenceCell, n);
   }
 
-  public async removeImpact() {
+  public async removeImpact(n: number) {
 
-    this.removeImpactInfo();
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isImpact = false;
+    })
 
-    await this.commonOps.deleteRectangles();
+    await this.commonOps.deleteRectangles(this.cells);
 
     if (SheetProperties.isLikelihood) {
 
       const likelihood = new Likelihood(this.cells, this.referenceCell);
-      likelihood.showLikelihood();
+      likelihood.showLikelihood(n);
     }
   }
 
   private showInputImpact(cell: CellProperties, i: number) {
 
-    console.log('Show Input Impact: ' + i);
     cell.inputCells.forEach((inCell: CellProperties) => {
 
       if (inCell.isImpact) {
-        console.log('Returning because there is already an impact');
         return;
       }
 
       inCell.isImpact = true;
       this.commonOps.drawRectangle(inCell);
+
       if (i == 1) {
         return;
-      } else {
-        this.showInputImpact(inCell, i - 1);
       }
+      this.showInputImpact(inCell, i - 1);
     })
   }
 
   private showOutputImpact(cell: CellProperties, i: number) {
+
     cell.outputCells.forEach((outCell: CellProperties) => {
+
       if (outCell.isImpact) {
         return;
       }
 
       outCell.isImpact = true;
       this.commonOps.drawRectangle(outCell);
+
       if (i == 1) {
         return;
-      } else {
-        this.showOutputImpact(outCell, i - 1);
       }
-    })
-  }
-
-  private removeImpactInfo() {
-
-    let color = null;
-    let transparency = 0;
-
-    if (SheetProperties.isLikelihood) {
-      color = 'gray';
-    }
-
-    this.cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
-    })
-
-    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
-      inCell.rectColor = color;
-      inCell.rectTransparency = transparency;
-    })
-
-    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
-      outCell.rectColor = color;
-      outCell.rectTransparency = transparency;
+      this.showOutputImpact(outCell, i - 1);
     })
   }
 

@@ -3,7 +3,6 @@ import CellOperations from '../celloperations';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
-import { increment } from 'src/functions/functions';
 import Impact from './impact';
 
 
@@ -20,14 +19,14 @@ export default class Likelihood {
   }
 
 
-  public showLikelihood(n: number = 1) {
+  public showLikelihood(n: number) {
 
     this.addLikelihoodInfo();
 
     try {
 
       if (SheetProperties.isImpact) {
-        this.commonOps.deleteRectangles();
+        this.commonOps.deleteRectangles(this.cells);
       }
 
       this.showInputLikelihood(this.referenceCell, n);
@@ -38,51 +37,55 @@ export default class Likelihood {
     }
   }
 
-  public async removeLikelihood() {
+  public async removeLikelihood(n: number) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isLikelihood = false;
     })
-    await this.commonOps.deleteRectangles();
+
+    await this.commonOps.deleteRectangles(this.cells);
 
     if (SheetProperties.isImpact) {
-
       const impact = new Impact(this.referenceCell, this.cells);
-      impact.showImpact();
+      impact.showImpact(n);
     }
   }
 
-  private showInputLikelihood(cell: CellProperties, i: number) {
+  private showInputLikelihood(cell: CellProperties, n: number) {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
+
       if (inCell.isLikelihood) {
         return;
       }
 
       inCell.isLikelihood = true;
       this.commonOps.drawRectangle(inCell);
-      if (i == 1) {
+
+      if (n == 1) {
         return;
-      } else {
-        this.showInputLikelihood(inCell, i - 1);
       }
+
+      this.showInputLikelihood(inCell, n - 1);
     })
   }
 
-  private showOutputLikelihood(cell: CellProperties, i: number) {
+  private showOutputLikelihood(cell: CellProperties, n: number) {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
+
       if (outCell.isLikelihood) {
         return;
       }
 
       outCell.isLikelihood = true;
       this.commonOps.drawRectangle(outCell);
-      if (i == 1) {
+
+      if (n == 1) {
         return;
-      } else {
-        this.showOutputLikelihood(outCell, i - 1);
       }
+
+      this.showOutputLikelihood(outCell, n - 1);
     })
   }
 

@@ -42,16 +42,16 @@ export default class CellOperations {
     this.impact.showImpact(n);
   }
 
-  async removeImpact() {
-    await this.impact.removeImpact();
+  async removeImpact(n: number) {
+    await this.impact.removeImpact(n);
   }
 
   showLikelihood(n: number) {
     this.likelihood.showLikelihood(n);
   }
 
-  async removeLikelihood() {
-    await this.likelihood.removeLikelihood();
+  async removeLikelihood(n: number) {
+    await this.likelihood.removeLikelihood(n);
   }
 
   showSpread(n: number) {

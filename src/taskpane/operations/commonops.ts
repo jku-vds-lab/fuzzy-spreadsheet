@@ -5,17 +5,6 @@ import SheetProperties from "../sheetproperties";
 
 export default class CommonOperations {
 
-  drawRectangles(cells: CellProperties[]) {
-    try {
-
-      cells.forEach((cell: CellProperties) => {
-        this.drawRectangle(cell);
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   drawRectangle(cell: CellProperties) {
 
     Excel.run((context) => {
@@ -49,7 +38,15 @@ export default class CommonOperations {
     });
   }
 
-  async deleteRectangles() {
+  async deleteRectangles(cells: CellProperties[]) {
+
+    // remove both impact and likelihood here?
+
+    cells.forEach((cell: CellProperties) => {
+      cell.isImpact = false;
+      cell.isLikelihood = false;
+    })
+
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       var shapes = sheet.shapes;
