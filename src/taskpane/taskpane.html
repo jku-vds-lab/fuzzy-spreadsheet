@@ -49,16 +49,25 @@
 
         <div class='loader' id='loading' hidden='true'></div>
 
-        <div role="button" id="parseSheet" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <span class="ms-Button-label">Parse Sheet</span>
-        </div>
+        <table style="width: 100%;">
+            <col width="25" style="text-align: center;">
+            <col width="50">
+            <col width="auto">
 
-        <div role="button" id="referenceCell" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <img width="25" height="20" src="../../assets/focus2.png" alt="Contoso" title="Mark Reference Cell" />
-            <span class="ms-Button-label">Mark as reference cell</span>
-        </div>
+            <tr role="button" id="parseSheet">
+                <td><img width="25" height="25" src="../../assets/init.png" alt="impact" title="Initialize the Sheet" />
+                </td>
+                <td>Initialize</td>
+            </tr>
 
-        <table style="width: 60%;">
+            <tr role="button" id="referenceCell">
+                <td><img width="25" height="25" src="../../assets/focus2.png" alt="impact"
+                        title="Mark Reference Cell" />
+                </td>
+                <td colspan="2">Reference Cell</td>
+
+            </tr>
+
             <tr>
                 <td><input type="checkbox" id="impact"></td>
                 <td><img width="50" height="10" src="../../assets/impact.png" alt="impact" title="Impact" /></td>
@@ -76,15 +85,19 @@
                 <td>Spread</td>
             </tr>
             <tr>
+                <td><input type="checkbox" id="relationship"></td>
+                <td><img width="25" height="25" src="../../assets/relationship.png" alt="relationship"
+                        title="Relationship" /></td>
+                <td> Relationship</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"> &#x2514;</td>
                 <td><input type="checkbox" id="inputRelationship"></td>
-                <td><img width="25" height="25" src="../../assets/relationship.png" alt="input relationship"
-                        title="Input Relationship" /></td>
                 <td>Input Relationship</td>
             </tr>
             <tr>
-                <td><input type="checkbox" id="outputRelationship"></td>
-                <td><img width="25" height="25" src="../../assets/relationship.png" alt="output relationship"
-                        title="Output Relationship" /></td>
+                <td style="text-align: center"> &#x2514;</td>
+                <td><input type="checkbox" id="outputRelationship"> </td>
                 <td>Output Relationship</td>
             </tr>
         </table>

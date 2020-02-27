@@ -1,4 +1,5 @@
 import CellOperations from "./celloperations";
+import SheetProperties from "./sheetproperties";
 
 /* global console, Excel */
 
@@ -18,9 +19,8 @@ export default class CellProperties {
   public degreeToFocus: number;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
+  public impact: number = 0;
   public likelihood: number = 10;
-  public isInputRelationship: boolean;
-  public isOutputRelationship: boolean;
   public spreadRange: string;
   public variance: number = 0;
   public samples: number[];
@@ -29,6 +29,12 @@ export default class CellProperties {
   public rect: Excel.Shape;
   public rectColor: string;
   public rectTransparency: number;
+
+  public isInputRelationship: boolean = false;
+  public isOutputRelationship: boolean = false;
+  public isImpact: boolean = false;
+  public isLikelihood: boolean = false;
+  public isSpread: boolean = false;
 
   CellProperties() {
     this.id = "";
@@ -46,22 +52,81 @@ export default class CellProperties {
     this.isUncertain = false;
   }
 
+  async getRangeProperties(referenceCell: CellProperties, cells: CellProperties[]) {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      const range = sheet.getUsedRange(true);
+      range.load(['formulas', 'values']);
+      await context.sync();
+      this.performLazyUpdate(referenceCell, cells, range.values, range.formulas);
+    });
+  }
+
+  private performLazyUpdate(referenceCell: CellProperties, cells: CellProperties[], newValues: any[][], newFormulas: any[][]) {
+
+    if (referenceCell == null) {
+      return;
+    }
+
+    let indices = this.convertIdToIndices(referenceCell.id);
+    let rowIndex = indices.rowIndex;
+    let colIndex = indices.colIndex;
+    let oldValue = referenceCell.value;
+
+    if (referenceCell.value == newValues[rowIndex][colIndex] && referenceCell.formula == newFormulas[rowIndex][colIndex]) {
+
+      if (referenceCell.variance == newValues[rowIndex][colIndex + 1]) {
+        // perform no updates
+        return;
+      } else {
+        console.log('Variance has changed');
+        // Check if Spread is selected
+        // recalculate samples of spread
+        // check if cheat sheet exist
+        // write them in the CheatSheet new range
+        // draw the new graph with a different color
+      }
+    }
+
+    let newValue = newValues[rowIndex][colIndex];
+
+    SheetProperties.temp = newValue - oldValue;
+
+    // otherwise perform an update
+    cells.forEach((cell: CellProperties) => {
+
+      indices = this.convertIdToIndices(cell.id);
+      rowIndex = indices.rowIndex;
+      colIndex = indices.colIndex;
+
+      cell.value = newValues[rowIndex][colIndex];
+      cell.formula = newFormulas[rowIndex][colIndex];
+      if (cell.formula == cell.value) {
+        cell.formula = "";
+      }
+    })
+  }
+
+  private convertIdToIndices(id: string) {
+
+    id = id.replace('R', '');
+    let c = id.indexOf('C');
+    let rowIndex = id.substring(0, c);
+    let colIndex = id.substring(c + 1);
+
+    return { rowIndex: rowIndex, colIndex: colIndex };
+  }
+
   async getCellsProperties(cells = new Array<CellProperties>()) {
 
     await Excel.run(async (context) => {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const range = sheet.getUsedRange(true);
-      range.load(["columnIndex", "rowIndex", "columnCount", "rowCount"]);
-      await context.sync();
 
-      const rowIndex = range.rowIndex;
-      const colIndex = range.columnIndex;
-      const rowCount = range.rowCount;
-      const colCount = range.columnCount;
+      // range.load(["formulas", "values"]);
 
-      for (let i = rowIndex; i < rowIndex + rowCount; i++) {
-        for (let j = colIndex; j < colIndex + colCount; j++) {
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 18; j++) {
 
           let cell = sheet.getCell(i, j);
           cell.load(["formulas", "top", "left", "height", "width", "address", "values"]);
@@ -119,7 +184,6 @@ export default class CellProperties {
         rangeAddresses.forEach((rangeAddress: string) => {
           rangeAddress = rangeAddress.trim();
           if (rangeAddress.includes(':')) {
-
             cellRangeAddresses = new Array<string>();
 
             let ranges = rangeAddress.split(':');
@@ -258,20 +322,22 @@ export default class CellProperties {
       let i = formula.indexOf("SUM");
       formula = formula.slice(i + 3);
 
-      if (formula.includes(':')) {
-        rangeAddress.push(formula);
-      } else if (formula.includes(',')) {
+      if (formula.includes(',')) {
         rangeAddress = formula.split(',');
+      } else if (formula.includes(':')) {
+        rangeAddress.push(formula);
       }
     }
+
     if (formula.includes("AVERAGE")) {
       let i = formula.indexOf("AVERAGE");
       formula = formula.slice(i + 7);
 
-      if (rangeAddress.includes(':')) {
-        rangeAddress.push(formula);
-      } else if (formula.includes(',')) {
+      if (formula.includes(',')) {
         rangeAddress = formula.split(',');
+
+      } else if (formula.includes(':')) {
+        rangeAddress.push(formula);
       }
     }
 

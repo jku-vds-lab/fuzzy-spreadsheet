@@ -1,270 +1,199 @@
 /* global console, Excel */
-import { std } from 'mathjs';
+import { abs, round } from 'mathjs';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
+import Likelihood from './likelihood';
 
 export default class Impact {
 
   private referenceCell: CellProperties;
+  private cells: CellProperties[];
+  private commonOps: CommonOperations;
 
-  constructor(referenceCell: CellProperties) {
+  constructor(referenceCell: CellProperties, cells: CellProperties[]) {
     this.referenceCell = referenceCell;
+    this.commonOps = new CommonOperations();
+    this.cells = cells;
   }
 
-  public showImpact() {
+  public showImpact(n: number) {
 
-    this.addImpactInfo();
-    const commonOps = new CommonOperations();
+    this.addImpactInfo(n);
 
     if (SheetProperties.isLikelihood) {
-      commonOps.deleteRectangles();
+      this.commonOps.deleteRectangles(this.cells);
     }
 
-    commonOps.drawRectangles(this.referenceCell.inputCells);
-    commonOps.drawRectangles(this.referenceCell.outputCells);
+    this.showInputImpact(this.referenceCell, n);
+    this.showOutputImpact(this.referenceCell, n);
   }
 
-  public async removeImpact() {
+  public async removeImpact(n: number) {
 
-    this.removeImpactInfo();
-    const commonOps = new CommonOperations();
-
-    await commonOps.deleteRectangles();
-
-    if (SheetProperties.isLikelihood) {
-
-      commonOps.drawRectangles(this.referenceCell.inputCells);
-      commonOps.drawRectangles(this.referenceCell.outputCells);
-    }
-  }
-
-  private removeImpactInfo() {
-
-    let color = null;
-    let transparency = 0;
-
-    if (SheetProperties.isLikelihood) {
-      color = 'gray';
-    }
-
-    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
-      inCell.rectColor = color;
-      inCell.rectTransparency = transparency;
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isImpact = false;
     })
 
-    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
-      outCell.rectColor = color;
-      outCell.rectTransparency = transparency;
+    await this.commonOps.deleteRectangles(this.cells);
+
+    if (SheetProperties.isLikelihood) {
+
+      const likelihood = new Likelihood(this.cells, this.referenceCell);
+      likelihood.showLikelihood(n);
+    }
+  }
+
+  private showInputImpact(cell: CellProperties, i: number) {
+
+    cell.inputCells.forEach((inCell: CellProperties) => {
+
+      if (inCell.isImpact) {
+        return;
+      }
+
+      inCell.isImpact = true;
+      this.commonOps.drawRectangle(inCell);
+
+      if (i == 1) {
+        return;
+      }
+      this.showInputImpact(inCell, i - 1);
     })
   }
 
-  private addImpactInfo(color: string = null) {
-    this.addImpactInfoToInputCells(color);
-    this.addImpactInfoOutputCells();
+  private showOutputImpact(cell: CellProperties, i: number) {
+
+    cell.outputCells.forEach((outCell: CellProperties) => {
+
+      if (outCell.isImpact) {
+        return;
+      }
+
+      outCell.isImpact = true;
+      this.commonOps.drawRectangle(outCell);
+
+      if (i == 1) {
+        return;
+      }
+      this.showOutputImpact(outCell, i - 1);
+    })
   }
 
-  private addImpactInfoToInputCells(color: string = null) {
+  private addImpactInfo(n: number = 1) {
 
-    const isreferenceCellAverage = this.referenceCell.formula.includes("AVERAGE") || this.referenceCell.formula.includes("MITTELWERT");
-    const isreferenceCellSum = this.referenceCell.formula.includes("SUM");
+    this.addImpactInfoInputCells(n);
+    this.addImpactInfoOutputCells(this.referenceCell, n);
+  }
+
+  private addImpactInfoInputCells(n: number = 1) {
+
     const isreferenceCellDiff = this.referenceCell.formula.includes('-');
+    const divisor = this.getDivisor(this.referenceCell);
     let subtrahend = null;
+
 
     if (isreferenceCellDiff) {
       let formula: string = this.referenceCell.formula;
       let idx = formula.indexOf('-');
       subtrahend = formula.substring(idx + 1, formula.length);
     }
+    let color = 'green';
+    const inputCells = this.referenceCell.inputCells;
 
-    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
 
-      let colorProperties;
+    this.addInputImpactInfoRecursively(inputCells, n, color, divisor, subtrahend);
+  }
 
-      if (isreferenceCellAverage) {
-        colorProperties = this.inputColorPropertiesAverage(inCell.value, this.referenceCell.value, this.referenceCell.inputCells);
+  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, color: string, divisor: number, subtrahend: string = null) {
+
+    inputCells.forEach((inCell: CellProperties) => {
+
+      inCell.rectColor = color;
+
+      if (inCell.address.includes(subtrahend)) {
+        inCell.rectColor = 'red';
       }
-      else if (isreferenceCellSum) {
-        colorProperties = this.inputColorProperties(inCell.value, this.referenceCell.value, this.referenceCell.inputCells);
-      }
-      else if (isreferenceCellDiff) {
-        let isSubtrahend = false;
+      const impact = inCell.value / divisor;
+      inCell.impact = round(impact * 100, 2);
+      inCell.rectTransparency = abs(1 - impact);
+    })
 
-        if (inCell.address.includes(subtrahend)) {
-          isSubtrahend = true;
-        }
+    if (n == 1) {
+      return;
+    }
 
-        colorProperties = this.inputColorProperties(inCell.value, this.referenceCell.value, this.referenceCell.inputCells, isSubtrahend);
-      }
-      inCell.rectColor = color ? color : colorProperties.color;
-      inCell.rectTransparency = colorProperties.transparency;
+    n = n - 1;
+
+    inputCells.forEach((inCell: CellProperties) => {
+      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.rectColor, divisor);
     })
   }
 
-  private addImpactInfoOutputCells() {
+  private addImpactInfoOutputCells(cell: CellProperties, n: number) {
 
-    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
-
-      let isSubtrahend: boolean = false;
-      let isMinuend: boolean = false;
+    cell.outputCells.forEach((outCell: CellProperties) => {
 
       if (outCell.formula.includes('-')) {
-        //figure out whether the reference cell is minuend or subtrahend to the outcell
+        const divisor = this.getDivisor(outCell);
         let formula: string = outCell.formula;
         formula = formula.replace('=', '').replace(' ', '');
-        let idx = formula.indexOf('-');
-        let subtrahend = formula.substring(idx + 1, formula.length);
+        const idx = formula.indexOf('-');
+        const subtrahend = formula.substring(idx + 1, formula.length);
 
-        if (this.referenceCell.address.includes(subtrahend)) {
-          isSubtrahend = true;
-        } else {
-          isMinuend = true;
-        }
+        const impact = this.referenceCell.value / divisor;
+        outCell.rectColor = this.checkIfCellHasSubtrahend(cell, subtrahend);
+        outCell.rectTransparency = abs(1 - impact);
+        outCell.impact = round(impact * 100, 2);
+
+
+      } else if (outCell.formula.includes('AVERAGE')) {
+        const divisor = this.getDivisor(outCell);
+        const impact = this.referenceCell.value / divisor;
+
+        outCell.rectTransparency = abs(1 - impact);
+        outCell.rectColor = 'green';
+        outCell.impact = round(impact * 100, 2);
+      } else {
+        const impact = this.referenceCell.value / outCell.value;
+        outCell.impact = round(impact * 100, 2);
+        outCell.rectTransparency = abs(1 - impact);
+        outCell.rectColor = 'green';
       }
-
-      let colorProperties = this.outputColorProperties(outCell.value, this.referenceCell.value, outCell.inputCells, isSubtrahend, isMinuend);
-      outCell.rectColor = colorProperties.color;
-      outCell.rectTransparency = colorProperties.transparency;
     })
+
+    if (n == 1) {
+      return;
+    }
+
+    n = n - 1;
+    cell.outputCells.forEach((outCell: CellProperties) => {
+      this.addImpactInfoOutputCells(outCell, n);
+    });
+
   }
 
-  private computeColor(cellValue: number, referenceCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
+  private checkIfCellHasSubtrahend(cell: CellProperties, subtrahend: string) {
+    let color = 'green';
 
-    let color = "green";
-
-    if (isSubtrahend) {
-      color = "red";
+    if (cell.address.includes(subtrahend)) {
+      color = 'red';
       return color;
     }
 
-    if (referenceCellValue > 0 && cellValue < 0) {
-      if (isMinuend) {
-        color = "green";
-      } else {
-        color = "red";
-      }
-    }
+    cell.outputCells.forEach((outCell: CellProperties) => {
+      this.checkIfCellHasSubtrahend(outCell, subtrahend);
+    })
 
-    if (referenceCellValue < 0 && cellValue < 0) { // because of the negative sign, the smaller the number the higher it is
-      let isAnyCellPositive = false;
-
-      cells.forEach((cell: CellProperties) => {
-        if (cell.value > 0) {
-          isAnyCellPositive = true;
-        }
-      })
-
-      if (isAnyCellPositive) { // if even one cell is positive, then it means that only that cell is contributing positively and rest all are contributing negatively
-        color = "red";
-      }
-    }
     return color;
   }
 
-  private inputColorProperties(cellValue: number, referenceCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
+  private getDivisor(cell: CellProperties) {
+    let divisor = 1;
 
-    let transparency = 0;
-    const color = this.computeColor(cellValue, referenceCellValue, cells, isSubtrahend, isMinuend);
-
-    // Make both values positive
-    if (cellValue < 0) {
-      cellValue = -cellValue;
-    }
-
-    if (referenceCellValue < 0) {
-      referenceCellValue = -referenceCellValue;
-    }
-
-    if (cellValue < referenceCellValue) {
-
-      let value = cellValue / referenceCellValue;
-
-      transparency = 1 - value;
-    }
-    else {
-
-      let maxValue = cellValue;
-      // go through the input cells of the reference cell
-      cells.forEach((c: CellProperties) => {
-        let val = c.value;
-
-        if (val < 0) {
-          val = -val;
-        }
-        if (val > maxValue) {
-          maxValue = val;
-        }
-      })
-
-      transparency = 1 - (cellValue / maxValue);
-    }
-
-    return { color: color, transparency: transparency };
-  }
-
-  private inputColorPropertiesAverage(cellValue: number, referenceCellValue: number, cells: CellProperties[]) {
-
-    let transparency = 0;
-    let values: number[] = new Array<number>();
-
-
-    cells.forEach((cell: CellProperties) => {
-      values.push(cell.value);
-    });
-
-    let stdDev = std(values);
-
-    transparency = (referenceCellValue - cellValue) / (2 * stdDev);
-
-    if (transparency < 0) {
-      transparency = -transparency;
-    }
-
-    if (transparency > 1) {
-      transparency = 1;
-    }
-
-    return { color: "green", transparency: transparency }
-  }
-
-  // Fix color values for negative values
-  private outputColorProperties(cellValue: number, referenceCellValue: number, cells: CellProperties[], isSubtrahend: boolean = false, isMinuend: boolean = false) {
-
-    let transparency = 0;
-    const color = this.computeColor(cellValue, referenceCellValue, cells, isSubtrahend, isMinuend);
-
-    // Make both values positive
-    if (cellValue < 0) {
-      cellValue = -cellValue;
-    }
-
-    if (referenceCellValue < 0) {
-      referenceCellValue = -referenceCellValue;
-    }
-
-    if (cellValue > referenceCellValue) {
-
-      let value = referenceCellValue / cellValue;
-
-      transparency = 1 - value;
-
-    }
-    else {
-      let maxValue = cellValue;
-      // go through the input cells of the output cell
-      cells.forEach((c: CellProperties) => {
-        let val = c.value;
-        if (val < 0) {
-          val = -val;
-        }
-        if (val > maxValue) {
-          maxValue = val;
-        }
-      })
-
-      transparency = 1 - (referenceCellValue / maxValue);
-    }
-
-    return { color: color, transparency: transparency };
+    cell.inputCells.forEach((c: CellProperties) => {
+      divisor += c.value;
+    })
+    return divisor;
   }
 }

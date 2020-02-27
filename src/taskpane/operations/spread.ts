@@ -13,21 +13,20 @@ export default class Spread {
     this.referenceCell = referenceCell;
   }
 
-  public showSpread() {
+  public showSpread(n: number) {
 
     this.drawLineChart(this.referenceCell);
 
-    this.referenceCell.inputCells.forEach((cell: CellProperties) => {
-      this.drawLineChart(cell);
-
-    })
-
-    this.referenceCell.outputCells.forEach((cell: CellProperties) => {
-      this.drawLineChart(cell);
-    })
+    this.showInputSpread(this.referenceCell.inputCells, n);
+    this.showOutputSpread(this.referenceCell.outputCells, n);
   }
 
   public async removeSpread() {
+
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isSpread = false;
+    })
+
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       var charts = sheet.charts;
@@ -62,9 +61,13 @@ export default class Spread {
 
       for (let c = 0; c < this.cells.length; c++) {
 
+        if (isNaN(this.cells[c].value)) {
+          continue;
+        }
+
         this.cells[c].samples = new Array<number>();
 
-        let overallMin = -10;
+        let overallMin = -15;
         let overallMax = 40;
         let mean = this.cells[c].value;
 
@@ -81,19 +84,13 @@ export default class Spread {
         }
         else {
           rowIndex++;
-          if (this.cells[c].degreeToFocus >= 0) {
-            for (let i = overallMin; i <= overallMax; i++) {
-              if (i == ceil(this.cells[c].value)) {
-                this.cells[c].samples.push(1);
-              } else {
-                this.cells[c].samples.push(0);
-              }
+          for (let i = overallMin; i <= overallMax; i++) {
+            if (i == ceil(this.cells[c].value)) {
+              this.cells[c].samples.push(1);
+            } else {
+              this.cells[c].samples.push(0);
             }
           }
-        }
-
-        if (this.cells[c].samples.length == 0) {
-          continue;
         }
 
         let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
@@ -107,9 +104,47 @@ export default class Spread {
     });
   }
 
+  private showInputSpread(cells: CellProperties[], i: number) {
+
+    cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        console.log(cell.address + ' already has a spread');
+        return;
+      }
+
+      cell.isSpread = true;
+      this.drawLineChart(cell);
+
+      if (i == 1) {
+        return;
+      }
+      this.showInputSpread(cell.inputCells, i - 1);
+    })
+  }
+
+  private showOutputSpread(cells: CellProperties[], i: number) {
+
+    cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        return;
+      }
+
+      cell.isSpread = true;
+
+      this.drawLineChart(cell);
+      if (i == 1) {
+        return;
+      }
+      this.showOutputSpread(cell.outputCells, i - 1);
+    })
+  }
+
   private addVarianceInfo() {
 
     for (let i = 0; i < this.cells.length; i++) {
+      this.cells[i].variance = 0;
       if (this.cells[i].isUncertain) {
         this.cells[i].variance = this.cells[i + 1].value;
       }
@@ -132,10 +167,8 @@ export default class Spread {
         let chart: Excel.Chart;
 
         if (cell.isLineChart) {
-          console.log("Line chart");
           chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
         } else {
-          console.log("Column chart");
           chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
         }
 
@@ -155,7 +188,8 @@ export default class Spread {
         chart.plotArea.height = 100;
         chart.format.fill.clear();
         chart.format.border.clear();
-        return context.sync();
+        return context.sync().then(() => { console.log('Finished drawing the chart') }).
+          catch(() => console.log('Failed to draw a chart'));
       });
     } catch (error) {
       console.log('Could not draw chart because of the following error', error);
