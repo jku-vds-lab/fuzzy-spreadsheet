@@ -4,6 +4,8 @@ import Impact from './operations/impact';
 import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
 import Relationship from './operations/relationship';
+import SheetProperties from './sheetproperties';
+import { add } from 'src/functions/functions';
 
 export default class CellOperations {
 
@@ -77,9 +79,20 @@ export default class CellOperations {
     this.relationship.removeOutputRelationship();
   }
 
-  showPopUpWindow(address: string) {
+  async showPopUpWindow(address: string) {
     this.removePopUps();
     console.log(address);
+
+    if (SheetProperties.isImpact) {
+
+      this.cells.forEach(async (cell: CellProperties) => {
+        if (cell.address.includes(address)) {
+          await this.showImpactInPopUp(cell);
+          return;
+        }
+      })
+
+    }
     // this.cells.forEach((cell: CellProperties) => {
     //   if (cell.address.includes(address)) {
     //     if (cell.spreadRange == null) {
@@ -111,40 +124,6 @@ export default class CellOperations {
 
     //         this.customShapes.forEach((cShape: CustomShape) => {
 
-    //           if (cShape.cell == cell) {
-
-    //             let impact = sheet.shapes.addGeometricShape("Rectangle");
-    //             impact.name = "Pop1";
-    //             impact.left = cell.left + MARGIN;
-    //             impact.top = cell.top + TOPMARGIN;
-    //             impact.height = 5;
-    //             impact.width = 5;
-    //             impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
-    //             impact.fill.setSolidColor(cShape.color);
-    //             impact.fill.transparency = cShape.transparency;
-    //             impact.lineFormat.weight = 0;
-    //             impact.lineFormat.color = cShape.color;
-    //             impact.setZOrder(Excel.ShapeZOrder.bringForward);
-
-    //             let text = (Math.ceil((1 - cShape.transparency) * 100)) + '%';
-
-    //             if (cShape.color == 'green') {
-    //               text += 'Positive Impact';
-    //             } else {
-    //               text += 'Negative Impact';
-    //             }
-
-    //             let textbox = sheet.shapes.addTextBox(text);
-    //             textbox.name = "Pop2";
-    //             textbox.left = cell.left + MARGIN + TEXTMARGIN;
-    //             textbox.top = cell.top;
-    //             textbox.height = 20;
-    //             textbox.width = 150;
-
-    //             textbox.setZOrder(Excel.ShapeZOrder.bringForward);
-    //           }
-    //         })
-    //       }
 
     //       if (cell.isLikelihood) {
 
@@ -197,6 +176,52 @@ export default class CellOperations {
     //     });
     //   }
     // })
+  }
+  private async showImpactInPopUp(cell: CellProperties) {
+
+    let MARGIN = 120
+    let TEXTMARGIN = 20;
+    let TOPMARGIN = 15;
+
+    if (cell.impact == 0) {
+      return;
+    }
+
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      let impact = sheet.shapes.addGeometricShape("Rectangle");
+      impact.name = "Pop1";
+      impact.left = cell.left + MARGIN;
+      impact.top = cell.top + TOPMARGIN;
+      impact.height = 5;
+      impact.width = 5;
+      impact.geometricShapeType = Excel.GeometricShapeType.rectangle;
+      impact.fill.setSolidColor(cell.rectColor);
+      impact.fill.transparency = cell.rectTransparency;
+      impact.lineFormat.weight = 0;
+      impact.lineFormat.color = cell.rectColor;
+      impact.setZOrder(Excel.ShapeZOrder.bringForward);
+
+      let text = cell.impact + '%';
+
+      if (cell.rectColor == 'green') {
+        text += 'Positive Impact';
+      } else {
+        text += 'Negative Impact';
+      }
+
+      let textbox = sheet.shapes.addTextBox(text);
+      textbox.name = "Pop2";
+      textbox.left = cell.left + MARGIN + TEXTMARGIN;
+      textbox.top = cell.top;
+      textbox.height = 20;
+      textbox.width = 150;
+
+      textbox.setZOrder(Excel.ShapeZOrder.bringForward);
+
+      await context.sync();
+    });
+
   }
   async removePopUps() {
     // remove();

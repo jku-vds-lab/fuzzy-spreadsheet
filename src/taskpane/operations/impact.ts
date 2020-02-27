@@ -6,7 +6,7 @@
 // work on output
 // remove duplicates
 
-import { abs } from 'mathjs';
+import { abs, round } from 'mathjs';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
@@ -126,8 +126,9 @@ export default class Impact {
       if (inCell.address.includes(subtrahend)) {
         inCell.rectColor = 'red';
       }
-      console.log(inCell.rectColor);
-      inCell.rectTransparency = abs(1 - (inCell.value / divisor));
+      const impact = inCell.value / divisor;
+      inCell.impact = round(impact * 100, 2);
+      inCell.rectTransparency = abs(1 - impact);
     })
 
     if (n == 1) {
@@ -152,17 +153,22 @@ export default class Impact {
         const idx = formula.indexOf('-');
         const subtrahend = formula.substring(idx + 1, formula.length);
 
+        const impact = this.referenceCell.value / divisor;
         outCell.rectColor = this.checkIfCellHasSubtrahend(cell, subtrahend);
-        outCell.rectTransparency = abs(1 - this.referenceCell.value / divisor);
+        outCell.rectTransparency = abs(1 - impact);
+        outCell.impact = round(impact * 100, 2);
 
       } else if (outCell.formula.includes('AVERAGE')) {
         const divisor = this.getDivisor(outCell);
-        const transparency = abs(1 - this.referenceCell.value / divisor);
+        const impact = this.referenceCell.value / divisor;
 
-        outCell.rectTransparency = transparency;
+        outCell.rectTransparency = abs(1 - impact);
         outCell.rectColor = 'green';
+        outCell.impact = round(impact * 100, 2);
       } else {
-        outCell.rectTransparency = abs(1 - this.referenceCell.value / outCell.value);
+        const impact = this.referenceCell.value / outCell.value;
+        outCell.impact = round(impact * 100, 2);
+        outCell.rectTransparency = abs(1 - impact);
         outCell.rectColor = 'green';
       }
     })

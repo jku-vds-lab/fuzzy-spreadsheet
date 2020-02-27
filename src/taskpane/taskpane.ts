@@ -431,17 +431,13 @@ Excel.run(function (context) {
     });
 }).catch(errorHandlerFunction);
 
-function handleSelectionChange(event) {
-  return Excel.run(function (context) {
-    return context.sync()
-      .then(function () {
-        if (SheetProperties.isReferenceCell) {
-          cellOp.showPopUpWindow(event.address);
-        }
-        console.log("Address of current selection: ", event);
-      });
-  }).catch(errorHandlerFunction);
+async function handleSelectionChange(event) {
+  if (SheetProperties.isReferenceCell) {
+    await cellOp.showPopUpWindow(event.address);
+  }
 }
+
+
 
 function remove() {
   return Excel.run(eventResult.context, function (context) {

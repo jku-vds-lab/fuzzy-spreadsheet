@@ -19,6 +19,7 @@ export default class CellProperties {
   public degreeToFocus: number;
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
+  public impact: number = 0;
   public likelihood: number = 10;
   public isInputRelationship: boolean;
   public isOutputRelationship: boolean;
