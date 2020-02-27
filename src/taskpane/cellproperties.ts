@@ -21,8 +21,6 @@ export default class CellProperties {
   public outputCells: CellProperties[];
   public impact: number = 0;
   public likelihood: number = 10;
-  public isInputRelationship: boolean;
-  public isOutputRelationship: boolean;
   public spreadRange: string;
   public variance: number = 0;
   public samples: number[];
@@ -31,6 +29,12 @@ export default class CellProperties {
   public rect: Excel.Shape;
   public rectColor: string;
   public rectTransparency: number;
+
+  public isInputRelationship: boolean = false;
+  public isOutputRelationship: boolean = false;
+  public isImpact: boolean = false;
+  public isLikelihood: boolean = false;
+  public isSpread: boolean = false;
 
   CellProperties() {
     this.id = "";

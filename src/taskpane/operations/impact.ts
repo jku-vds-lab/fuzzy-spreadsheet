@@ -84,11 +84,13 @@ export default class Impact {
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
       inCell.rectColor = color;
       inCell.rectTransparency = transparency;
+      inCell.isImpact = false;
     })
 
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.rectColor = color;
       outCell.rectTransparency = transparency;
+      outCell.isImpact = false;
     })
   }
 
@@ -129,6 +131,7 @@ export default class Impact {
       const impact = inCell.value / divisor;
       inCell.impact = round(impact * 100, 2);
       inCell.rectTransparency = abs(1 - impact);
+      inCell.isImpact = true;
     })
 
     if (n == 1) {
@@ -158,6 +161,7 @@ export default class Impact {
         outCell.rectTransparency = abs(1 - impact);
         outCell.impact = round(impact * 100, 2);
 
+
       } else if (outCell.formula.includes('AVERAGE')) {
         const divisor = this.getDivisor(outCell);
         const impact = this.referenceCell.value / divisor;
@@ -171,6 +175,7 @@ export default class Impact {
         outCell.rectTransparency = abs(1 - impact);
         outCell.rectColor = 'green';
       }
+      outCell.isImpact = true;
     })
 
     if (n == 1) {

@@ -5,7 +5,6 @@ import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
 import Relationship from './operations/relationship';
 import SheetProperties from './sheetproperties';
-import { add } from 'src/functions/functions';
 
 export default class CellOperations {
 
