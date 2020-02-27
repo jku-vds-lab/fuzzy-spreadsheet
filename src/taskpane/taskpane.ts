@@ -339,12 +339,12 @@ function showInputRelationship() {
     var element = <HTMLInputElement>document.getElementById("inputRelationship");
 
     if (element.checked) {
-      blurBackground();
+      // blurBackground();
       SheetProperties.isInputRelationship = true;
       cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isInputRelationship = false;
-      unblurBackground();
+      // unblurBackground();
       cellOp.removeInputRelationship();
     }
   } catch (error) {
@@ -357,12 +357,12 @@ function showOutputRelationship() {
     var element = <HTMLInputElement>document.getElementById("outputRelationship");
 
     if (element.checked) {
-      blurBackground();
+      // blurBackground();
       SheetProperties.isOutputRelationship = true;
       cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isOutputRelationship = false;
-      unblurBackground();
+      // unblurBackground();
       cellOp.removeOutputRelationship();
     }
   } catch (error) {
