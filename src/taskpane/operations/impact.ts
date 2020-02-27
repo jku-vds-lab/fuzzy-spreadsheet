@@ -116,27 +116,19 @@ export default class Impact {
     let color = 'green';
     const inputCells = this.referenceCell.inputCells;
 
-    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
-      // fix color issue here
-      if (isreferenceCellDiff) {
-        color = 'green';
-        if (inCell.address.includes(subtrahend)) {
-          color = 'red';
-        }
-      }
 
-      console.log('Incell Address: ' + inCell.address + ' with color: ' + color);
-      this.addInputImpactInfoRecursively(inputCells, n, color, divisor);
-
-    })
+    this.addInputImpactInfoRecursively(inputCells, n, color, divisor, subtrahend);
   }
 
-  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, color: string, divisor: number) {
-
-    console.log('color I am here with: ' + color);
+  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, color: string, divisor: number, subtrahend: string = null) {
 
     inputCells.forEach((inCell: CellProperties) => {
+
       inCell.rectColor = color;
+
+      if (inCell.address.includes(subtrahend)) {
+        inCell.rectColor = 'red';
+      }
       console.log(inCell.rectColor);
       inCell.rectTransparency = abs(1 - (inCell.value / divisor));
     })
@@ -148,7 +140,7 @@ export default class Impact {
     n = n - 1;
 
     inputCells.forEach((inCell: CellProperties) => {
-      this.addInputImpactInfoRecursively(inCell.inputCells, n, color, divisor);
+      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.rectColor, divisor);
     })
   }
 
