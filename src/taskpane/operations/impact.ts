@@ -10,15 +10,18 @@ import { abs, round } from 'mathjs';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
+import Likelihood from './likelihood';
 
 export default class Impact {
 
   private referenceCell: CellProperties;
+  private cells: CellProperties[];
   private commonOps: CommonOperations;
 
-  constructor(referenceCell: CellProperties) {
+  constructor(referenceCell: CellProperties, cells: CellProperties[]) {
     this.referenceCell = referenceCell;
     this.commonOps = new CommonOperations();
+    this.cells = cells;
   }
 
   public showImpact(n: number = 1) {
@@ -42,33 +45,44 @@ export default class Impact {
 
     if (SheetProperties.isLikelihood) {
 
-      this.commonOps.drawRectangles(this.referenceCell.inputCells);
-      this.commonOps.drawRectangles(this.referenceCell.outputCells);
+      const likelihood = new Likelihood(this.cells, this.referenceCell);
+      likelihood.showLikelihood();
     }
   }
 
   private showInputImpact(cell: CellProperties, i: number) {
 
-    this.commonOps.drawRectangles(cell.inputCells);
-
-    if (i == 1) {
-      return;
-    }
-
+    console.log('Show Input Impact: ' + i);
     cell.inputCells.forEach((inCell: CellProperties) => {
-      this.showInputImpact(inCell, i - 1);
+
+      if (inCell.isImpact) {
+        console.log('Returning because there is already an impact');
+        return;
+      }
+
+      inCell.isImpact = true;
+      this.commonOps.drawRectangle(inCell);
+      if (i == 1) {
+        return;
+      } else {
+        this.showInputImpact(inCell, i - 1);
+      }
     })
   }
 
   private showOutputImpact(cell: CellProperties, i: number) {
-    this.commonOps.drawRectangles(cell.outputCells);
-
-    if (i == 1) {
-      return;
-    }
-
     cell.outputCells.forEach((outCell: CellProperties) => {
-      this.showOutputImpact(outCell, i - 1);
+      if (outCell.isImpact) {
+        return;
+      }
+
+      outCell.isImpact = true;
+      this.commonOps.drawRectangle(outCell);
+      if (i == 1) {
+        return;
+      } else {
+        this.showOutputImpact(outCell, i - 1);
+      }
     })
   }
 
@@ -81,16 +95,18 @@ export default class Impact {
       color = 'gray';
     }
 
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isImpact = false;
+    })
+
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
       inCell.rectColor = color;
       inCell.rectTransparency = transparency;
-      inCell.isImpact = false;
     })
 
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.rectColor = color;
       outCell.rectTransparency = transparency;
-      outCell.isImpact = false;
     })
   }
 
@@ -131,7 +147,6 @@ export default class Impact {
       const impact = inCell.value / divisor;
       inCell.impact = round(impact * 100, 2);
       inCell.rectTransparency = abs(1 - impact);
-      inCell.isImpact = true;
     })
 
     if (n == 1) {
@@ -175,7 +190,6 @@ export default class Impact {
         outCell.rectTransparency = abs(1 - impact);
         outCell.rectColor = 'green';
       }
-      outCell.isImpact = true;
     })
 
     if (n == 1) {

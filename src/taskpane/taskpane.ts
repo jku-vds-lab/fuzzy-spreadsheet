@@ -239,16 +239,26 @@ async function spread() {
 }
 
 async function removeShapesFromReferenceCell() {
+
+  cells.forEach((cell: CellProperties) => {
+    cell.isImpact = false;
+    cell.isInputRelationship = false;
+    cell.isOutputRelationship = false;
+    cell.isLikelihood = false;
+    cell.isSpread = false;
+  })
+
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
-    const range = sheet.getUsedRange(true);
-    range.format.font.color = "black";
-    if (referenceCell != null) {
-      if (referenceCell.address != null) {
-        const cell = sheet.getRange(referenceCell.address);
-        cell.format.fill.clear();
-      }
-    }
+    // const range = sheet.getUsedRange(true);
+    // range.format.font.color = "black";
+    // // should not be removed for everything
+    // if (referenceCell != null) {
+    //   if (referenceCell.address != null) {
+    //     const cell = sheet.getRange(referenceCell.address);
+    //     cell.format.fill.clear();
+    //   }
+    // }
 
     var shapes = sheet.shapes;
     shapes.load("items/$none");

@@ -3,6 +3,8 @@ import CellOperations from '../celloperations';
 import CellProperties from '../cellproperties';
 import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
+import { increment } from 'src/functions/functions';
+import Impact from './impact';
 
 
 export default class Likelihood {
@@ -38,37 +40,49 @@ export default class Likelihood {
 
   public async removeLikelihood() {
 
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isLikelihood = false;
+    })
     await this.commonOps.deleteRectangles();
 
     if (SheetProperties.isImpact) {
 
-      this.commonOps.drawRectangles(this.referenceCell.inputCells);
-      this.commonOps.drawRectangles(this.referenceCell.outputCells);
+      const impact = new Impact(this.referenceCell, this.cells);
+      impact.showImpact();
     }
   }
 
   private showInputLikelihood(cell: CellProperties, i: number) {
 
-    this.commonOps.drawRectangles(cell.inputCells);
-
-    if (i == 1) {
-      return;
-    }
-
     cell.inputCells.forEach((inCell: CellProperties) => {
-      this.showInputLikelihood(inCell, i - 1);
+      if (inCell.isLikelihood) {
+        return;
+      }
+
+      inCell.isLikelihood = true;
+      this.commonOps.drawRectangle(inCell);
+      if (i == 1) {
+        return;
+      } else {
+        this.showInputLikelihood(inCell, i - 1);
+      }
     })
   }
 
   private showOutputLikelihood(cell: CellProperties, i: number) {
-    this.commonOps.drawRectangles(cell.outputCells);
-
-    if (i == 1) {
-      return;
-    }
 
     cell.outputCells.forEach((outCell: CellProperties) => {
-      this.showOutputLikelihood(outCell, i - 1);
+      if (outCell.isLikelihood) {
+        return;
+      }
+
+      outCell.isLikelihood = true;
+      this.commonOps.drawRectangle(outCell);
+      if (i == 1) {
+        return;
+      } else {
+        this.showOutputLikelihood(outCell, i - 1);
+      }
     })
   }
 

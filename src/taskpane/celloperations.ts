@@ -20,7 +20,7 @@ export default class CellOperations {
     this.cells = cells;
     this.referenceCell = referenceCell;
     this.degreeOfNeighbourhood = n;
-    this.impact = new Impact(this.referenceCell);
+    this.impact = new Impact(this.referenceCell, this.cells);
     this.likelihood = new Likelihood(this.cells, this.referenceCell);
     this.spread = new Spread(this.cells, this.referenceCell);
     this.relationship = new Relationship(this.referenceCell);
