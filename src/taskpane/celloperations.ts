@@ -71,8 +71,8 @@ export default class CellOperations {
     this.relationship.removeInputRelationship();
   }
 
-  showOutputRelationship() {
-    this.relationship.showOutputRelationship();
+  showOutputRelationship(n: number) {
+    this.relationship.showOutputRelationship(n);
   }
 
   removeOutputRelationship() {

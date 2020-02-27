@@ -343,7 +343,7 @@ function showOutputRelationship() {
     if (element.checked) {
       blurBackground();
       SheetProperties.isOutputRelationship = true;
-      cellOp.showOutputRelationship();
+      cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isOutputRelationship = false;
       unblurBackground();
