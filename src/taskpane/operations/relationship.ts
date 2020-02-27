@@ -10,8 +10,9 @@ export default class Relationship {
     this.referenceCell = referenceCell;
   }
 
-  showInputRelationship() {
-    this.addInputRelation(this.referenceCell.inputCells);
+  showInputRelationship(n: number) {
+    let colors = new Array<string>('black', 'grey', 'lightgrey');
+    this.addInputRelationRecursively(this.referenceCell.inputCells, n, 0, colors);
   }
 
   showOutputRelationship() {
@@ -43,12 +44,13 @@ export default class Relationship {
     });
   }
 
-  private addInputRelation(cells: CellProperties[]) {
+  private addInputRelation(cells: CellProperties[], color: string) {
 
     Excel.run(async (context) => {
 
-      for (let i = 0; i < cells.length; i++) {
+      let i = 0;
 
+      cells.forEach((cell: CellProperties) => {
         let type: Excel.GeometricShapeType;
         var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
@@ -56,16 +58,34 @@ export default class Relationship {
         let triangle = shapes.addGeometricShape(type);
         triangle.name = "Input" + i;
         triangle.rotation = 90;
-        triangle.left = cells[i].left;
-        triangle.top = cells[i].top + cells[i].height / 4;
+        triangle.left = cell.left;
+        triangle.top = cell.top + cell.height / 4;
         triangle.height = 3;
         triangle.width = 6;
         triangle.lineFormat.weight = 0;
-        triangle.lineFormat.color = 'black';
-        triangle.fill.setSolidColor('black');
-      }
+        triangle.lineFormat.color = color;
+        triangle.fill.setSolidColor(color);
+        i++;
+      })
 
       await context.sync();
+    })
+  }
+
+  private addInputRelationRecursively(cells: CellProperties[], n: number, colorIndex: number, colors: string[]) {
+
+    this.addInputRelation(cells, colors[colorIndex]);
+
+    if (n == 1) {
+      return;
+    }
+
+    n = n - 1;
+    colorIndex = colorIndex + 1;
+
+    cells.forEach((cell: CellProperties) => {
+
+      this.addInputRelationRecursively(cell.inputCells, n, colorIndex, colors);
     })
   }
 

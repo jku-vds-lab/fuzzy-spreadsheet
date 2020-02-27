@@ -63,8 +63,8 @@ export default class CellOperations {
     await this.spread.removeSpread();
   }
 
-  showInputRelationship() {
-    this.relationship.showInputRelationship();
+  showInputRelationship(n: number) {
+    this.relationship.showInputRelationship(n);
   }
 
   removeInputRelationship() {

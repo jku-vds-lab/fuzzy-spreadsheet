@@ -325,7 +325,7 @@ function showInputRelationship() {
     if (element.checked) {
       blurBackground();
       SheetProperties.isInputRelationship = true;
-      cellOp.showInputRelationship();
+      cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isInputRelationship = false;
       unblurBackground();
