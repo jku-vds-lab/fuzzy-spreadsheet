@@ -79,19 +79,18 @@ export default class CellOperations {
   }
 
   async showPopUpWindow(address: string) {
-    this.removePopUps();
-    console.log(address);
+    // this.removePopUps();
+    // console.log(address);
 
-    if (SheetProperties.isImpact) {
+    // if (SheetProperties.isImpact) {
 
-      this.cells.forEach(async (cell: CellProperties) => {
-        if (cell.address.includes(address)) {
-          await this.showImpactInPopUp(cell);
-          return;
-        }
-      })
-
-    }
+    //   this.cells.forEach(async (cell: CellProperties) => {
+    //     if (cell.address.includes(address)) {
+    //       await this.showImpactInPopUp(cell);
+    //       return;
+    //     }
+    //   })
+    // }
     // this.cells.forEach((cell: CellProperties) => {
     //   if (cell.address.includes(address)) {
     //     if (cell.spreadRange == null) {

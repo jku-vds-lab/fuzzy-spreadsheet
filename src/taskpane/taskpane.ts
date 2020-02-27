@@ -107,6 +107,8 @@ async function markAsReferenceCell() {
       removeShapesFromReferenceCell();
     }
 
+    clearPreviousReferenceCell();
+
     let range: Excel.Range;
     Excel.run(async context => {
 
@@ -250,16 +252,6 @@ async function removeShapesFromReferenceCell() {
 
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
-    // const range = sheet.getUsedRange(true);
-    // range.format.font.color = "black";
-    // // should not be removed for everything
-    // if (referenceCell != null) {
-    //   if (referenceCell.address != null) {
-    //     const cell = sheet.getRange(referenceCell.address);
-    //     cell.format.fill.clear();
-    //   }
-    // }
-
     var shapes = sheet.shapes;
     var charts = sheet.charts;
     shapes.load("items/$none");
@@ -277,7 +269,24 @@ async function removeShapesFromReferenceCell() {
   });
 }
 
+async function clearPreviousReferenceCell() {
+
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    if (referenceCell != null) {
+      if (referenceCell.address != null) {
+        const cell = sheet.getRange(referenceCell.address);
+        cell.format.fill.clear();
+      }
+    }
+    await context.sync();
+  })
+}
+
 async function removeAll() {
+
+  clearPreviousReferenceCell();
 
   var element1 = <HTMLInputElement>document.getElementById("impact");
   var element2 = <HTMLInputElement>document.getElementById("likelihood");
@@ -339,12 +348,10 @@ function showInputRelationship() {
     var element = <HTMLInputElement>document.getElementById("inputRelationship");
 
     if (element.checked) {
-      // blurBackground();
       SheetProperties.isInputRelationship = true;
       cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isInputRelationship = false;
-      // unblurBackground();
       cellOp.removeInputRelationship();
     }
   } catch (error) {
@@ -357,83 +364,16 @@ function showOutputRelationship() {
     var element = <HTMLInputElement>document.getElementById("outputRelationship");
 
     if (element.checked) {
-      // blurBackground();
       SheetProperties.isOutputRelationship = true;
       cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isOutputRelationship = false;
-      // unblurBackground();
       cellOp.removeOutputRelationship();
     }
   } catch (error) {
     console.error(error);
   }
 }
-
-function blurBackground() {
-  try {
-    Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const range = sheet.getUsedRange(true);
-      range.format.font.color = "grey";
-
-      let specialRange = sheet.getRange(referenceCell.address);
-      specialRange.format.font.color = "black";
-
-      referenceCell.inputCells.forEach((cell: CellProperties) => {
-        specialRange = sheet.getRange(cell.address);
-        specialRange.format.font.color = "black";
-      })
-
-      referenceCell.outputCells.forEach((cell: CellProperties) => {
-        specialRange = sheet.getRange(cell.address);
-        specialRange.format.font.color = "black";
-      })
-      return context.sync();
-    })
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function unblurBackground() {
-
-  Excel.run(function (context) {
-
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    const range = sheet.getUsedRange(true);
-    range.format.font.color = "black";
-
-    return context.sync();
-  })
-}
-
-
-function protectSheet() {
-  return Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    sheet.load("protection/protected");
-    return context.sync().then(function () {
-      if (!sheet.protection.protected) {
-        console.log("Protecting the sheet");
-        sheet.protection.protect();
-      }
-    });
-  });
-}
-function unprotectSheet() {
-  return Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    sheet.load("protection/protected");
-    return context.sync().then(function () {
-      if (sheet.protection.protected) {
-        console.log("Unprotecting the sheet");
-        sheet.protection.unprotect();
-      }
-    });
-  });
-}
-
 
 var eventResult;
 
