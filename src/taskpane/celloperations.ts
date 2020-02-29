@@ -80,24 +80,37 @@ export default class CellOperations {
 
   async addTextBoxOnUpdate(updatedValue: number) {
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
+    try {
 
-      let text = updatedValue.toPrecision(1).toString();
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      let textbox = sheet.shapes.addTextBox(text);
-      textbox.name = "Update";
-      textbox.left = this.referenceCell.left;
-      textbox.top = this.referenceCell.top;
-      textbox.height = this.referenceCell.height;
-      textbox.width = this.referenceCell.width / 2;
-      textbox.fill.transparency = 1;
-      // textbox.textFrame.horizontalOverflow = "Clip";
+        let text = updatedValue.toPrecision(1).toString();
 
-      textbox.setZOrder(Excel.ShapeZOrder.bringForward);
+        let textbox = sheet.shapes.addTextBox(text);
+        textbox.name = "Update";
+        textbox.left = this.referenceCell.left;
+        textbox.top = this.referenceCell.top;
+        textbox.height = this.referenceCell.height + 2;
+        textbox.width = this.referenceCell.width / 2;
+        textbox.lineFormat.visible = false;
+        // textbox.fill.transparency = 1;
+        textbox.fill.setSolidColor('red');
+        // textbox.setZOrder(Excel.ShapeZOrder.bringForward);
 
-      await context.sync();
-    });
+        // let arrow = sheet.shapes.addLine(this.referenceCell.left, this.referenceCell.top, this.referenceCell.left, this.referenceCell.top + 20);
+        // arrow.name = 'Arrow';
+        // arrow.lineFormat.weight = 10;
+        // arrow.lineFormat.color = 'red';
+        // arrow.line.endArrowheadStyle = "Triangle";
+        // arrow.setZOrder(Excel.ShapeZOrder.bringForward);
+        await context.sync();
+      });
+
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async showPopUpWindow(address: string) {
