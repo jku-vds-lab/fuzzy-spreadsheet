@@ -23,13 +23,9 @@ Office.initialize = () => {
   document.getElementById("first").onchange = first;
   document.getElementById("second").onchange = second;
   document.getElementById("third").onchange = third;
+  document.getElementById("useNewValues").onclick = useNewValues;
+  document.getElementById("dismissValues").onclick = dismissValues;
 }
-
-var cellOp: CellOperations;
-var cellProp = new CellProperties();
-var cells: CellProperties[];
-var referenceCell: CellProperties = null;
-var isSheetParsed = false;
 
 Excel.run(function (context) {
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
@@ -44,49 +40,81 @@ Excel.run(function (context) {
 }).catch(errorHandlerFunction);
 
 
+function useNewValues() {
+  SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas, true);
+}
+
+async function dismissValues() {
+  // Error so far
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    const range = sheet.getUsedRange();
+    const values = new Array<any>();
+
+    SheetProperties.cells.forEach((cell: CellProperties) => {
+      values.push(cell.value);
+    })
+
+    range.values = [values];
+    await context.sync();
+  });
+}
+
 async function handleDataChanged() {
 
-  if (referenceCell != null) {
-    console.log('Address of reference cell: ' + referenceCell.address);
+  console.log('Registered Data Change');
+
+  if (SheetProperties.referenceCell == null) {
+    console.log('Returning because reference cell is null');
+    return;
   }
 
-  await cellProp.getRangeProperties(referenceCell, cells); // get the increase here and draw a glyph on it
-  let updatedValue = referenceCell.whatIf.value;
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    const range = sheet.getUsedRange(true);
+    range.load(['formulas', 'values']);
+    await context.sync();
+    SheetProperties.newValues = range.values;
+    SheetProperties.newFormulas = range.formulas;
+  });
+
+  SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
+
+  SheetProperties.cellProp.calculateUpdatedNumber(SheetProperties.referenceCell);
+
+  if (!SheetProperties.referenceCell.whatIf) {
+    console.log('Returning because no what-if found');
+    return;
+  }
+
+  const updatedValue = SheetProperties.referenceCell.whatIf.value;
+
 
   if (updatedValue == 0) {
-    // no change
-  } else {
-    console.log("CHANGE: " + updatedValue);
-    Excel.run(function (context) {
-
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const cell = sheet.getRange(referenceCell.address);
-      let color = 'grey';
-      if (updatedValue < 0) {
-        color = 'red';
-      } else {
-        color = 'green';
-      }
-      cell.format.fill.color = color;
-      return context.sync();
-    });
+    console.log('Returning because updated value was zero');
+    return;
   }
+
+  console.log("CHANGE: " + updatedValue);
+
+  await SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
+
   displayOptions(); // at the moment it is overwriting this value
-  SheetProperties.temp = 0;
 }
 
 
 async function parseSheet() {
 
-  isSheetParsed = true;
+  SheetProperties.isSheetParsed = true;
 
   try {
     disableInputs();
     console.log("Start parsing the sheet");
 
-    cellProp = new CellProperties();
-    cells = await cellProp.getCellsProperties(); // needs to be optimised
-    cellProp.getRelationshipOfCells(cells);
+    SheetProperties.cellProp = new CellProperties();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cells = await SheetProperties.cellProp.getCells(); // needs to be optimised
+    SheetProperties.cellProp.getRelationshipOfCells();
 
     console.log('Done parsing the sheet');
     enableInputs();
@@ -99,7 +127,7 @@ async function parseSheet() {
 async function markAsReferenceCell() {
   try {
 
-    if (!isSheetParsed) {
+    if (!SheetProperties.isSheetParsed) {
       await parseSheet();
     }
 
@@ -120,9 +148,9 @@ async function markAsReferenceCell() {
       disableInputs();
       console.log('Marking a reference cell');
 
-      referenceCell = cellProp.getReferenceAndNeighbouringCells(cells, range.address);
-      cellProp.checkUncertainty(cells);
-      cellOp = new CellOperations(cells, referenceCell, 1);
+      SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(range.address);
+      SheetProperties.cellProp.checkUncertainty();
+      SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
       SheetProperties.isReferenceCell = true;
 
       console.log('Done Marking a reference cell');
@@ -190,10 +218,10 @@ async function impact() {
 
     if (element.checked) {
       SheetProperties.isImpact = true;
-      cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isImpact = false;
-      await cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
@@ -207,10 +235,10 @@ async function likelihood() {
 
     if (element.checked) {
       SheetProperties.isLikelihood = true;
-      cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
+      SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
-      await cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
@@ -221,7 +249,7 @@ async function spread() {
   try {
 
     if (!SheetProperties.isCheatSheetExist) {
-      await cellOp.createCheatSheet(); // but create it just once
+      await SheetProperties.cellOp.createCheatSheet(); // but create it just once
     }
 
     var element = <HTMLInputElement>document.getElementById("spread");
@@ -229,11 +257,11 @@ async function spread() {
     if (element.checked) {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
-      cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;
-      await cellOp.removeSpread();
+      await SheetProperties.cellOp.removeSpread();
     }
   } catch (error) {
     console.error(error);
@@ -242,7 +270,7 @@ async function spread() {
 
 async function removeShapesFromReferenceCell() {
 
-  cells.forEach((cell: CellProperties) => {
+  SheetProperties.cells.forEach((cell: CellProperties) => {
     cell.isImpact = false;
     cell.isInputRelationship = false;
     cell.isOutputRelationship = false;
@@ -274,9 +302,9 @@ async function clearPreviousReferenceCell() {
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-    if (referenceCell != null) {
-      if (referenceCell.address != null) {
-        const cell = sheet.getRange(referenceCell.address);
+    if (SheetProperties.referenceCell != null) {
+      if (SheetProperties.referenceCell.address != null) {
+        const cell = sheet.getRange(SheetProperties.referenceCell.address);
         cell.format.fill.clear();
       }
     }
@@ -349,10 +377,10 @@ function showInputRelationship() {
 
     if (element.checked) {
       SheetProperties.isInputRelationship = true;
-      cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isInputRelationship = false;
-      cellOp.removeInputRelationship();
+      SheetProperties.cellOp.removeInputRelationship();
     }
   } catch (error) {
     console.error(error);
@@ -365,10 +393,10 @@ function showOutputRelationship() {
 
     if (element.checked) {
       SheetProperties.isOutputRelationship = true;
-      cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isOutputRelationship = false;
-      cellOp.removeOutputRelationship();
+      SheetProperties.cellOp.removeOutputRelationship();
     }
   } catch (error) {
     console.error(error);
@@ -389,7 +417,7 @@ Excel.run(function (context) {
 
 async function handleSelectionChange(event) {
   if (SheetProperties.isReferenceCell) {
-    await cellOp.showPopUpWindow(event.address);
+    await SheetProperties.cellOp.showPopUpWindow(event.address);
   }
 }
 

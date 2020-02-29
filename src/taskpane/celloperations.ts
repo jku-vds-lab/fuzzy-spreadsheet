@@ -78,6 +78,28 @@ export default class CellOperations {
     this.relationship.removeOutputRelationship();
   }
 
+  async addTextBoxOnUpdate(updatedValue: number) {
+
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+
+      let text = updatedValue.toPrecision(1).toString();
+
+      let textbox = sheet.shapes.addTextBox(text);
+      textbox.name = "Update";
+      textbox.left = this.referenceCell.left;
+      textbox.top = this.referenceCell.top;
+      textbox.height = this.referenceCell.height;
+      textbox.width = this.referenceCell.width / 2;
+      textbox.fill.transparency = 1;
+      // textbox.textFrame.horizontalOverflow = "Clip";
+
+      textbox.setZOrder(Excel.ShapeZOrder.bringForward);
+
+      await context.sync();
+    });
+  }
+
   async showPopUpWindow(address: string) {
     // this.removePopUps();
     // console.log(address);

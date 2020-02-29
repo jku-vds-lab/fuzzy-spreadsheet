@@ -1,3 +1,6 @@
+import CellOperations from "./celloperations";
+import CellProperties from "./cellproperties";
+
 export default class SheetProperties {
 
   static isInputRelationship: boolean = false;
@@ -8,5 +11,11 @@ export default class SheetProperties {
   static isReferenceCell: boolean = false;
   static degreeOfNeighbourhood: number = 1;
   static isCheatSheetExist: boolean = false;
-  static temp: number = 0;
+  static cellOp: CellOperations;
+  static cellProp = new CellProperties();
+  static cells: CellProperties[];
+  static referenceCell: CellProperties = null;
+  static isSheetParsed = false;
+  static newValues: any[][];
+  static newFormulas: any[][];
 }
