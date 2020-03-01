@@ -84,21 +84,29 @@ export default class Spread {
 
   public async createNewSheet(isDeleteSheet: boolean = false) {
 
+    let isCreateNewSheet = true;
+
     await Excel.run(async (context) => {
 
-      let cheatsheet: Excel.Worksheet;
+      let cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
+      await context.sync();
 
-      if (isDeleteSheet) {
 
-        cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
-        await context.sync();
+      if (!cheatsheet.isNullObject) {
 
-        if (!cheatsheet.isNullObject) {
+        isCreateNewSheet = false;
+
+        if (isDeleteSheet) {
           cheatsheet.delete();
+          isCreateNewSheet = true;
         }
       }
 
-      cheatsheet = context.workbook.worksheets.add(this.sheetName);
+      if (isCreateNewSheet) {
+
+        cheatsheet = context.workbook.worksheets.add(this.sheetName);
+      }
+
       await context.sync();
     });
   }
