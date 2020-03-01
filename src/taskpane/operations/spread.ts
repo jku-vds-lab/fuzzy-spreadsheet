@@ -62,10 +62,6 @@ export default class Spread {
 
     await this.addValuesToSheet(values);
 
-    this.rangeAddresses.forEach((range: Excel.Range) => {
-      console.log(range.address);
-    })
-
     let index = 0;
 
     this.cells.forEach((cell: CellProperties) => {
@@ -155,9 +151,9 @@ export default class Spread {
 
       await context.sync();
     })
-  }
 
-  //  cell.spreadRange = range.address;
+    return this.rangeAddresses;
+  }
 
   private showInputSpread(cells: CellProperties[], i: number) {
 
@@ -196,7 +192,7 @@ export default class Spread {
     })
   }
 
-  private addVarianceInfo() {
+  public addVarianceInfo() {
 
     try {
       for (let i = 0; i < this.cells.length; i++) {
@@ -210,7 +206,7 @@ export default class Spread {
     }
   }
 
-  private drawLineChart(cell: CellProperties) {
+  public drawLineChart(cell: CellProperties, color: string = null, lineWeight: number = 2, chartName: string = 'Chart') {
 
     if (cell.spreadRange == null) {
       console.log('Returning because spreadrange is null');
@@ -234,8 +230,12 @@ export default class Spread {
 
         chart.setPosition(cell.address, cell.address);
         // only if chatt type is line, if it is column, use the fill
-        chart.series.getItemAt(0).format.line.color = 'orange';
-        chart.series.getItemAt(0).format.line.weight = 2;
+        if (color != null) {
+          chart.series.getItemAt(0).format.line.color = color;
+        }
+
+        chart.name = chartName;
+        chart.series.getItemAt(0).format.line.weight = lineWeight;
         chart.left = cell.left + 0.2 * cell.width;
         chart.title.visible = false;
         chart.legend.visible = false;

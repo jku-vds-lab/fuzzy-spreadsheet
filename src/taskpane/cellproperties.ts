@@ -109,6 +109,7 @@ export default class CellProperties {
 
   updateNewValues(newValues: any[][], newFormulas: any[][], isUpdate: boolean = false) {
 
+    console.log('Update Values');
     try {
 
       this.newCells = new Array<CellProperties>();
@@ -148,22 +149,8 @@ export default class CellProperties {
     } catch (error) {
       console.log('Error: ' + error);
     }
-  }
 
-  async calculateUpdatedNumber(referenceCell: CellProperties) {
-    let i = 0;
-    this.newCells.forEach(async (newCell: CellProperties) => {
-
-
-      if (referenceCell.id == newCell.id) {
-        console.log('New Reference Cell: ', newCell);
-        referenceCell.whatIf = new WhatIf();
-        referenceCell.whatIf.value = newCell.value - referenceCell.value;
-        console.log('Change is value here: ' + referenceCell.whatIf.value);
-        return;
-      }
-      i++;
-    })
+    return this.newCells;
   }
 
   private convertIdToIndices(id: string) {

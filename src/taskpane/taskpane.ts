@@ -1,6 +1,7 @@
 import CellOperations from './celloperations';
 import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
+import WhatIf from './operations/whatif';
 // C:\Windows\SysWOW64\F12
 
 /*
@@ -28,11 +29,6 @@ Office.initialize = () => {
 }
 
 Excel.run(function (context) {
-
-  // if (SheetProperties.referenceCell == null) {
-  //   console.log('Returning because reference cell is null');
-  //   return;
-  // }
 
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
   eventResult = worksheet.onChanged.add(handleDataChanged);
@@ -68,7 +64,11 @@ async function dismissValues() {
 
 async function handleDataChanged() {
 
+
+  console.log('Registered data changed');
+
   if (SheetProperties.referenceCell == null) {
+    console.log('Returning because reference cell is null');
     return;
   }
 
@@ -81,27 +81,33 @@ async function handleDataChanged() {
     SheetProperties.newFormulas = range.formulas;
   });
 
-  SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
+  let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
 
-  await SheetProperties.cellProp.calculateUpdatedNumber(SheetProperties.referenceCell);
+  console.log('Updated values');
+
+  const whatif = new WhatIf();
+  whatif.setNewCells(newCells);
+
+  console.log('Calculating updated number');
+
+  await whatif.calculateUpdatedNumber(SheetProperties.referenceCell);
 
   if (!SheetProperties.referenceCell.whatIf) {
-    console.log('Returning because no what-if found');
+    console.log('Returning because what if is null');
     return;
   }
 
   const updatedValue = SheetProperties.referenceCell.whatIf.value;
 
-
   if (updatedValue == 0) {
-    return;
+    console.log('No update in value');
+  } else {
+    console.log("CHANGE: " + updatedValue);
+    await SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
   }
 
-  console.log("CHANGE: " + updatedValue);
+  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
 
-  await SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
-
-  displayOptions(); // at the moment it is overwriting this value
 }
 
 
@@ -249,10 +255,6 @@ async function likelihood() {
 
 async function spread() {
   try {
-
-    // if (!SheetProperties.isCheatSheetExist) {
-    //   await SheetProperties.cellOp.createNewSheet(); // but create it just once
-    // }
 
     var element = <HTMLInputElement>document.getElementById("spread");
 
