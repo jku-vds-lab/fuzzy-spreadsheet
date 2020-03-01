@@ -85,17 +85,34 @@ export default class CellOperations {
       await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-        let text = updatedValue.toPrecision(1).toString();
+        const oldTextbox = sheet.shapes;
+        oldTextbox.load("items/name");
+        await context.sync().then(function () {
+          oldTextbox.items.forEach(function (c) {
+            if (c.name == 'Update')
+              c.delete();
+          });
+        });
 
-        let textbox = sheet.shapes.addTextBox(text);
+        const text = updatedValue.toPrecision(1).toString();
+
+        let color = 'green';
+        if (updatedValue < 0) {
+          color = 'red';
+        }
+
+        const textbox = sheet.shapes.addTextBox(text);
         textbox.name = "Update";
         textbox.left = this.referenceCell.left;
         textbox.top = this.referenceCell.top;
-        textbox.height = this.referenceCell.height + 2;
+        textbox.height = this.referenceCell.height + 4;
         textbox.width = this.referenceCell.width / 2;
         textbox.lineFormat.visible = false;
-        // textbox.fill.transparency = 1;
-        textbox.fill.setSolidColor('red');
+        textbox.fill.setSolidColor(color);
+        textbox.fill.transparency = 0.5;
+        textbox.textFrame.verticalAlignment = "Distributed";
+        // textbox.textFrame.horizontalOverflow = "Clip";
+        // textbox.textFrame.verticalOverflow = "Clip";
         // textbox.setZOrder(Excel.ShapeZOrder.bringForward);
 
         // let arrow = sheet.shapes.addLine(this.referenceCell.left, this.referenceCell.top, this.referenceCell.left, this.referenceCell.top + 20);

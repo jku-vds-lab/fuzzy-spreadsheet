@@ -66,29 +66,31 @@ export default class CellProperties {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      // range.load(["formulas", "values"]);
+      const range = sheet.getUsedRange(true);
+      range.load(['formulas', 'values']);
+      await context.sync();
 
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
           let cell = sheet.getCell(i, j);
-          cell.load(["formulas", "top", "left", "height", "width", "address", "values"]);
+          cell.load(["top", "left", "height", "width", "address"]);
 
           await context.sync();
 
-          if (cell.values[0][0] == "") {
+          if (range.values[i][j] == "") {
             continue;
           }
 
           let cellProperties = new CellProperties();
           cellProperties.id = "R" + i + "C" + j;
           cellProperties.address = cell.address;
-          cellProperties.value = cell.values[0][0];
+          cellProperties.value = range.values[i][j];
           cellProperties.top = cell.top;
           cellProperties.left = cell.left;
           cellProperties.height = cell.height;
           cellProperties.width = cell.width;
-          cellProperties.formula = cell.formulas[0][0];
+          cellProperties.formula = range.formulas[i][j];
           cellProperties.degreeToFocus = -1;
 
           if (cellProperties.formula == cellProperties.value) {

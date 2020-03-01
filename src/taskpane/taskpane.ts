@@ -28,6 +28,12 @@ Office.initialize = () => {
 }
 
 Excel.run(function (context) {
+
+  // if (SheetProperties.referenceCell == null) {
+  //   console.log('Returning because reference cell is null');
+  //   return;
+  // }
+
   var worksheet = context.workbook.worksheets.getActiveWorksheet();
   eventResult = worksheet.onChanged.add(handleDataChanged);
 
