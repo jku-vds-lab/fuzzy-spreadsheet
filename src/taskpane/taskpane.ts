@@ -250,16 +250,17 @@ async function likelihood() {
 async function spread() {
   try {
 
-    if (!SheetProperties.isCheatSheetExist) {
-      await SheetProperties.cellOp.createCheatSheet(); // but create it just once
-    }
+    // if (!SheetProperties.isCheatSheetExist) {
+    //   await SheetProperties.cellOp.createNewSheet(); // but create it just once
+    // }
 
     var element = <HTMLInputElement>document.getElementById("spread");
 
     if (element.checked) {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
-      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.createNewSheet();
+      await SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;

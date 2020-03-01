@@ -1,4 +1,3 @@
-import CellOperations from "./celloperations";
 import SheetProperties from "./sheetproperties";
 import WhatIf from "./operations/whatif";
 import Spread from "./operations/spread";
@@ -161,22 +160,6 @@ export default class CellProperties {
         referenceCell.whatIf = new WhatIf();
         referenceCell.whatIf.value = newCell.value - referenceCell.value;
         console.log('Change is value here: ' + referenceCell.whatIf.value);
-
-        if (newCell.isUncertain) {
-          newCell.variance = this.newCells[i + 1].value;
-        }
-
-        console.log('New cell variance: ' + newCell.variance);
-
-        if (referenceCell.variance == newCell.variance) {
-          console.log('No change in variance');
-          return;
-        } else {
-          const spread = new Spread(this.newCells, newCell, 'MyCheatSheet');
-          await spread.createCheatSheet();
-          spread.showSpread(1);
-        }
-        // createNewGraph on the reference Cell
         return;
       }
       i++;

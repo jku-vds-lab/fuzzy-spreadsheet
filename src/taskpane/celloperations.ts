@@ -34,8 +34,9 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  async createCheatSheet() {
-    await this.spread.createCheatSheet();
+  async createNewSheet() {
+    console.log('Create New Sheet');
+    await this.spread.createNewSheet();
   }
 
   showImpact(n: number) {
@@ -54,8 +55,8 @@ export default class CellOperations {
     await this.likelihood.removeLikelihood(n);
   }
 
-  showSpread(n: number) {
-    this.spread.showSpread(n);
+  async showSpread(n: number) {
+    await this.spread.showSpread(n);
   }
 
   async removeSpread() {
