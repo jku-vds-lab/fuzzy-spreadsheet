@@ -61,6 +61,7 @@ export default class CellProperties {
   async getCells() {
 
     this.cells = new Array<CellProperties>();
+    let cellRanges = new Array<Excel.Range>();
 
     await Excel.run(async (context) => {
 
@@ -70,6 +71,7 @@ export default class CellProperties {
       range.load(['formulas', 'values']);
       await context.sync();
 
+
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
@@ -78,33 +80,49 @@ export default class CellProperties {
           }
 
           let cell = sheet.getCell(i, j);
-          cell.load(["top", "left", "address"]); // compute these three as well
-
-          await context.sync();
-
-          let cellProperties = new CellProperties();
-          cellProperties.id = "R" + i + "C" + j;
-          cellProperties.address = cell.address;
-          cellProperties.value = range.values[i][j];
-          cellProperties.top = cell.top;
-          cellProperties.left = cell.left;
-          cellProperties.height = 15;
-          cellProperties.width = 75.5;
-          cellProperties.formula = range.formulas[i][j];
-          cellProperties.degreeToFocus = -1;
-
-          if (cellProperties.formula == cellProperties.value) {
-            cellProperties.formula = "";
-          }
-
-          cellProperties.inputCells = new Array<CellProperties>();
-          cellProperties.outputCells = new Array<CellProperties>();
-          this.cells.push(cellProperties);
+          cellRanges.push(cell.load(["top", "left", "address"]));
         }
       }
-      // context.sync();
+      await context.sync();
+
+      this.updateCellsValues(range, cellRanges);
+
     });
     return this.cells;
+  }
+
+  updateCellsValues(range: Excel.Range, cellRanges: Excel.Range[]) {
+
+    let index = 0;
+
+    for (let i = 0; i < 20; i++) {
+      for (let j = 0; j < 18; j++) {
+
+        if (range.values[i][j] == "") {
+          continue;
+        }
+
+        let cellProperties = new CellProperties();
+        cellProperties.id = "R" + i + "C" + j;
+        cellProperties.address = cellRanges[index].address;
+        cellProperties.value = range.values[i][j];
+        cellProperties.top = cellRanges[index].top;
+        cellProperties.left = cellRanges[index].left;
+        cellProperties.height = 15;
+        cellProperties.width = 75.5;
+        cellProperties.formula = range.formulas[i][j];
+        cellProperties.degreeToFocus = -1;
+
+        if (cellProperties.formula == cellProperties.value) {
+          cellProperties.formula = "";
+        }
+
+        cellProperties.inputCells = new Array<CellProperties>();
+        cellProperties.outputCells = new Array<CellProperties>();
+        this.cells.push(cellProperties);
+        index++;
+      }
+    }
   }
 
   updateNewValues(newValues: any[][], newFormulas: any[][], isUpdate: boolean = false) {
