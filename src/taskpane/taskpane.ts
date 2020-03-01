@@ -68,10 +68,7 @@ async function dismissValues() {
 
 async function handleDataChanged() {
 
-  console.log('Registered Data Change');
-
   if (SheetProperties.referenceCell == null) {
-    console.log('Returning because reference cell is null');
     return;
   }
 
@@ -86,7 +83,7 @@ async function handleDataChanged() {
 
   SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
 
-  SheetProperties.cellProp.calculateUpdatedNumber(SheetProperties.referenceCell);
+  await SheetProperties.cellProp.calculateUpdatedNumber(SheetProperties.referenceCell);
 
   if (!SheetProperties.referenceCell.whatIf) {
     console.log('Returning because no what-if found');
@@ -97,7 +94,6 @@ async function handleDataChanged() {
 
 
   if (updatedValue == 0) {
-    console.log('Returning because updated value was zero');
     return;
   }
 
@@ -155,7 +151,7 @@ async function markAsReferenceCell() {
       console.log('Marking a reference cell');
 
       SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(range.address);
-      SheetProperties.cellProp.checkUncertainty();
+      SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
       SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
       SheetProperties.isReferenceCell = true;
 

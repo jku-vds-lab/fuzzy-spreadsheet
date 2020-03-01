@@ -7,18 +7,20 @@ export default class Spread {
   private chartType: string;
   private cells: CellProperties[];
   private referenceCell: CellProperties;
+  private sheetName: string;
 
-  constructor(cells: CellProperties[], referenceCell: CellProperties) {
+  constructor(cells: CellProperties[], referenceCell: CellProperties, sheetName: string = 'CheatSheet') {
     this.cells = cells;
     this.referenceCell = referenceCell;
+    this.sheetName = sheetName;
   }
 
   public showSpread(n: number) {
 
     this.drawLineChart(this.referenceCell);
 
-    this.showInputSpread(this.referenceCell.inputCells, n);
-    this.showOutputSpread(this.referenceCell.outputCells, n);
+    // this.showInputSpread(this.referenceCell.inputCells, n);
+    // this.showOutputSpread(this.referenceCell.outputCells, n);
   }
 
   public async removeSpread() {
@@ -45,16 +47,16 @@ export default class Spread {
     this.addVarianceInfo();
     await Excel.run(async (context) => {
 
-      let cheatsheet = context.workbook.worksheets.getItemOrNullObject("CheatSheet");
+      let cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
       await context.sync();
 
       if (!cheatsheet.isNullObject) {
         cheatsheet.delete();
       }
 
-      SheetProperties.isCheatSheetExist = true;
+      // SheetProperties.isCheatSheetExist = true;
 
-      cheatsheet = context.workbook.worksheets.add("CheatSheet");
+      cheatsheet = context.workbook.worksheets.add(this.sheetName);
       let rowIndex = -1;
       // let min = mean - variance * 2;
       // let max = mean + variance * 2;
@@ -143,17 +145,22 @@ export default class Spread {
 
   private addVarianceInfo() {
 
-    for (let i = 0; i < this.cells.length; i++) {
-      this.cells[i].variance = 0;
-      if (this.cells[i].isUncertain) {
-        this.cells[i].variance = this.cells[i + 1].value;
+    try {
+      for (let i = 0; i < this.cells.length; i++) {
+        this.cells[i].variance = 0;
+        if (this.cells[i].isUncertain) {
+          this.cells[i].variance = this.cells[i + 1].value;
+        }
       }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   private drawLineChart(cell: CellProperties) {
 
     if (cell.spreadRange == null) {
+      console.log('Returning because spreadrange is null');
       return;
     }
 
@@ -161,7 +168,7 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+        const cheatSheet = context.workbook.worksheets.getItem(this.sheetName);
         const dataRange = cheatSheet.getRange(cell.spreadRange);
 
         let chart: Excel.Chart;
@@ -173,6 +180,9 @@ export default class Spread {
         }
 
         chart.setPosition(cell.address, cell.address);
+        // only if chatt type is line, if it is column, use the fill
+        chart.series.getItemAt(0).format.line.color = 'orange';
+        chart.series.getItemAt(0).format.line.weight = 2;
         chart.left = cell.left + 0.2 * cell.width;
         chart.title.visible = false;
         chart.legend.visible = false;
@@ -189,7 +199,7 @@ export default class Spread {
         chart.format.fill.clear();
         chart.format.border.clear();
         return context.sync().then(() => { console.log('Finished drawing the chart') }).
-          catch(() => console.log('Failed to draw a chart'));
+          catch((reason: any) => console.log('Failed to draw a chart: ' + reason));
       });
     } catch (error) {
       console.log('Could not draw chart because of the following error', error);

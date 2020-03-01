@@ -1,6 +1,7 @@
 import CellOperations from "./celloperations";
 import SheetProperties from "./sheetproperties";
 import WhatIf from "./operations/whatif";
+import Spread from "./operations/spread";
 
 /* global console, Excel */
 
@@ -73,14 +74,14 @@ export default class CellProperties {
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
-          let cell = sheet.getCell(i, j);
-          cell.load(["top", "left", "height", "width", "address"]);
-
-          await context.sync();
-
           if (range.values[i][j] == "") {
             continue;
           }
+
+          let cell = sheet.getCell(i, j);
+          cell.load(["top", "left", "address"]); // compute these three as well
+
+          await context.sync();
 
           let cellProperties = new CellProperties();
           cellProperties.id = "R" + i + "C" + j;
@@ -88,8 +89,8 @@ export default class CellProperties {
           cellProperties.value = range.values[i][j];
           cellProperties.top = cell.top;
           cellProperties.left = cell.left;
-          cellProperties.height = cell.height;
-          cellProperties.width = cell.width;
+          cellProperties.height = 15;
+          cellProperties.width = 75.5;
           cellProperties.formula = range.formulas[i][j];
           cellProperties.degreeToFocus = -1;
 
@@ -136,12 +137,13 @@ export default class CellProperties {
         }
       }, this.newCells);
 
+      this.checkUncertainty(this.newCells);
       // check if the reference cell is uncertain or not
 
       if (isUpdate) {
         console.log('Update everything');
         this.cells = this.newCells;
-        this.checkUncertainty();
+
         this.getRelationshipOfCells();
       }
     } catch (error) {
@@ -149,10 +151,10 @@ export default class CellProperties {
     }
   }
 
-  // Check for variance too
-  calculateUpdatedNumber(referenceCell: CellProperties) {
+  async calculateUpdatedNumber(referenceCell: CellProperties) {
+    let i = 0;
+    this.newCells.forEach(async (newCell: CellProperties) => {
 
-    this.newCells.forEach((newCell: CellProperties) => {
 
       if (referenceCell.id == newCell.id) {
         console.log('New Reference Cell: ', newCell);
@@ -160,13 +162,24 @@ export default class CellProperties {
         referenceCell.whatIf.value = newCell.value - referenceCell.value;
         console.log('Change is value here: ' + referenceCell.whatIf.value);
 
+        if (newCell.isUncertain) {
+          newCell.variance = this.newCells[i + 1].value;
+        }
+
+        console.log('New cell variance: ' + newCell.variance);
+
         if (referenceCell.variance == newCell.variance) {
           console.log('No change in variance');
           return;
+        } else {
+          const spread = new Spread(this.newCells, newCell, 'MyCheatSheet');
+          await spread.createCheatSheet();
+          spread.showSpread(1);
         }
         // createNewGraph on the reference Cell
         return;
       }
+      i++;
     })
   }
 
@@ -291,11 +304,11 @@ export default class CellProperties {
     return referenceCell;
   }
 
-  checkUncertainty() {
+  checkUncertainty(cells: CellProperties[]) {
 
-    this.checkAverageValues(this.cells);
+    this.checkAverageValues(cells);
 
-    this.cells.forEach((cell: CellProperties) => {
+    cells.forEach((cell: CellProperties) => {
 
       //if input cells are uncertain then there sum or difference will also be uncertain
       if (cell.formula.includes("SUM")) {
