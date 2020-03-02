@@ -18,7 +18,6 @@ export default class Likelihood {
     this.commonOps = new CommonOperations();
   }
 
-
   public showLikelihood(n: number) {
 
     this.addLikelihoodInfo();

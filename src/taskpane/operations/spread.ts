@@ -7,13 +7,19 @@ export default class Spread {
   private chartType: string;
   private cells: CellProperties[];
   private referenceCell: CellProperties;
+  private sheetName: string;
+  private rangeAddresses: Excel.Range[];
 
-  constructor(cells: CellProperties[], referenceCell: CellProperties) {
+  constructor(cells: CellProperties[], referenceCell: CellProperties, sheetName: string = 'CheatSheet') {
     this.cells = cells;
     this.referenceCell = referenceCell;
+    this.sheetName = sheetName;
+    this.rangeAddresses = new Array<Excel.Range>();
   }
 
-  public showSpread(n: number) {
+  public async showSpread(n: number) {
+
+    await this.addSpreadInfoToCells();
 
     this.drawLineChart(this.referenceCell);
 
@@ -40,68 +46,113 @@ export default class Spread {
     });
   }
 
-  public async createCheatSheet() {
+  public async addSpreadInfoToCells() {
 
     this.addVarianceInfo();
-    await Excel.run(async (context) => {
 
-      let cheatsheet = context.workbook.worksheets.getItemOrNullObject("CheatSheet");
-      await context.sync();
+    let values = new Array<Array<number>>();
 
-      if (!cheatsheet.isNullObject) {
-        cheatsheet.delete();
+    this.cells.forEach((cell: CellProperties) => {
+      if (isNaN(cell.value)) {
+        return;
+      }
+      this.addSamplesToCell(cell);
+      values.push(cell.samples);
+    })
+
+    await this.addValuesToSheet(values);
+
+    let index = 0;
+
+    this.cells.forEach((cell: CellProperties) => {
+      if (isNaN(cell.value)) {
+        return;
       }
 
-      SheetProperties.isCheatSheetExist = true;
+      if (this.rangeAddresses[index] == null) {
+        console.log('Returning for cell: ' + cell.address + 'because range is null');
+      }
 
-      cheatsheet = context.workbook.worksheets.add("CheatSheet");
-      let rowIndex = -1;
-      // let min = mean - variance * 2;
-      // let max = mean + variance * 2;
+      cell.spreadRange = this.rangeAddresses[index].address;
+      index++;
+    })
+  }
 
-      for (let c = 0; c < this.cells.length; c++) {
+  public async createNewSheet(isDeleteSheet: boolean = false) {
 
-        if (isNaN(this.cells[c].value)) {
-          continue;
+    let isCreateNewSheet = true;
+
+    await Excel.run(async (context) => {
+
+      let cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
+      await context.sync();
+
+
+      if (!cheatsheet.isNullObject) {
+
+        isCreateNewSheet = false;
+
+        if (isDeleteSheet) {
+          cheatsheet.delete();
+          isCreateNewSheet = true;
         }
+      }
 
-        this.cells[c].samples = new Array<number>();
+      if (isCreateNewSheet) {
 
-        let overallMin = -15;
-        let overallMax = 40;
-        let mean = this.cells[c].value;
-
-        let variance = this.cells[c].variance
-
-        if (variance > 0) {
-          rowIndex++;
-          let sampleSize = (variance * 2) / 50;
-
-          for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
-            this.cells[c].samples.push(jstat.normal.pdf(i, mean, variance));
-            this.cells[c].isLineChart = true;
-          }
-        }
-        else {
-          rowIndex++;
-          for (let i = overallMin; i <= overallMax; i++) {
-            if (i == ceil(this.cells[c].value)) {
-              this.cells[c].samples.push(1);
-            } else {
-              this.cells[c].samples.push(0);
-            }
-          }
-        }
-
-        let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, this.cells[c].samples.length);
-        range.values = [this.cells[c].samples];
-        range.load('address');
-        await context.sync();
-        this.cells[c].spreadRange = range.address;
+        cheatsheet = context.workbook.worksheets.add(this.sheetName);
       }
 
       await context.sync();
     });
+  }
+
+  public addSamplesToCell(cell: CellProperties) {
+
+    let overallMin = -15;
+    let overallMax = 40;
+
+    cell.samples = new Array<number>();
+    const mean = cell.value;
+    const variance = cell.variance;
+
+    if (variance == 0) {
+
+      for (let i = overallMin; i <= overallMax; i++) {
+        if (i == ceil(cell.value)) {
+          cell.samples.push(1);
+        } else {
+          cell.samples.push(0);
+        }
+      }
+    } else {
+      const sampleSize = (variance * 2) / 50;
+
+      for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
+        cell.samples.push(jstat.normal.pdf(i, mean, variance));
+        cell.isLineChart = true;
+      }
+    }
+  }
+
+  public async addValuesToSheet(values: any[][]) {
+
+    await Excel.run(async (context) => {
+      const cheatsheet = context.workbook.worksheets.getItem(this.sheetName);
+      let rowIndex = 0;
+
+      values.forEach((value: number[]) => {
+        let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, value.length);
+        range.values = [value];
+        rowIndex++;
+
+        this.rangeAddresses.push(range.load('address'));
+      })
+
+      await context.sync();
+    })
+
+    return this.rangeAddresses;
   }
 
   private showInputSpread(cells: CellProperties[], i: number) {
@@ -141,19 +192,24 @@ export default class Spread {
     })
   }
 
-  private addVarianceInfo() {
+  public addVarianceInfo() {
 
-    for (let i = 0; i < this.cells.length; i++) {
-      this.cells[i].variance = 0;
-      if (this.cells[i].isUncertain) {
-        this.cells[i].variance = this.cells[i + 1].value;
+    try {
+      for (let i = 0; i < this.cells.length; i++) {
+        this.cells[i].variance = 0;
+        if (this.cells[i].isUncertain) {
+          this.cells[i].variance = this.cells[i + 1].value;
+        }
       }
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  private drawLineChart(cell: CellProperties) {
+  public drawLineChart(cell: CellProperties, color: string = null, lineWeight: number = 2, chartName: string = 'Chart') {
 
     if (cell.spreadRange == null) {
+      console.log('Returning because spreadrange is null');
       return;
     }
 
@@ -161,7 +217,7 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        const cheatSheet = context.workbook.worksheets.getItem("CheatSheet");
+        const cheatSheet = context.workbook.worksheets.getItem(this.sheetName);
         const dataRange = cheatSheet.getRange(cell.spreadRange);
 
         let chart: Excel.Chart;
@@ -173,6 +229,13 @@ export default class Spread {
         }
 
         chart.setPosition(cell.address, cell.address);
+        // only if chatt type is line, if it is column, use the fill
+        if (color != null) {
+          chart.series.getItemAt(0).format.line.color = color;
+        }
+
+        chart.name = chartName;
+        chart.series.getItemAt(0).format.line.weight = lineWeight;
         chart.left = cell.left + 0.2 * cell.width;
         chart.title.visible = false;
         chart.legend.visible = false;
@@ -189,7 +252,7 @@ export default class Spread {
         chart.format.fill.clear();
         chart.format.border.clear();
         return context.sync().then(() => { console.log('Finished drawing the chart') }).
-          catch(() => console.log('Failed to draw a chart'));
+          catch((reason: any) => console.log('Failed to draw a chart: ' + reason));
       });
     } catch (error) {
       console.log('Could not draw chart because of the following error', error);

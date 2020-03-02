@@ -1,5 +1,6 @@
-import CellOperations from "./celloperations";
 import SheetProperties from "./sheetproperties";
+import WhatIf from "./operations/whatif";
+import Spread from "./operations/spread";
 
 /* global console, Excel */
 
@@ -35,6 +36,10 @@ export default class CellProperties {
   public isImpact: boolean = false;
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
+  public whatIf: WhatIf;
+
+  private cells: CellProperties[];
+  private newCells: CellProperties[];
 
   CellProperties() {
     this.id = "";
@@ -50,61 +55,120 @@ export default class CellProperties {
     this.formula = "";
     this.spreadRange = null;
     this.isUncertain = false;
+    this.whatIf = new WhatIf();
   }
 
-  async getRangeProperties(referenceCell: CellProperties, cells: CellProperties[]) {
+  async getCells() {
+
+    this.cells = new Array<CellProperties>();
+    let cellRanges = new Array<Excel.Range>();
+
     await Excel.run(async (context) => {
+
       const sheet = context.workbook.worksheets.getActiveWorksheet();
+
       const range = sheet.getUsedRange(true);
       range.load(['formulas', 'values']);
       await context.sync();
-      this.performLazyUpdate(referenceCell, cells, range.values, range.formulas);
+
+
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 18; j++) {
+
+          if (range.values[i][j] == "") {
+            continue;
+          }
+
+          let cell = sheet.getCell(i, j);
+          cellRanges.push(cell.load(["top", "left", "address"]));
+        }
+      }
+      await context.sync();
+
+      this.updateCellsValues(range, cellRanges);
+
     });
+    return this.cells;
   }
 
-  private performLazyUpdate(referenceCell: CellProperties, cells: CellProperties[], newValues: any[][], newFormulas: any[][]) {
+  updateCellsValues(range: Excel.Range, cellRanges: Excel.Range[]) {
 
-    if (referenceCell == null) {
-      return;
-    }
+    let index = 0;
 
-    let indices = this.convertIdToIndices(referenceCell.id);
-    let rowIndex = indices.rowIndex;
-    let colIndex = indices.colIndex;
-    let oldValue = referenceCell.value;
+    for (let i = 0; i < 20; i++) {
+      for (let j = 0; j < 18; j++) {
 
-    if (referenceCell.value == newValues[rowIndex][colIndex] && referenceCell.formula == newFormulas[rowIndex][colIndex]) {
+        if (range.values[i][j] == "") {
+          continue;
+        }
 
-      if (referenceCell.variance == newValues[rowIndex][colIndex + 1]) {
-        // perform no updates
-        return;
-      } else {
-        console.log('Variance has changed');
-        // Check if Spread is selected
-        // recalculate samples of spread
-        // check if cheat sheet exist
-        // write them in the CheatSheet new range
-        // draw the new graph with a different color
+        let cellProperties = new CellProperties();
+        cellProperties.id = "R" + i + "C" + j;
+        cellProperties.address = cellRanges[index].address;
+        cellProperties.value = range.values[i][j];
+        cellProperties.top = cellRanges[index].top;
+        cellProperties.left = cellRanges[index].left;
+        cellProperties.height = 15;
+        cellProperties.width = 75.5;
+        cellProperties.formula = range.formulas[i][j];
+        cellProperties.degreeToFocus = -1;
+
+        if (cellProperties.formula == cellProperties.value) {
+          cellProperties.formula = "";
+        }
+
+        cellProperties.inputCells = new Array<CellProperties>();
+        cellProperties.outputCells = new Array<CellProperties>();
+        this.cells.push(cellProperties);
+        index++;
       }
     }
+  }
 
-    let newValue = newValues[rowIndex][colIndex];
+  updateNewValues(newValues: any[][], newFormulas: any[][], isUpdate: boolean = false) {
 
-    SheetProperties.temp = newValue - oldValue;
+    console.log('Update Values');
+    try {
 
-    // otherwise perform an update
-    cells.forEach((cell: CellProperties) => {
+      this.newCells = new Array<CellProperties>();
 
-      indices = this.convertIdToIndices(cell.id);
-      rowIndex = indices.rowIndex;
-      colIndex = indices.colIndex;
+      // make a deep copy of the element
+      this.cells.forEach((cell: CellProperties) => {
+        let newCell = new CellProperties();
+        newCell = Object.assign(newCell, cell);
+        newCell.id = cell.id;
+        this.newCells.push(newCell);
+      });
 
-      cell.value = newValues[rowIndex][colIndex];
-      cell.formula = newFormulas[rowIndex][colIndex];
-      if (cell.formula == cell.value) {
-        cell.formula = "";
+      this.newCells.forEach(function (newCell: CellProperties, index) {
+
+        let id = newCell.id;
+        id = id.replace('R', '');
+        let c = id.indexOf('C');
+        const rowIndex = id.substring(0, c);
+        const colIndex = id.substring(c + 1);
+
+        this[index].value = newValues[rowIndex][colIndex];
+        this[index].formula = newFormulas[rowIndex][colIndex];
+        if (this[index].formula == this[index].value) {
+          this[index].formula = "";
+        }
+      }, this.newCells);
+
+      this.checkUncertainty(this.newCells);
+      // check if the reference cell is uncertain or not
+
+      if (isUpdate) {
+        console.log('Update everything');
+        this.cells = this.newCells;
+
+        this.getRelationshipOfCells();
       }
-    })
+    } catch (error) {
+      console.log('Error: ' + error);
+    }
+
+    return this.newCells;
   }
 
   private convertIdToIndices(id: string) {
@@ -117,51 +181,6 @@ export default class CellProperties {
     return { rowIndex: rowIndex, colIndex: colIndex };
   }
 
-  async getCellsProperties(cells = new Array<CellProperties>()) {
-
-    await Excel.run(async (context) => {
-
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-      // range.load(["formulas", "values"]);
-
-      for (let i = 0; i < 20; i++) {
-        for (let j = 0; j < 18; j++) {
-
-          let cell = sheet.getCell(i, j);
-          cell.load(["formulas", "top", "left", "height", "width", "address", "values"]);
-
-          await context.sync();
-
-          if (cell.values[0][0] == "") {
-            continue;
-          }
-
-          let cellProperties = new CellProperties();
-          cellProperties.id = "R" + i + "C" + j;
-          cellProperties.address = cell.address;
-          cellProperties.value = cell.values[0][0];
-          cellProperties.top = cell.top;
-          cellProperties.left = cell.left;
-          cellProperties.height = cell.height;
-          cellProperties.width = cell.width;
-          cellProperties.formula = cell.formulas[0][0];
-          cellProperties.degreeToFocus = -1;
-
-          if (cellProperties.formula == cellProperties.value) {
-            cellProperties.formula = "";
-          }
-
-          cellProperties.inputCells = new Array<CellProperties>();
-          cellProperties.outputCells = new Array<CellProperties>();
-          cells.push(cellProperties);
-        }
-      }
-      // context.sync();
-    });
-    return cells;
-  }
-
   errorHandlerFunction(callback) {
     try {
       callback();
@@ -170,9 +189,9 @@ export default class CellProperties {
     }
   }
 
-  getRelationshipOfCells(cells: CellProperties[]) {
+  getRelationshipOfCells() {
 
-    cells.forEach((cell: CellProperties) => {
+    this.cells.forEach((cell: CellProperties) => {
       // eslint-disable-next-line no-empty
       if (cell.formula == "") {
 
@@ -227,7 +246,7 @@ export default class CellProperties {
             cellRangeAddresses.push(rangeAddress);
           }
 
-          const cellsFromRange = this.getCellsFromRangeAddress(cells, cellRangeAddresses);
+          const cellsFromRange = this.getCellsFromRangeAddress(cellRangeAddresses);
 
 
           cellsFromRange.forEach((cellInRange: CellProperties) => {
@@ -240,15 +259,15 @@ export default class CellProperties {
   }
 
   // can be optimised further
-  private getCellsFromRangeAddress(cells: CellProperties[], cellRangeAddresses: string[]) {
+  private getCellsFromRangeAddress(cellRangeAddresses: string[]) {
 
     let cellsInRange = new Array<CellProperties>();
 
     for (let i = 0; i < cellRangeAddresses.length; i++) {
-      for (let j = 0; j < cells.length; j++) {
+      for (let j = 0; j < this.cells.length; j++) {
 
-        if (cells[j].address.includes(cellRangeAddresses[i])) {
-          cellsInRange.push(cells[j]);
+        if (this.cells[j].address.includes(cellRangeAddresses[i])) {
+          cellsInRange.push(this.cells[j]);
           break;
         }
       }
@@ -257,24 +276,26 @@ export default class CellProperties {
     return cellsInRange;
   }
 
-  getReferenceAndNeighbouringCells(cells: CellProperties[], focusCellAddress: string) {
-    let focusCell = new CellProperties();
+  getReferenceAndNeighbouringCells(referenceCellAddress: string) {
+    let referenceCell = new CellProperties();
 
-    cells.forEach((cell: CellProperties) => {
-      if (cell.address == focusCellAddress) {
-        focusCell = cell;
+    this.cells.forEach((cell: CellProperties) => {
+      if (cell.address == referenceCellAddress) {
+        referenceCell = cell;
       }
     });
 
-    focusCell.degreeToFocus = 0;
+    referenceCell.degreeToFocus = 0;
 
-    this.inCellsDegree(focusCell.inputCells, 1);
-    this.outCellsDegree(focusCell.outputCells, 1);
-    return focusCell;
+    this.inCellsDegree(referenceCell.inputCells, 1);
+    this.outCellsDegree(referenceCell.outputCells, 1);
+    return referenceCell;
   }
 
   checkUncertainty(cells: CellProperties[]) {
+
     this.checkAverageValues(cells);
+
     cells.forEach((cell: CellProperties) => {
 
       //if input cells are uncertain then there sum or difference will also be uncertain

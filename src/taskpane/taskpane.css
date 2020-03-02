@@ -17,9 +17,9 @@ ul {
 }
 
 .ms-welcome__header {
-    padding: 20px;
-    padding-bottom: 30px;
-    padding-top: 100px;
+    padding: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
     display: -webkit-flex;
     display: flex;
     -webkit-flex-direction: column;
@@ -52,7 +52,7 @@ ul {
 }
 
 .ms-welcome__features.ms-List .ms-ListItem {
-    padding-bottom: 20px;
+    padding-bottom: 10px;
     display: -webkit-flex;
     display: flex;
 }
@@ -62,7 +62,7 @@ ul {
 }
 
 .ms-welcome__action.ms-Button--hero {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .ms-Button.ms-Button--hero .ms-Button-label {
