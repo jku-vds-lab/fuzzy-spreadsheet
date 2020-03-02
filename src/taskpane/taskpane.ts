@@ -83,6 +83,12 @@ async function handleDataChanged() {
 
   let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
 
+  newCells.forEach((nC: CellProperties) => {
+    if (nC.id == SheetProperties.referenceCell.id) {
+      console.log('New cell id:' + nC.value);
+    }
+  })
+
   console.log('Updated values');
 
   const whatif = new WhatIf();
@@ -103,11 +109,14 @@ async function handleDataChanged() {
     console.log('No update in value');
   } else {
     console.log("CHANGE: " + updatedValue);
-    await SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
+    SheetProperties.cellOp.deleteUpdateshapes();
+    SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
   }
 
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
-
+  if (SheetProperties.isSpread) {
+    console.log('Computing new spread');
+    await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
+  }
 }
 
 
@@ -121,7 +130,8 @@ async function parseSheet() {
 
     SheetProperties.cellProp = new CellProperties();
     // eslint-disable-next-line require-atomic-updates
-    SheetProperties.cells = await SheetProperties.cellProp.getCells(); // needs to be optimised
+    SheetProperties.cells = await SheetProperties.cellProp.getCells();
+    console.log('Cells', SheetProperties.cells);
     SheetProperties.cellProp.getRelationshipOfCells();
 
     console.log('Done parsing the sheet');

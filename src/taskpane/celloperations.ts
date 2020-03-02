@@ -79,21 +79,30 @@ export default class CellOperations {
     this.relationship.removeOutputRelationship();
   }
 
-  async addTextBoxOnUpdate(updatedValue: number) {
+  deleteUpdateshapes() {
+
+    Excel.run(function (context) {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+
+      const oldTextbox = sheet.shapes;
+      oldTextbox.load("items/name");
+      return context.sync().then(function () {
+        oldTextbox.items.forEach(function (c) {
+          if (c.name.includes('Update'))
+            c.delete();
+          console.log('Deleted shape: ' + c.name);
+        });
+      });
+
+    })
+  }
+
+  addTextBoxOnUpdate(updatedValue: number) {
 
     try {
 
-      await Excel.run(async (context) => {
+      Excel.run((context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-        const oldTextbox = sheet.shapes;
-        oldTextbox.load("items/name");
-        await context.sync().then(function () {
-          oldTextbox.items.forEach(function (c) {
-            if (c.name == 'Update')
-              c.delete();
-          });
-        });
 
         const text = updatedValue.toPrecision(1).toString();
 
@@ -103,29 +112,32 @@ export default class CellOperations {
         }
 
         const textbox = sheet.shapes.addTextBox(text);
-        textbox.name = "Update";
+        textbox.name = "Update1";
         textbox.left = this.referenceCell.left;
         textbox.top = this.referenceCell.top;
         textbox.height = this.referenceCell.height + 4;
         textbox.width = this.referenceCell.width / 2;
         textbox.lineFormat.visible = false;
-        textbox.fill.setSolidColor(color);
-        textbox.fill.transparency = 0.5;
+        textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
-        // textbox.textFrame.horizontalOverflow = "Clip";
-        // textbox.textFrame.verticalOverflow = "Clip";
-        // textbox.setZOrder(Excel.ShapeZOrder.bringForward);
 
-        // let arrow = sheet.shapes.addLine(this.referenceCell.left, this.referenceCell.top, this.referenceCell.left, this.referenceCell.top + 20);
-        // arrow.name = 'Arrow';
-        // arrow.lineFormat.weight = 10;
-        // arrow.lineFormat.color = 'red';
-        // arrow.line.endArrowheadStyle = "Triangle";
-        // arrow.setZOrder(Excel.ShapeZOrder.bringForward);
-        await context.sync();
+        let arrow: Excel.Shape;
+
+        if (color == 'red') {
+          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.downArrow);
+        } else {
+          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.upArrow);
+        }
+
+        arrow.name = 'Update2';
+        arrow.width = 5;
+        arrow.height = this.referenceCell.height;
+        arrow.top = this.referenceCell.top;
+        arrow.left = this.referenceCell.left;
+        arrow.lineFormat.color = color;
+        arrow.fill.setSolidColor(color);
+        return context.sync().then(() => console.log('Updated shapes')).catch((reason: any) => console.log('Failed to draw the updated shape: ' + reason));
       });
-
-
     } catch (error) {
       console.log(error);
     }
