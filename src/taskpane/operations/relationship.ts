@@ -67,7 +67,7 @@ export default class Relationship {
       type = Excel.GeometricShapeType.triangle;
       let triangle = shapes.addGeometricShape(type);
       triangle.name = "Input";
-      triangle.rotation = 90;
+      triangle.rotation = 0;
       triangle.left = cell.left;
       triangle.top = cell.top + cell.height / 4;
       triangle.height = 3;
@@ -128,17 +128,16 @@ export default class Relationship {
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.triangle;
-      let triangle = shapes.addGeometricShape(type);
-      triangle.name = "Output"
-      triangle.rotation = 270;
-      triangle.left = cell.left;
-      triangle.top = cell.top + cell.height / 4;
-      triangle.height = 3;
-      triangle.width = 6;
-      triangle.lineFormat.weight = 0;
-      triangle.lineFormat.color = color;
-      triangle.fill.setSolidColor(color);
+      type = Excel.GeometricShapeType.diamond;
+      let diamond = shapes.addGeometricShape(type);
+      diamond.name = "Output"
+      diamond.left = cell.left;
+      diamond.top = cell.top + cell.height / 4;
+      diamond.height = 6;
+      diamond.width = 6;
+      diamond.lineFormat.weight = 0;
+      diamond.lineFormat.color = color;
+      diamond.fill.setSolidColor(color);
       await context.sync();
     })
   }
