@@ -5,6 +5,7 @@ import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
 import Relationship from './operations/relationship';
 import SheetProperties from './sheetproperties';
+import DiscreteSpread from './operations/discreteSpread';
 
 export default class CellOperations {
 
@@ -15,6 +16,7 @@ export default class CellOperations {
   private likelihood: Likelihood;
   private spread: Spread;
   private relationship: Relationship;
+  private discreteSpread: DiscreteSpread;
 
   constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
     this.cells = cells;
@@ -23,6 +25,7 @@ export default class CellOperations {
     this.impact = new Impact(this.referenceCell, this.cells);
     this.likelihood = new Likelihood(this.cells, this.referenceCell);
     this.spread = new Spread(this.cells, this.referenceCell);
+    this.discreteSpread = new DiscreteSpread(this.cells, this.referenceCell);
     this.relationship = new Relationship(this.cells, this.referenceCell);
   }
 
@@ -36,7 +39,8 @@ export default class CellOperations {
 
   async createNewSheet() {
     console.log('Create New Sheet');
-    await this.spread.createNewSheet();
+    // await this.spread.createNewSheet();
+    await this.discreteSpread.createNewSheet();
   }
 
   showImpact(n: number) {
@@ -56,7 +60,8 @@ export default class CellOperations {
   }
 
   async showSpread(n: number) {
-    await this.spread.showSpread(n);
+    // await this.spread.showSpread(n);
+    await this.discreteSpread.showSpread(n);
   }
 
   async removeSpread() {
@@ -97,51 +102,7 @@ export default class CellOperations {
     })
   }
 
-  addTextBoxOnUpdate(updatedValue: number) {
 
-    try {
-
-      Excel.run((context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-        const text = updatedValue.toPrecision(1).toString();
-
-        let color = 'green';
-        if (updatedValue < 0) {
-          color = 'red';
-        }
-
-        const textbox = sheet.shapes.addTextBox(text);
-        textbox.name = "Update1";
-        textbox.left = this.referenceCell.left;
-        textbox.top = this.referenceCell.top;
-        textbox.height = this.referenceCell.height + 4;
-        textbox.width = this.referenceCell.width / 2;
-        textbox.lineFormat.visible = false;
-        textbox.fill.transparency = 1;
-        textbox.textFrame.verticalAlignment = "Distributed";
-
-        let arrow: Excel.Shape;
-
-        if (color == 'red') {
-          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.downArrow);
-        } else {
-          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.upArrow);
-        }
-
-        arrow.name = 'Update2';
-        arrow.width = 5;
-        arrow.height = this.referenceCell.height;
-        arrow.top = this.referenceCell.top;
-        arrow.left = this.referenceCell.left;
-        arrow.lineFormat.color = color;
-        arrow.fill.setSolidColor(color);
-        return context.sync().then(() => console.log('Updated shapes')).catch((reason: any) => console.log('Failed to draw the updated shape: ' + reason));
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   async showPopUpWindow(address: string) {
     // this.removePopUps();

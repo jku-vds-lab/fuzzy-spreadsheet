@@ -92,11 +92,11 @@ async function handleDataChanged() {
   console.log('Updated values');
 
   const whatif = new WhatIf();
-  whatif.setNewCells(newCells);
+  whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
   console.log('Calculating updated number');
 
-  await whatif.calculateUpdatedNumber(SheetProperties.referenceCell);
+  await whatif.calculateUpdatedNumber();
 
   if (!SheetProperties.referenceCell.whatIf) {
     console.log('Returning because what if is null');
@@ -110,7 +110,7 @@ async function handleDataChanged() {
   } else {
     console.log("CHANGE: " + updatedValue);
     SheetProperties.cellOp.deleteUpdateshapes();
-    SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
+    // SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
   }
 
   if (SheetProperties.isSpread) {

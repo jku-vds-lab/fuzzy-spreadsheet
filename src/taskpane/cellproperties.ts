@@ -14,7 +14,7 @@ export default class CellProperties {
   public left: number;
   public height: number;
   public width: number;
-  public formula: any;
+  public formula: string;
   public isFocus: boolean;
   public isUncertain: boolean = false;
   public degreeToFocus: number;
@@ -25,6 +25,8 @@ export default class CellProperties {
   public spreadRange: string;
   public variance: number = 0;
   public samples: number[];
+  public mySamples: { value: number, likelihood: number }[];
+  public samplesLikelihood: number[];
   public isLineChart: boolean = false;
   // for impact and likelihood
   public rect: Excel.Shape;
@@ -67,6 +69,7 @@ export default class CellProperties {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
+      // change to 20 & 18
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
@@ -85,7 +88,7 @@ export default class CellProperties {
   updateCellsValues(cellRanges: Excel.Range[]) {
 
     let index = 0;
-
+    // change to 20 & 18
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 18; j++) {
 
@@ -105,7 +108,7 @@ export default class CellProperties {
         cellProperties.formula = cellRanges[index].formulas[0][0];
         cellProperties.degreeToFocus = -1;
 
-        if (cellProperties.formula == cellProperties.value) {
+        if (cellProperties.formula == cellProperties.value.toString()) {
           cellProperties.formula = "";
         }
 
@@ -148,6 +151,8 @@ export default class CellProperties {
       }, this.newCells);
 
       this.checkUncertainty(this.newCells);
+
+      this.getRelationshipOfCells(this.newCells);
       // check if the reference cell is uncertain or not
 
       if (isUpdate) {
@@ -181,9 +186,9 @@ export default class CellProperties {
     }
   }
 
-  getRelationshipOfCells() {
+  getRelationshipOfCells(cells: CellProperties[] = this.cells) {
 
-    this.cells.forEach((cell: CellProperties) => {
+    cells.forEach((cell: CellProperties) => {
       // eslint-disable-next-line no-empty
       if (cell.formula == "") {
 
