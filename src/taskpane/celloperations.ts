@@ -5,7 +5,7 @@ import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
 import Relationship from './operations/relationship';
 import SheetProperties from './sheetproperties';
-import DiscreteSpread from './operations/discreteSpread';
+import DiscreteSpread from './operations/spread';
 
 export default class CellOperations {
 
@@ -16,7 +16,6 @@ export default class CellOperations {
   private likelihood: Likelihood;
   private spread: Spread;
   private relationship: Relationship;
-  private discreteSpread: DiscreteSpread;
 
   constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
     this.cells = cells;
@@ -25,7 +24,6 @@ export default class CellOperations {
     this.impact = new Impact(this.referenceCell, this.cells);
     this.likelihood = new Likelihood(this.cells, this.referenceCell);
     this.spread = new Spread(this.cells, this.referenceCell);
-    this.discreteSpread = new DiscreteSpread(this.cells, this.referenceCell);
     this.relationship = new Relationship(this.cells, this.referenceCell);
   }
 
@@ -39,8 +37,7 @@ export default class CellOperations {
 
   async createNewSheet() {
     console.log('Create New Sheet');
-    // await this.spread.createNewSheet();
-    await this.discreteSpread.createNewSheet();
+    await this.spread.createNewSheet();
   }
 
   showImpact(n: number) {
@@ -60,8 +57,7 @@ export default class CellOperations {
   }
 
   async showSpread(n: number) {
-    // await this.spread.showSpread(n);
-    await this.discreteSpread.showSpread(n);
+    await this.spread.showSpread(n);
   }
 
   async removeSpread() {

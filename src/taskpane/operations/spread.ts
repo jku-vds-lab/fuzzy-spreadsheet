@@ -3,6 +3,7 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
+// ToDO: Samples for subtraction
 export default class Spread {
   private chartType: string;
   private cells: CellProperties[];
@@ -48,106 +49,200 @@ export default class Spread {
 
   public async addSpreadInfoToCells() {
 
-    this.addVarianceInfo();
+    try {
 
-    let values = new Array<Array<number>>();
+      this.addVarianceInfo();
 
-    this.cells.forEach((cell: CellProperties) => {
-      if (isNaN(cell.value)) {
-        return;
-      }
-      this.addSamplesToCell(cell);
-      values.push(cell.samples);
-    })
+      let values = new Array<Array<number>>();
 
-    await this.addValuesToSheet(values);
+      this.cells.forEach((cell: CellProperties) => {
+        if (isNaN(cell.value)) {
+          return;
+        }
+        this.addSamplesToCell(cell);
 
-    let index = 0;
+        let sampleValues = new Array<number>();
+        let sampleLikelihood = new Array<number>();
 
-    this.cells.forEach((cell: CellProperties) => {
-      if (isNaN(cell.value)) {
-        return;
-      }
+        cell.mySamples.forEach((sample: { value: number, likelihood: number }) => {
+          sampleValues.push(sample.value);
+          sampleLikelihood.push(sample.likelihood);
+        })
 
-      if (this.rangeAddresses[index] == null) {
-        console.log('Returning for cell: ' + cell.address + 'because range is null');
-      }
+        values.push(sampleValues);
+        values.push(sampleLikelihood);
+      })
 
-      cell.spreadRange = this.rangeAddresses[index].address;
-      index++;
-    })
+      await this.addValuesToSheet(values);
+
+      let index = 0;
+
+      this.cells.forEach((cell: CellProperties) => {
+        if (isNaN(cell.value)) {
+          return;
+        }
+
+        if (this.rangeAddresses[index] == null) {
+          console.log('Returning for cell: ' + cell.address + 'because range is null');
+        }
+
+        cell.spreadRange = this.rangeAddresses[index].address;
+        index++;
+      })
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public async createNewSheet(isDeleteSheet: boolean = false) {
 
-    let isCreateNewSheet = true;
+    try {
+      let isCreateNewSheet = true;
 
-    await Excel.run(async (context) => {
+      await Excel.run(async (context) => {
 
-      let cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
-      await context.sync();
+        let cheatsheet = context.workbook.worksheets.getItemOrNullObject(this.sheetName);
+        await context.sync();
 
 
-      if (!cheatsheet.isNullObject) {
+        if (!cheatsheet.isNullObject) {
 
-        isCreateNewSheet = false;
+          isCreateNewSheet = false;
 
-        if (isDeleteSheet) {
-          cheatsheet.delete();
-          isCreateNewSheet = true;
+          if (isDeleteSheet) {
+            cheatsheet.delete();
+            isCreateNewSheet = true;
+          }
         }
-      }
 
-      if (isCreateNewSheet) {
+        if (isCreateNewSheet) {
 
-        cheatsheet = context.workbook.worksheets.add(this.sheetName);
-      }
+          cheatsheet = context.workbook.worksheets.add(this.sheetName);
+        }
 
-      await context.sync();
-    });
+        await context.sync();
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public addSamplesToCell(cell: CellProperties) {
 
-    let overallMin = -15;
-    let overallMax = 40;
+    cell.mySamples = new Array<{ value: number, likelihood: number }>();
 
-    cell.samples = new Array<number>();
+
     const mean = cell.value;
     const variance = cell.variance;
 
     if (variance == 0) {
+      cell.mySamples.push({ value: mean, likelihood: 1 });
+    }
+    else {
 
-      for (let i = overallMin; i <= overallMax; i++) {
-        if (i == ceil(cell.value)) {
-          cell.samples.push(1);
-        } else {
-          cell.samples.push(0);
-        }
+      if (cell.formula.includes('SUM')) {
+        let resultSamples = this.addSamplesToSumCell(cell);
+
+        cell.mySamples = resultSamples;
+
+        return;
       }
-    } else {
-      const sampleSize = (variance * 2) / 50;
 
-      for (let i = overallMin; i <= overallMax; i = i + sampleSize) {
-        cell.samples.push(jstat.normal.pdf(i, mean, variance));
+      cell.mySamples.push({ value: 0, likelihood: (1 - cell.likelihood) });
+
+      let numberOfSamples = 0;
+      let i = mean - variance;
+
+      while (i <= mean + variance) {
+        numberOfSamples++;
+        i++;
+      }
+
+      for (let i = mean - variance; i <= mean + variance; i++) {
+
+        cell.mySamples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
         cell.isLineChart = true;
       }
     }
   }
 
+  public addSamplesToSumCell(cell: CellProperties) {
+
+    let inputCells = cell.inputCells;
+    let index = 0;
+
+    let resultantSample = new CellProperties();
+    resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
+
+    if (inputCells.length > 1) {
+      resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1]);
+      index = index + 2;
+    }
+
+    while (index < inputCells.length) {
+
+      resultantSample = this.addTwoSamples(resultantSample, inputCells[index]);
+      index = index + 1;
+    }
+
+    resultantSample.mySamples.forEach((sample: { value: number, likelihood: number }) => {
+      cell.mySamples.push(sample);
+    })
+
+    return cell.mySamples;
+  }
+
+  private addTwoSamples(sample1: CellProperties, sample2: CellProperties) {
+
+    let resultantSample = new CellProperties();
+    resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
+
+    sample1.mySamples.forEach((sampleCell1: { value: number, likelihood: number }) => {
+
+      sample2.mySamples.forEach((sampleCell2: { value: number, likelihood: number }) => {
+
+        const value = sampleCell1.value + sampleCell2.value;
+        const likelihood = sampleCell1.likelihood * sampleCell2.likelihood;
+
+        let allowInsert = true;
+
+        resultantSample.mySamples.forEach((result: { value: number, likelihood: number }) => {
+          if (result.value == value) {
+            result.likelihood += likelihood;
+            allowInsert = false;
+            return;
+          }
+        })
+
+        if (allowInsert) {
+          resultantSample.mySamples.push({ value: value, likelihood: likelihood });
+        }
+
+      })
+    })
+
+    return resultantSample;
+  }
+
   public async addValuesToSheet(values: any[][]) {
+
 
     await Excel.run(async (context) => {
       const cheatsheet = context.workbook.worksheets.getItem(this.sheetName);
-      let rowIndex = 0;
 
-      values.forEach((value: number[]) => {
-        let range = cheatsheet.getRangeByIndexes(rowIndex, 0, 1, value.length);
+
+      values.forEach((value: number[], index: number) => {
+        let range = cheatsheet.getRangeByIndexes(index, 0, 1, value.length);
         range.values = [value];
-        rowIndex++;
 
-        this.rangeAddresses.push(range.load('address'));
       })
+
+      for (let index = 0; index < values.length; index = index + 2) {
+
+        let range = cheatsheet.getRangeByIndexes(index, 0, 2, values[index].length);
+        this.rangeAddresses.push(range.load('address'));
+      }
 
       await context.sync();
     })
@@ -199,6 +294,7 @@ export default class Spread {
         this.cells[i].variance = 0;
         if (this.cells[i].isUncertain) {
           this.cells[i].variance = this.cells[i + 1].value;
+          this.cells[i].likelihood = this.cells[i + 2].value;
         }
       }
     } catch (error) {
@@ -222,11 +318,7 @@ export default class Spread {
 
         let chart: Excel.Chart;
 
-        if (cell.isLineChart) {
-          chart = sheet.charts.add(Excel.ChartType.line, dataRange, Excel.ChartSeriesBy.rows);
-        } else {
-          chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
-        }
+        chart = sheet.charts.add(Excel.ChartType.columnClustered, dataRange, Excel.ChartSeriesBy.rows);
 
         chart.setPosition(cell.address, cell.address);
         // only if chatt type is line, if it is column, use the fill
@@ -251,7 +343,10 @@ export default class Spread {
         chart.plotArea.height = 100;
         chart.format.fill.clear();
         chart.format.border.clear();
-        return context.sync().then(() => { console.log('Finished drawing the chart') }).
+        chart.series.getItemAt(0).delete(); // labels are not right
+        return context.sync().then(() => {
+          console.log('Finished drawing the chart')
+        }).
           catch((reason: any) => console.log('Failed to draw a chart: ' + reason));
       });
     } catch (error) {
