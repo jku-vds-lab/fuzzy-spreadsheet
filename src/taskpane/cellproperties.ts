@@ -69,7 +69,6 @@ export default class CellProperties {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      // change to 20 & 18
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
@@ -88,7 +87,6 @@ export default class CellProperties {
   updateCellsValues(cellRanges: Excel.Range[]) {
 
     let index = 0;
-    // change to 20 & 18
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 18; j++) {
 

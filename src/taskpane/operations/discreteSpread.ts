@@ -5,6 +5,8 @@ import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
 import { add } from 'src/functions/functions';
 
+
+// TO DO: remove duplicates
 export default class DiscreteSpread {
   private chartType: string;
   private cells: CellProperties[];
@@ -206,7 +208,22 @@ export default class DiscreteSpread {
         const value = sampleCell1.value + sampleCell2.value;
         const likelihood = sampleCell1.likelihood * sampleCell2.likelihood;
 
-        resultantSample.mySamples.push({ value: value, likelihood: likelihood });
+        // check if the value exists, then add their likelihood
+
+        let allowInsert = true;
+
+        resultantSample.mySamples.forEach((result: { value: number, likelihood: number }) => {
+          if (result.value == value) {
+            result.likelihood += likelihood;
+            allowInsert = false;
+            return;
+          }
+        })
+
+        if (allowInsert) {
+          resultantSample.mySamples.push({ value: value, likelihood: likelihood });
+        }
+
       })
     })
 
