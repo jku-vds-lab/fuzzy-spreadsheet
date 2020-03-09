@@ -19,14 +19,52 @@ export default class Spread {
     this.rangeAddresses = new Array<Excel.Range>();
   }
 
-  public async showSpread(n: number, color: string = null, lineWeight: number = 2, chartName: string = 'Chart') {
 
-    await this.addSpreadInfoToCells();
+  public showSpread(n: number, color: string = null, lineWeight: number = 2, chartName: string = 'Chart') {
 
-    this.drawLineChart(this.referenceCell, color, lineWeight, chartName);
+    this.addSpreadInfoToCellsInUse();
 
-    this.showInputSpread(this.referenceCell.inputCells, n);
-    this.showOutputSpread(this.referenceCell.outputCells, n);
+    // this.drawLineChart(this.referenceCell, color, lineWeight, chartName);
+
+    // this.showInputSpread(this.referenceCell.inputCells, n);
+    // this.showOutputSpread(this.referenceCell.outputCells, n);
+  }
+
+  public showInputSpread(cells: CellProperties[], i: number) {
+
+    cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        console.log(cell.address + ' already has a spread');
+        return;
+      }
+
+      cell.isSpread = true;
+      this.drawLineChart(cell);
+
+      if (i == 1) {
+        return;
+      }
+      this.showInputSpread(cell.inputCells, i - 1);
+    })
+  }
+
+  public showOutputSpread(cells: CellProperties[], i: number) {
+
+    cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        return;
+      }
+
+      cell.isSpread = true;
+
+      this.drawLineChart(cell);
+      if (i == 1) {
+        return;
+      }
+      this.showOutputSpread(cell.outputCells, i - 1);
+    })
   }
 
   public async removeSpread() {
@@ -48,7 +86,61 @@ export default class Spread {
     });
   }
 
-  public async addSpreadInfoToCells() {
+
+  public addSpreadInfoToCellsInUse() {
+
+    try {
+
+      // debugger;
+
+      this.addVarianceInfo();
+
+      this.addSamplesToCell(this.referenceCell);
+
+      console.log('Samples: ', this.referenceCell.mySamples);
+
+      this.drawBarCodePlot(this.referenceCell);
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public drawBarCodePlot(cell: CellProperties) {
+    try {
+      Excel.run((context) => {
+
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        // let totalWidth = cell.width;
+        let totalHeight = cell.height;
+
+        let startLineTop = cell.top;
+        let startLineLeft = cell.left + 10;
+        let endLineTop = cell.top + totalHeight;
+        // let endLineLeft = cell.left + totalWidth;
+
+        cell.mySamples.forEach((sample: { value: number, likelihood: number }) => {
+          let line = sheet.shapes.addLine(startLineLeft + sample.value, startLineTop, startLineLeft + sample.value, endLineTop);
+          line.width = sample.likelihood * 2;
+        })
+
+        // sheet.shapes.addLine(startLineLeft, startLineTop, startLineLeft, endLineTop);
+        // sheet.shapes.addLine(startLineLeft + 2, startLineTop, startLineLeft + 2, endLineTop);
+        // sheet.shapes.addLine(startLineLeft + 5, startLineTop, startLineLeft + 5, endLineTop);
+
+        return context.sync().then(() => {
+          console.log('Finished drawing the chart')
+        }).
+          catch((reason: any) => console.log('Failed to draw a chart: ' + reason));
+      });
+    } catch (error) {
+      console.log('Could not draw chart because of the following error', error);
+    }
+
+  }
+
+  public async addSpreadInfoToAllCells() {
 
     try {
 
@@ -65,9 +157,6 @@ export default class Spread {
         let sampleValues = new Array<number>();
         let sampleLikelihood = new Array<number>();
 
-        // sampleValues.push(cell.value);
-        // sampleLikelihood.push(cell.likelihood);
-
         cell.mySamples.forEach((sample: { value: number, likelihood: number }) => {
           sampleValues.push(sample.value);
           sampleLikelihood.push(sample.likelihood);
@@ -80,14 +169,14 @@ export default class Spread {
       console.log('Add values to sheet');
 
       await this.createNewSheet(values);
-      this.addSpreadRangeToCells();
+      this.addSpreadRangeToAllCells();
 
     } catch (error) {
       console.log(error);
     }
   }
 
-  public addSpreadRangeToCells() {
+  public addSpreadRangeToAllCells() {
 
     let index = 0;
 
@@ -150,43 +239,50 @@ export default class Spread {
       else {
 
         if (cell.formula.includes('SUM')) {
-          let resultSamples = this.addSamplesToSumCell(cell);
-
-          cell.mySamples = resultSamples;
-
+          cell.mySamples = this.addSamplesToSumCell(cell);
           return;
         }
 
         if (cell.formula.includes('-')) {
-
-          let resultSamples = this.addSamplesToSumCell(cell, true);
-
-          cell.mySamples = resultSamples;
-
+          cell.mySamples = this.addSamplesToSumCell(cell, true);
           return;
         }
 
-        cell.mySamples.push({ value: 0, likelihood: (1 - cell.likelihood) });
-
-        let numberOfSamples = 0;
-        let i = mean - variance;
-
-        while (i <= mean + variance) {
-          numberOfSamples++;
-          i++;
-        }
-
-        for (let i = mean - variance; i <= mean + variance; i++) {
-
-          cell.mySamples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
-          cell.isLineChart = true;
-        }
+        cell.mySamples = this.addSamplesToAverageCell(cell);
       }
+
+      console.log('Samples here: ', cell.mySamples);
       // let t1 = performance.now();
       // console.log('Adding samples took: ' + (t1 - t0) + " ms");
     } catch (error) {
       console.log(error);
     }
+  }
+
+  public addSamplesToAverageCell(cell: CellProperties) {
+
+    const mean = cell.value;
+    const variance = cell.variance;
+
+    cell.mySamples = new Array<{ value: number, likelihood: number }>();
+
+    cell.mySamples.push({ value: 0, likelihood: (1 - cell.likelihood) });
+
+    let numberOfSamples = 0;
+    let i = mean - variance;
+
+    while (i <= mean + variance) {
+      numberOfSamples++;
+      i++;
+    }
+
+    for (let i = mean - variance; i <= mean + variance; i++) {
+
+      cell.mySamples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
+      cell.isLineChart = true;
+    }
+
+    return cell.mySamples;
   }
 
   public addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {
@@ -221,6 +317,14 @@ export default class Spread {
     resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
 
     try {
+
+      if (sample1.mySamples == null) {
+        this.addSamplesToAverageCell(sample1);
+      }
+
+      if (sample2.mySamples == null) {
+        this.addSamplesToAverageCell(sample2);
+      }
 
       sample1.mySamples.forEach((sampleCell1: { value: number, likelihood: number }) => {
 
@@ -258,70 +362,6 @@ export default class Spread {
     }
 
     return resultantSample;
-  }
-
-  // public async addValuesToSheet(values: any[][]) {
-
-  //   try {
-
-  //     await Excel.run(async (context) => {
-  //       const cheatsheet = context.workbook.worksheets.getItem(this.sheetName);
-
-  //       values.forEach((value: number[], index: number) => {
-  //         let range = cheatsheet.getRangeByIndexes(index, 0, 1, value.length);
-  //         range.values = [value];
-
-  //       })
-
-  //       for (let index = 0; index < values.length; index = index + 2) {
-
-  //         let range = cheatsheet.getRangeByIndexes(index, 0, 2, values[index].length);
-  //         this.rangeAddresses.push(range.load('address'));
-  //       }
-
-  //       await context.sync();
-  //     })
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  //   return this.rangeAddresses;
-  // }
-
-  public showInputSpread(cells: CellProperties[], i: number) {
-
-    cells.forEach((cell: CellProperties) => {
-
-      if (cell.isSpread) {
-        console.log(cell.address + ' already has a spread');
-        return;
-      }
-
-      cell.isSpread = true;
-      this.drawLineChart(cell);
-
-      if (i == 1) {
-        return;
-      }
-      this.showInputSpread(cell.inputCells, i - 1);
-    })
-  }
-
-  public showOutputSpread(cells: CellProperties[], i: number) {
-
-    cells.forEach((cell: CellProperties) => {
-
-      if (cell.isSpread) {
-        return;
-      }
-
-      cell.isSpread = true;
-
-      this.drawLineChart(cell);
-      if (i == 1) {
-        return;
-      }
-      this.showOutputSpread(cell.outputCells, i - 1);
-    })
   }
 
   public addVarianceInfo() {

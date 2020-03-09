@@ -274,7 +274,7 @@ async function spread() {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
       // await SheetProperties.cellOp.createNewSheet();
-      await SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;

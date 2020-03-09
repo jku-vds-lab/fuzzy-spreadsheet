@@ -137,29 +137,20 @@ export default class WhatIf {
 
   // check the variance & likelihood
   async drawChangedSpread(referenceCell: CellProperties, oldVariance: number) {
-
-    const spread: Spread = new Spread(this.newCells, referenceCell, 'MyCheatSheet');
-
-
-    let values = new Array<Array<number>>();
+    let newReferenceCell = null;
 
     this.newCells.forEach((cell: CellProperties) => {
-      if (isNaN(cell.value)) {
+
+      if (referenceCell.id == cell.id) {
+        // for this cell -> compute the linecharts
+        newReferenceCell = cell;
         return;
       }
+    });
 
+    const spread: Spread = new Spread(this.newCells, newReferenceCell, 'MyCheatSheet');
 
-      let sampleValues = new Array<number>();
-      let sampleLikelihood = new Array<number>();
-
-      sampleValues.push(cell.value);
-      sampleLikelihood.push(0.9);
-
-      values.push(sampleValues);
-      values.push(sampleLikelihood);
-    })
-
-    await spread.createNewSheet(values);
+    spread.showSpread(1);
 
   }
 }

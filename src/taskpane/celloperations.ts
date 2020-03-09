@@ -56,8 +56,8 @@ export default class CellOperations {
     await this.likelihood.removeLikelihood(n);
   }
 
-  async showSpread(n: number) {
-    await this.spread.showSpread(n);
+  showSpread(n: number) {
+    this.spread.showSpread(n);
   }
 
   async removeSpread() {
