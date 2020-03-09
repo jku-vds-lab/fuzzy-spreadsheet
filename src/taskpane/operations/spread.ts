@@ -3,7 +3,7 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
-// ToDO: Samples for subtraction
+
 export default class Spread {
   private chartType: string;
   private cells: CellProperties[];
@@ -149,6 +149,14 @@ export default class Spread {
         return;
       }
 
+      if (cell.formula.includes('-')) {
+        let resultSamples = this.addSamplesToSumCell(cell, true);
+
+        cell.mySamples = resultSamples;
+
+        return;
+      }
+
       cell.mySamples.push({ value: 0, likelihood: (1 - cell.likelihood) });
 
       let numberOfSamples = 0;
@@ -167,7 +175,7 @@ export default class Spread {
     }
   }
 
-  public addSamplesToSumCell(cell: CellProperties) {
+  public addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {
 
     let inputCells = cell.inputCells;
     let index = 0;
@@ -176,13 +184,13 @@ export default class Spread {
     resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
 
     if (inputCells.length > 1) {
-      resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1]);
+      resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
       index = index + 2;
     }
 
     while (index < inputCells.length) {
 
-      resultantSample = this.addTwoSamples(resultantSample, inputCells[index]);
+      resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
       index = index + 1;
     }
 
@@ -193,7 +201,7 @@ export default class Spread {
     return cell.mySamples;
   }
 
-  private addTwoSamples(sample1: CellProperties, sample2: CellProperties) {
+  private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false) {
 
     let resultantSample = new CellProperties();
     resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
@@ -202,7 +210,11 @@ export default class Spread {
 
       sample2.mySamples.forEach((sampleCell2: { value: number, likelihood: number }) => {
 
-        const value = sampleCell1.value + sampleCell2.value;
+        let value = sampleCell1.value + sampleCell2.value;
+
+        if (isDifference) {
+          value = sampleCell1.value - sampleCell2.value;
+        }
         const likelihood = sampleCell1.likelihood * sampleCell2.likelihood;
 
         let allowInsert = true;
