@@ -141,27 +141,14 @@ export default class WhatIf {
     let newReferenceCell = null;
 
     this.newCells.forEach((cell: CellProperties) => {
+      cell.isSpread = false;
       if (referenceCell.id == cell.id) {
         newReferenceCell = cell;
-        return;
       }
     });
-
-    console.log('Spread in reference cell: ' + this.referenceCell.isSpread);
-
-    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
-      inCell.isSpread = false;
-      console.log('Spread in input cell: ' + inCell.isSpread);
-    })
-
-    this.referenceCell.outputCells.forEach((inCell: CellProperties) => {
-      inCell.isSpread = false;
-      console.log('Spread in output cell: ' + inCell.isSpread);
-    })
 
     const spread: Spread = new Spread(this.newCells, newReferenceCell, 'red');
 
     spread.showSpread(degreeOfNeighbourhood);
-
   }
 }
