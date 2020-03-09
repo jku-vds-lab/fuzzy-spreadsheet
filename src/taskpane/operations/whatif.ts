@@ -135,29 +135,31 @@ export default class WhatIf {
     }
   }
 
-  // check the variance
+  // check the variance & likelihood
   async drawChangedSpread(referenceCell: CellProperties, oldVariance: number) {
 
-    const spread = new Spread(this.newCells, referenceCell, 'MyCheatSheet');
-    await spread.createNewSheet(true);
-    spread.addVarianceInfo();
+    const spread: Spread = new Spread(this.newCells, referenceCell, 'MyCheatSheet');
 
-    this.newCells.forEach(async (newCell: CellProperties) => {
 
-      if (newCell.id == referenceCell.id) {
-        console.log('Reference cell variance: ' + newCell.variance + ' and oldVariance: ' + oldVariance);
+    let values = new Array<Array<number>>();
 
-        if (newCell.variance == oldVariance) {
-          return;
-        }
-
-        spread.addSamplesToCell(newCell);
-        const rangeAddress = await spread.addValuesToSheet([newCell.samples]);
-        // eslint-disable-next-line require-atomic-updates
-        newCell.spreadRange = rangeAddress[0].address; // should be in whatif?
-        spread.drawLineChart(newCell, 'red', 1, 'UpdateChart');
+    this.newCells.forEach((cell: CellProperties) => {
+      if (isNaN(cell.value)) {
         return;
       }
+
+
+      let sampleValues = new Array<number>();
+      let sampleLikelihood = new Array<number>();
+
+      sampleValues.push(cell.value);
+      sampleLikelihood.push(0.9);
+
+      values.push(sampleValues);
+      values.push(sampleLikelihood);
     })
+
+    await spread.createNewSheet(values);
+
   }
 }

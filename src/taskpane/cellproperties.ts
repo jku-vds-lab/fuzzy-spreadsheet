@@ -24,7 +24,6 @@ export default class CellProperties {
   public likelihood: number = 10;
   public spreadRange: string;
   public variance: number = 0;
-  public samples: number[];
   public mySamples: { value: number, likelihood: number }[];
   public samplesLikelihood: number[];
   public isLineChart: boolean = false;
