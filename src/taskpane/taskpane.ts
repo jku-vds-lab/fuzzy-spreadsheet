@@ -271,9 +271,7 @@ async function spread() {
     var element = <HTMLInputElement>document.getElementById("spread");
 
     if (element.checked) {
-      // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
-      // await SheetProperties.cellOp.createNewSheet();
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates

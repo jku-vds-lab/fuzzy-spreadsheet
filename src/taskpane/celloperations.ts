@@ -35,11 +35,6 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  // async createNewSheet() {
-  //   console.log('Create New Sheet');
-  //   await this.spread.createNewSheet();
-  // }
-
   showImpact(n: number) {
     this.impact.showImpact(n);
   }
