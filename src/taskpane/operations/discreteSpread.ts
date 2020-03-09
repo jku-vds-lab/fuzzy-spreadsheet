@@ -208,8 +208,6 @@ export default class DiscreteSpread {
         const value = sampleCell1.value + sampleCell2.value;
         const likelihood = sampleCell1.likelihood * sampleCell2.likelihood;
 
-        // check if the value exists, then add their likelihood
-
         let allowInsert = true;
 
         resultantSample.mySamples.forEach((result: { value: number, likelihood: number }) => {
