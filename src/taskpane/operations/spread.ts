@@ -6,19 +6,16 @@ import SheetProperties from '../sheetproperties';
 
 // the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
 export default class Spread {
-  private chartType: string;
+
   private cells: CellProperties[];
   private referenceCell: CellProperties;
-  private sheetName: string;
-  private rangeAddresses: Excel.Range[];
+  private color: string = null;
 
-  constructor(cells: CellProperties[], referenceCell: CellProperties, sheetName: string = 'CheatSheet') {
+  constructor(cells: CellProperties[], referenceCell: CellProperties, color: string = null) {
     this.cells = cells;
     this.referenceCell = referenceCell;
-    this.sheetName = sheetName;
-    this.rangeAddresses = new Array<Excel.Range>();
+    this.color = color;
   }
-
 
   public showSpread(n: number) {
 
@@ -79,6 +76,7 @@ export default class Spread {
       cells.forEach((cell: CellProperties) => {
 
         if (cell.isSpread) {
+          console.log(cell.address + ' already has a spread');
           return;
         }
 
@@ -113,7 +111,15 @@ export default class Spread {
           let valueToBeAdded: number = sample.value; // Math.round((sample.value + Number.EPSILON) * 100) / 100;
 
           let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
-          // line.lineFormat.transparency = 1 - sample.likelihood;
+          line.lineFormat.transparency = 1 - sample.likelihood;
+
+          if (sample.likelihood < 0.1) {
+            line.lineFormat.transparency = 0.9;
+          }
+
+          if (this.color) {
+            line.lineFormat.color = this.color;
+          }
         })
 
         return context.sync().then(() => {

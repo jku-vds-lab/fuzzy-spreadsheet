@@ -95,7 +95,7 @@ async function handleDataChanged() {
   whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
   console.log('Computing new spread');
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
+  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood);
 
   // console.log('Calculating updated number');
 

@@ -1,5 +1,6 @@
 import CellProperties from "../cellproperties";
 import Spread from "./spread";
+import { increment } from "src/functions/functions";
 
 /* global console, Excel */
 export default class WhatIf {
@@ -136,21 +137,31 @@ export default class WhatIf {
   }
 
   // check the variance & likelihood
-  async drawChangedSpread(referenceCell: CellProperties, oldVariance: number) {
+  async drawChangedSpread(referenceCell: CellProperties, degreeOfNeighbourhood: number) {
     let newReferenceCell = null;
 
     this.newCells.forEach((cell: CellProperties) => {
-
       if (referenceCell.id == cell.id) {
-        // for this cell -> compute the linecharts
         newReferenceCell = cell;
         return;
       }
     });
 
-    const spread: Spread = new Spread(this.newCells, newReferenceCell, 'MyCheatSheet');
+    console.log('Spread in reference cell: ' + this.referenceCell.isSpread);
 
-    spread.showSpread(1);
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.isSpread = false;
+      console.log('Spread in input cell: ' + inCell.isSpread);
+    })
+
+    this.referenceCell.outputCells.forEach((inCell: CellProperties) => {
+      inCell.isSpread = false;
+      console.log('Spread in output cell: ' + inCell.isSpread);
+    })
+
+    const spread: Spread = new Spread(this.newCells, newReferenceCell, 'red');
+
+    spread.showSpread(degreeOfNeighbourhood);
 
   }
 }
