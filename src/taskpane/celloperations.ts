@@ -5,6 +5,7 @@ import Likelihood from './operations/likelihood';
 import Spread from './operations/spread';
 import Relationship from './operations/relationship';
 import SheetProperties from './sheetproperties';
+import DiscreteSpread from './operations/spread';
 
 export default class CellOperations {
 
@@ -34,11 +35,6 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  async createNewSheet() {
-    console.log('Create New Sheet');
-    await this.spread.createNewSheet();
-  }
-
   showImpact(n: number) {
     this.impact.showImpact(n);
   }
@@ -55,8 +51,8 @@ export default class CellOperations {
     await this.likelihood.removeLikelihood(n);
   }
 
-  async showSpread(n: number) {
-    await this.spread.showSpread(n);
+  showSpread(n: number) {
+    this.spread.showSpread(n);
   }
 
   async removeSpread() {
@@ -79,57 +75,25 @@ export default class CellOperations {
     this.relationship.removeOutputRelationship();
   }
 
-  async addTextBoxOnUpdate(updatedValue: number) {
+  deleteUpdateshapes() {
 
-    try {
+    Excel.run(function (context) {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      await Excel.run(async (context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-        const oldTextbox = sheet.shapes;
-        oldTextbox.load("items/name");
-        await context.sync().then(function () {
-          oldTextbox.items.forEach(function (c) {
-            if (c.name == 'Update')
-              c.delete();
-          });
+      const oldTextbox = sheet.shapes;
+      oldTextbox.load("items/name");
+      return context.sync().then(function () {
+        oldTextbox.items.forEach(function (c) {
+          if (c.name.includes('Update'))
+            c.delete();
+          console.log('Deleted shape: ' + c.name);
         });
-
-        const text = updatedValue.toPrecision(1).toString();
-
-        let color = 'green';
-        if (updatedValue < 0) {
-          color = 'red';
-        }
-
-        const textbox = sheet.shapes.addTextBox(text);
-        textbox.name = "Update";
-        textbox.left = this.referenceCell.left;
-        textbox.top = this.referenceCell.top;
-        textbox.height = this.referenceCell.height + 4;
-        textbox.width = this.referenceCell.width / 2;
-        textbox.lineFormat.visible = false;
-        textbox.fill.setSolidColor(color);
-        textbox.fill.transparency = 0.5;
-        textbox.textFrame.verticalAlignment = "Distributed";
-        // textbox.textFrame.horizontalOverflow = "Clip";
-        // textbox.textFrame.verticalOverflow = "Clip";
-        // textbox.setZOrder(Excel.ShapeZOrder.bringForward);
-
-        // let arrow = sheet.shapes.addLine(this.referenceCell.left, this.referenceCell.top, this.referenceCell.left, this.referenceCell.top + 20);
-        // arrow.name = 'Arrow';
-        // arrow.lineFormat.weight = 10;
-        // arrow.lineFormat.color = 'red';
-        // arrow.line.endArrowheadStyle = "Triangle";
-        // arrow.setZOrder(Excel.ShapeZOrder.bringForward);
-        await context.sync();
       });
 
-
-    } catch (error) {
-      console.log(error);
-    }
+    })
   }
+
+
 
   async showPopUpWindow(address: string) {
     // this.removePopUps();

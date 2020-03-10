@@ -14,7 +14,7 @@ export default class CellProperties {
   public left: number;
   public height: number;
   public width: number;
-  public formula: any;
+  public formula: string;
   public isFocus: boolean;
   public isUncertain: boolean = false;
   public degreeToFocus: number;
@@ -24,7 +24,8 @@ export default class CellProperties {
   public likelihood: number = 10;
   public spreadRange: string;
   public variance: number = 0;
-  public samples: number[];
+  public mySamples: { value: number, likelihood: number }[] = null;
+  public samplesLikelihood: number[];
   public isLineChart: boolean = false;
   // for impact and likelihood
   public rect: Excel.Shape;
@@ -67,53 +68,44 @@ export default class CellProperties {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      const range = sheet.getUsedRange(true);
-      range.load(['formulas', 'values']);
-      await context.sync();
-
-
       for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 18; j++) {
 
-          if (range.values[i][j] == "") {
-            continue;
-          }
-
           let cell = sheet.getCell(i, j);
-          cellRanges.push(cell.load(["top", "left", "address"]));
+          cellRanges.push(cell.load(["top", "left", "address", 'formulas', 'values']));
         }
       }
       await context.sync();
 
-      this.updateCellsValues(range, cellRanges);
+      this.updateCellsValues(cellRanges);
 
     });
     return this.cells;
   }
 
-  updateCellsValues(range: Excel.Range, cellRanges: Excel.Range[]) {
+  updateCellsValues(cellRanges: Excel.Range[]) {
 
     let index = 0;
-
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 18; j++) {
 
-        if (range.values[i][j] == "") {
+        if (cellRanges[index].values[0][0] == "") {
+          index++;
           continue;
         }
 
         let cellProperties = new CellProperties();
         cellProperties.id = "R" + i + "C" + j;
         cellProperties.address = cellRanges[index].address;
-        cellProperties.value = range.values[i][j];
+        cellProperties.value = cellRanges[index].values[0][0];
         cellProperties.top = cellRanges[index].top;
         cellProperties.left = cellRanges[index].left;
         cellProperties.height = 15;
         cellProperties.width = 75.5;
-        cellProperties.formula = range.formulas[i][j];
+        cellProperties.formula = cellRanges[index].formulas[0][0];
         cellProperties.degreeToFocus = -1;
 
-        if (cellProperties.formula == cellProperties.value) {
+        if (cellProperties.formula == cellProperties.value.toString()) {
           cellProperties.formula = "";
         }
 
@@ -156,6 +148,8 @@ export default class CellProperties {
       }, this.newCells);
 
       this.checkUncertainty(this.newCells);
+
+      this.getRelationshipOfCells(this.newCells);
       // check if the reference cell is uncertain or not
 
       if (isUpdate) {
@@ -189,9 +183,9 @@ export default class CellProperties {
     }
   }
 
-  getRelationshipOfCells() {
+  getRelationshipOfCells(cells: CellProperties[] = this.cells) {
 
-    this.cells.forEach((cell: CellProperties) => {
+    cells.forEach((cell: CellProperties) => {
       // eslint-disable-next-line no-empty
       if (cell.formula == "") {
 

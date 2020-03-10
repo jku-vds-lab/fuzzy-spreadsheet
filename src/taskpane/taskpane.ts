@@ -24,22 +24,22 @@ Office.initialize = () => {
   document.getElementById("first").onchange = first;
   document.getElementById("second").onchange = second;
   document.getElementById("third").onchange = third;
-  document.getElementById("useNewValues").onclick = useNewValues;
+  document.getElementById("useNewValues").onclick = handleDataChanged;
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
-Excel.run(function (context) {
+// Excel.run(function (context) {
 
-  var worksheet = context.workbook.worksheets.getActiveWorksheet();
-  eventResult = worksheet.onChanged.add(handleDataChanged);
+//   var worksheet = context.workbook.worksheets.getActiveWorksheet();
+//   eventResult = worksheet.onChanged.add(handleDataChanged);
 
-  return context.sync()
-    .then(function () {
-      console.log(eventResult);
-      console.log('Got the range properties');
+//   return context.sync()
+//     .then(function () {
+//       console.log(eventResult);
+//       console.log('Got the range properties');
 
-    });
-}).catch(errorHandlerFunction);
+//     });
+// }).catch(errorHandlerFunction);
 
 
 function useNewValues() {
@@ -83,33 +83,44 @@ async function handleDataChanged() {
 
   let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
 
+  newCells.forEach((nC: CellProperties) => {
+    if (nC.id == SheetProperties.referenceCell.id) {
+      console.log('New cell id:' + nC.value);
+    }
+  })
+
   console.log('Updated values');
 
   const whatif = new WhatIf();
-  whatif.setNewCells(newCells);
+  whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
-  console.log('Calculating updated number');
+  console.log('Computing new spread');
+  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood);
 
-  await whatif.calculateUpdatedNumber(SheetProperties.referenceCell);
+  // console.log('Calculating updated number');
 
-  if (!SheetProperties.referenceCell.whatIf) {
-    console.log('Returning because what if is null');
-    return;
-  }
+  // await whatif.calculateUpdatedNumber();
 
-  const updatedValue = SheetProperties.referenceCell.whatIf.value;
+  // if (!SheetProperties.referenceCell.whatIf) {
+  //   console.log('Returning because what if is null');
+  //   return;
+  // }
 
-  if (updatedValue == 0) {
-    console.log('No update in value');
-  } else {
-    console.log("CHANGE: " + updatedValue);
-    await SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
-  }
+  // const updatedValue = SheetProperties.referenceCell.whatIf.value;
 
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
+  // if (updatedValue == 0) {
+  //   console.log('No update in value');
+  // } else {
+  //   console.log("CHANGE: " + updatedValue);
+  //   SheetProperties.cellOp.deleteUpdateshapes();
+  //   // SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
+  // }
 
+  // if (SheetProperties.isSpread) {
+  //   console.log('Computing new spread');
+  //   await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
+  // }
 }
-
 
 async function parseSheet() {
 
@@ -121,7 +132,8 @@ async function parseSheet() {
 
     SheetProperties.cellProp = new CellProperties();
     // eslint-disable-next-line require-atomic-updates
-    SheetProperties.cells = await SheetProperties.cellProp.getCells(); // needs to be optimised
+    SheetProperties.cells = await SheetProperties.cellProp.getCells();
+    console.log('Cells', SheetProperties.cells);
     SheetProperties.cellProp.getRelationshipOfCells();
 
     console.log('Done parsing the sheet');
@@ -259,10 +271,8 @@ async function spread() {
     var element = <HTMLInputElement>document.getElementById("spread");
 
     if (element.checked) {
-      // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = true;
-      await SheetProperties.cellOp.createNewSheet();
-      await SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;
