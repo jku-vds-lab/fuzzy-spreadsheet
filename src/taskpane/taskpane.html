@@ -19,8 +19,6 @@
 
     <!-- Add Fontawesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/regular.min.css"> -->
 
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"
         integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous">
@@ -31,41 +29,22 @@
 </head>
 
 <body class="ms-font-m ms-welcome ms-Fabric">
-    <!-- <header class="ms-welcome__header ms-bgColor-neutralLighter">
-        <h1 class="ms-font-su">Fuzzy Spreadsheet</h1>
-    </header> -->
     <section id="sideload-msg" class="ms-welcome__main">
         <h2 class="ms-font-xl">Please sideload your add-in to see app body.</h2>
     </section>
     <main id="app-body" class="ms-welcome__main" style="display: none;">
 
-        <button class="btn" id="parseSheet"><img width="15" height="15" src="../../assets/play-button.png" alt="initialize"title="Initialize the Sheet"> Initialize</button>
 
-        <!-- <div class='initialize' id='parseSheet'>
-            <table>
-                <tr>
-                    <th><img width="10" height="10" src="../../assets/play-button.png" alt="initialize"
-                            title="Initialize the Sheet"></th>
-                    <th>Initialize</th>
-                </tr>
-            </table>
-        </div> -->
+        <button class="btn" id="parseSheet"><img width="15" height="15" src="../../assets/play-button.png"
+                alt="initialize" title="Initialize the Sheet"> Initialize</button>
 
-        <button class="btn" id="referenceCell"><img width="20" height="20" src="../../assets/referenceCell.png" alt="referenceCell"title="Mark Cell as Reference Cell"> Mark as Reference Cell</button>
+        <button class="btn" id="referenceCell" hidden="true"><img width="20" height="20"
+                src="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as
+            Reference Cell</button>
 
-        <!-- <div class='referenceCell' id='referenceCell'>
-            <table>
-                <tr>
-                    <td><img width="20" height="20" src="../../assets/referenceCell.png" alt="referenceCell"
-                            title="Mark Cell as Reference Cell"></td>
-                    <td>Mark as Reference Cell</td>
-                </tr>
-            </table>
-        </div> -->
+        <!-- <hr> -->
 
-        <hr>
-
-        <div class="relationship" id="relationship">
+        <div class="relationship" id="relationship" hidden="true">
             <p>Show visualizations for cells</p>
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
@@ -75,8 +54,8 @@
                     <td><input type="checkbox" id="inputRelationship"></td>
                     <td><b>influencing</b> the reference cell</td>
                     <td>
-                        <!-- <img width="10" height="10" src="../../assets/diamond.png" alt="influence" title="Influencing the reference cell"> -->
-                            <i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#333;"></i><td>
+                        <i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#333;"></i>
+                    <td>
                 </tr>
 
                 <tr>
@@ -88,21 +67,21 @@
             </table>
         </div>
 
-        <div class="neighborhood" id="neighborhood">
+        <div class="neighborhood" id="neighborhood" hidden="true">
             <p>with degree of neighborhood</p>
             <form id="list">
-                <input type="radio" id="first" name="neighbour" value="1" checked>
+                <input type="radio" id="first" name="group1" value="1" checked>
                 <label for="first"> 1</label>
-                <input type="radio" id="second" name="neighbour" value="2">
+                <input type="radio" id="second" name="group1" value="2">
                 <label for="second"> 2</label>
-                <input type="radio" id="third" name="neighbour" value="3">
+                <input type="radio" id="third" name="group1" value="3">
                 <label for="third"> 3</label>
             </form>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
-        <div class="impact" id="impact">
+        <div class="impact" id="impact" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="150" style="text-align: center;">
@@ -112,7 +91,9 @@
                 <tr>
                     <td><input type="checkbox" id="impact"></td>
                     <td>Impact</td>
-                    <td><font size="1" color="#333" text-align="center">MIN<font></td>
+                    <td>
+                        <font size="1" color="#333" text-align="center">MIN<font>
+                    </td>
                     <td>
                         <i class="fa fa-square" style="font-size:15px;color:red;"></i>
                         <i class="fa fa-square" style="font-size:15px;color:#ff4d4d;"></i>
@@ -130,16 +111,18 @@
                         <div class="slidecontainer">
                             <input type="range" min="0" max="100" value="50" class="slider" id="impact_range">
                           </div> -->
-                        </td>
-                        <td><font size="1" color="#333" text-align="center">MAX</font></td>
-                            <td>
+                    </td>
+                    <td>
+                        <font size="1" color="#333" text-align="center">MAX</font>
+                    </td>
+                    <td>
                 </tr>
             </table>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
-        <div class="likelihood" id="likelihood">
+        <div class="likelihood" id="likelihood" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="150" style="text-align: center;">
@@ -147,7 +130,9 @@
                 <tr>
                     <td><input type="checkbox" id="likelihood"></td>
                     <td>Likelihood</td>
-                    <td><font size="1" color="#333" text-align="center">0%</font></td>
+                    <td>
+                        <font size="1" color="#333" text-align="center">0%</font>
+                    </td>
                     <td>
                         <i class="fa fa-square" style="font-size:3px;color:#ccc;"></i>
                         <i class="fa fa-square" style="font-size:6px;color:#ccc;"></i>
@@ -162,14 +147,16 @@
                             <input type="range" min="0" max="100" value="50" class="slider" id="likelihood_range">
                           </div> -->
                     </td>
-                    <td><font size="1" color="#333">100%</font></td>
+                    <td>
+                        <font size="1" color="#333">100%</font>
+                    </td>
                 </tr>
             </table>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
-        <div class="relationship" id="relationship">
+        <div class="relationship" id="relationship" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="150" style="text-align: center;">
@@ -200,23 +187,23 @@
                                 <td>3</td>
                             </tr>
                         </table>
-                        </td>
+                    </td>
                 </tr>
             </table>
             <!-- <span class="fa-stack fa-2x">
                 <i class="fa fa-square fa-rotate-45 fa-stack-1x"></i>
                 <i class="far fa-square fa-stack-2x" ></i>
               </span> -->
-            
-              <span class="fa-stack fa-1x">
+
+            <span class="fa-stack fa-1x">
                 <i class="fa fa-square fa-rotate-45 fa-stack-1x" style="font-size:10px;color:#333;"></i>
                 <i class="far fa-square fa-stack-1x" style="font-size:25px;color:#333;"></i>
-              </span>
+            </span>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
-        <div class="distribution" id="spread">
+        <div class="distribution" id="spread" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="150">
@@ -224,8 +211,8 @@
                 <tr>
                     <td><input type="checkbox" id="distribution"></td>
                     <td>Distribution
-                        <br><small>Mean:  
-                        <br>Std. Dev: </small>
+                        <br><small>Mean:
+                            <br>Std. Dev: </small>
                     </td>
                     <td><img width="100" height="35" src="../../assets/spread2.png" alt="spread" title="Spread" />
                     </td>
@@ -233,162 +220,21 @@
             </table>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
-        <!-- <button class="btn"><img width="30" height="30" src ="../../assets/whatif.png" alt="initialize" title="Initialize the Sheet">Start What-If Analysis</button>  -->
-
-        
         <!-- Use Buttons -->
-        <button class="btn" id="startWhatIf"><img width="30" height="30" src="../../assets/whatif2.png" alt="whatif"title="Start What-If Analysis"> Start What-If Analysis</button>
-        <button class="btn" id="useNewValues"><i class="fa fa-check" style="font-size:12px;color:green;"></i> Finish What-If Analysis and keep new values</button>
-        <button class="btn" id="dismissValues"><i class="fa fa-times" style="font-size:12px;color:#333;"></i> Finish What-If Analysis and undo changes</button>
-
-        <!-- Use divs and tables for the what-if scenario settings -->
-        <!-- <div class='startwhatif' id='startwhatif'>
-            <table>
-                <tr>
-                    <th><img width="30" height="30" src="../../assets/whatif2.png" alt="whatif"
-                            title="Start What-If Analysis"></th>
-                    <th>Start What-If Analysis</th>
-                </tr>
-            </table>
-        </div>
-
-        <div class='endwhatif_new' id='endwhatif_new'>
-            <table>
-                <tr>
-                    <th><i class="fa fa-check" style="font-size:12px;color:#333;"></i></th>
-                    <th>Finish What-If Analaysis and keep new values</th>
-                </tr>
-            </table>
-        </div>
-
-        <div class='endwhatif_undo' id='endwhatif_undo'>
-            <table>
-                <tr>
-                    <th><i class="fa fa-times" style="font-size:12px;columns: #333;"></i></th>
-                    <th>Finish What-If Analaysis and undo changes</th>
-                </tr>
-            </table>
-        </div> -->
-
-
-        
-
-
-        <!-- Icon retrieved from Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
-        <!-- <button class="btn"><img width="20" height="20" src ="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as Reference Cell</button>    -->
-
-
-<!-- #####################  OLD VERSION   ####################### -->
-<!-- #####################  OLD VERSION   ####################### -->
-<!-- #####################  OLD VERSION   ####################### -->
-<!-- #####################  OLD VERSION   ####################### -->
-<!-- #####################  OLD VERSION   ####################### -->
-<!-- #####################  OLD VERSION   ####################### -->
-
-
-        <!-- <p> Click on the <b>Initialize</b> button just once. To choose any cell as a reference cell, click on <img
-                width="25" height="20" src="../../assets/focus2.png" alt="focus" title="Mark Focus Cell" /> <b>Reference
-                Cell</b> and then
-            choose your options.
-            You may also select the degree of neighborhood:
-            <form id="list">
-                <input type="radio" id="first" name="neighbour" value="1" checked>
-                <label for="first"> 1</label>
-                <input type="radio" id="second" name="neighbour" value="2">
-                <label for="second"> 2</label>
-                <input type="radio" id="third" name="neighbour" value="3">
-                <label for="third"> 3</label>
-            </form>
-        </p>
-
-        <div class='loader' id='loading' hidden='true'></div> -->
-<!-- 
-        <table style="width: 100%;">
-            <col width="25" style="text-align: center;">
-            <col width="50">
-            <col width="auto"> -->
-
-            <!-- <tr role="button" id="parseSheet">
-                <td><img width="25" height="25" src="../../assets/init.png" alt="impact" title="Initialize the Sheet" />
-                </td>
-                <td>Initialize</td>
-            </tr> -->
-
-            <!-- <tr role="button" id="referenceCell">
-                <td><img width="25" height="25" src="../../assets/focus2.png" alt="impact"
-                        title="Mark Reference Cell" />
-                </td>
-                <td colspan="2">Reference Cell</td>
-            </tr> -->
-
-            <!-- <tr>
-                <td><input type="checkbox" id="impact"></td>
-                <td><img width="50" height="10" src="../../assets/impact.png" alt="impact" title="Impact" /></td>
-                <td>Impact</td>
-            </tr> -->
-            <!-- <tr>
-                <td><input type="checkbox" id="likelihood"></td>
-                <td><img width="50" height="25" src="../../assets/likelihood.png" alt="likelihood" title="Likelihood" />
-                </td>
-                <td>Likelihood</td>
-            </tr> -->
-            <!-- <tr>
-                <td><input type="checkbox" id="spread"></td>
-                <td><img width="50" height="25" src="../../assets/spread2.png" alt="spread" title="Spread" /></td>
-                <td>Spread</td>
-            </tr> -->
-            <!-- <tr>
-                <td><input type="checkbox" id="relationship"></td>
-                <td><img width="25" height="25" src="../../assets/relationship.png" alt="relationship"
-                        title="Relationship" /></td>
-                <td> Relationship</td>
-            </tr>
-            <tr>
-                <td style="text-align: center"> &#x2514;</td>
-                <td><input type="checkbox" id="inputRelationship"></td>
-                <td>Input Relationship</td>
-            </tr>
-            <tr>
-                <td style="text-align: center"> &#x2514;</td>
-                <td><input type="checkbox" id="outputRelationship"> </td>
-                <td>Output Relationship</td>
-            </tr>
-        </table> -->
-
-
-        <!-- <div role="button" id="useNewValues" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <img width="20" height="20" src="../../assets/refresh.png" alt="removeAll" title="Remove all Features" />
-            <span class="ms-Button-label">Use current values</span>
-        </div> -->
-        <!-- <div role="button" id="dismissValues" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <img width="20" height="20" src="../../assets/undo.png" alt="removeAll" title="Remove all Features" />
-            <span class="ms-Button-label">Revert to initial values</span>
-        </div> -->
-        <!-- <div role="button" id="removeAll" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <img width="25" height="20" src="../../assets/bin.png" alt="removeAll" title="Remove all Features" />
-            <span class="ms-Button-label">Remove all visualisation</span>
-        </div> -->
-
-        <!-- <table style="width: 100%; ">
-            <tr role="button" id="removeAll">
-                <td>
-                    <img width="25" height="20" src="../../assets/bin.png" alt="removeAll"
-                        title="Remove all Features" />
-                </td>
-                <td>Remove All</td>
-                <td></td>
-            </tr>
-        </table> -->
-
+        <button class="btn" id="startWhatIf" hidden="true"><img width="auto" height="20" src="../../assets/whatif4.png"
+                alt="whatif" title="Start What-If Analysis"> Start What-If Analysis</button>
+        <button class="btn" id="useNewValues" hidden="true"><i class="fa fa-check"
+                style="font-size:12px;color:green;"></i> Finish
+            What-If Analysis and keep new values</button>
+        <button class="btn" id="dismissValues" hidden="true"><i class="fa fa-times"
+                style="font-size:12px;color:#333;"></i> Finish
+            What-If Analysis and undo changes</button>
     </main>
 </body>
 
 </html>
 
-<!-- Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
-<!-- Icons made by <a href="https://www.flaticon.com/authors/flat-icons" title="Flat Icons">Flat Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
-<!-- Icons made by <a href="https://www.flaticon.com/authors/becris" title="Becris">Becris</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
-<!-- Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
-<!-- Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
+
+<!-- Icon retrieved from Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
