@@ -305,11 +305,12 @@ function displayOptions() {
 function hideOptions() {
 
   document.getElementById('referenceCell').hidden = true;
-  document.getElementById('relationship').hidden = true;
-  document.getElementById('neighborhood').hidden = true;
-  document.getElementById('impact').hidden = true;
-  document.getElementById('likelihood').hidden = true;
-  document.getElementById('spread').hidden = true;
+  document.getElementById('relationshipDiv').hidden = true;
+  document.getElementById('neighborhoodDiv').hidden = true;
+  document.getElementById('impactDiv').hidden = true;
+  document.getElementById('likelihoodDiv').hidden = true;
+  document.getElementById('spreadDiv').hidden = true;
+  document.getElementById('relationshipInfoDiv').hidden = true;
   document.getElementById('startWhatIf').hidden = true;
   document.getElementById('useNewValues').hidden = true;
   document.getElementById('dismissValues').hidden = true;
@@ -321,33 +322,37 @@ function showReferenceCellOption() {
 
 function showVisualizationOption() {
 
-  document.getElementById('relationship').hidden = false;
-  document.getElementById('neighborhood').hidden = false;
-  document.getElementById('impact').hidden = false;
-  document.getElementById('likelihood').hidden = false;
-  document.getElementById('spread').hidden = false;
+  document.getElementById('relationshipDiv').hidden = false;
+  document.getElementById('neighborhoodDiv').hidden = false;
+  document.getElementById('impactDiv').hidden = false;
+  document.getElementById('likelihoodDiv').hidden = false;
+  document.getElementById('spreadDiv').hidden = false;
+  document.getElementById('relationshipInfoDiv').hidden = true;
   document.getElementById('startWhatIf').hidden = false;
-  (<HTMLInputElement>document.getElementById("neighborhood")).disabled = true;
-  (<HTMLInputElement>document.getElementById("impact")).disabled = true;
-  (<HTMLInputElement>document.getElementById("likelihood")).disabled = true;
-  (<HTMLInputElement>document.getElementById("spread")).disabled = false;
+  (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("impactDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
   (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
 }
 
 
 function showAllOptions() {
 
-  document.getElementById('relationship').hidden = false;
-  document.getElementById('neighborhood').hidden = false;
-  document.getElementById('impact').hidden = false;
-  document.getElementById('likelihood').hidden = false;
-  document.getElementById('spread').hidden = false;
+  document.getElementById('relationshipDiv').hidden = false;
+  document.getElementById('neighborhoodDiv').hidden = false;
+  document.getElementById('impactDiv').hidden = false;
+  document.getElementById('likelihoodDiv').hidden = false;
+  document.getElementById('spreadDiv').hidden = false;
+  document.getElementById('relationshipInfoDiv').hidden = false;
   document.getElementById('startWhatIf').hidden = false;
-  (<HTMLInputElement>document.getElementById("neighborhood")).disabled = false;
-  (<HTMLInputElement>document.getElementById("impact")).disabled = false;
-  (<HTMLInputElement>document.getElementById("likelihood")).disabled = false;
-  (<HTMLInputElement>document.getElementById("spread")).disabled = false;
+  (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("impactDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
   (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
+  (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
 }
 
 

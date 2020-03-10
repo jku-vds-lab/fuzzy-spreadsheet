@@ -21,7 +21,7 @@ export default class CellProperties {
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public impact: number = 0;
-  public likelihood: number = 10;
+  public likelihood: number = 1;
   public spreadRange: string;
   public variance: number = 0;
   public mySamples: { value: number, likelihood: number }[] = null;

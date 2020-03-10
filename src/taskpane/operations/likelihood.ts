@@ -100,7 +100,7 @@ export default class Likelihood {
         }
 
         if (this.cells[i].isUncertain) {
-          this.cells[i].likelihood = this.cells[i + 2].value / 10;
+          this.cells[i].likelihood = this.cells[i + 2].value;
         }
       }
     } catch (error) {

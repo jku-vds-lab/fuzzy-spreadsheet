@@ -21,8 +21,8 @@ export default class CommonOperations {
       cell.rect.top = cell.top + cell.height / 4;
 
       if (SheetProperties.isLikelihood) {
-        height = cell.likelihood;
-        width = cell.likelihood;
+        height = cell.likelihood * 10;
+        width = cell.likelihood * 10;
       }
 
       cell.rect.height = height;
