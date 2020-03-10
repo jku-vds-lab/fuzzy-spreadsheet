@@ -17,15 +17,26 @@ export default class Spread {
     this.color = color;
   }
 
-  public showSpread(n: number) {
+  public showSpread(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
 
       this.addVarianceInfo();
 
       this.showReferenceCellSpread();
-      this.showInputSpread(this.referenceCell.inputCells, n);
-      this.showOutputSpread(this.referenceCell.outputCells, n);
+
+      if (!(isInput || isOutput)) {
+        this.removeSpread(isInput, isOutput);
+        return;
+      }
+
+      if (isInput) {
+        this.showInputSpread(this.referenceCell.inputCells, n);
+      }
+
+      if (isOutput) {
+        this.showOutputSpread(this.referenceCell.outputCells, n);
+      }
 
     } catch (error) {
       console.log('Error in Show spread', error);
@@ -37,7 +48,7 @@ export default class Spread {
     try {
 
       this.addSamplesToCell(this.referenceCell);
-      this.drawBarCodePlot(this.referenceCell);
+      this.drawBarCodePlot(this.referenceCell, 'Reference');
 
     } catch (error) {
       console.log('Error in Show Reference Cell Spread', error);
@@ -56,7 +67,7 @@ export default class Spread {
 
         cell.isSpread = true;
         this.addSamplesToCell(cell);
-        this.drawBarCodePlot(cell);
+        this.drawBarCodePlot(cell, 'Input');
 
         if (i == 1) {
           return;
@@ -82,7 +93,7 @@ export default class Spread {
 
         cell.isSpread = true;
         this.addSamplesToCell(cell);
-        this.drawBarCodePlot(cell);
+        this.drawBarCodePlot(cell, 'Output');
         if (i == 1) {
           return;
         }
@@ -94,7 +105,7 @@ export default class Spread {
     }
   }
 
-  public drawBarCodePlot(cell: CellProperties) {
+  public drawBarCodePlot(cell: CellProperties, name: string) {
     try {
       Excel.run((context) => {
 
@@ -112,6 +123,7 @@ export default class Spread {
 
           let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
           line.lineFormat.transparency = 1 - sample.likelihood;
+          line.name = name;
 
           if (sample.likelihood < 0.1) {
             line.lineFormat.transparency = 0.9;
@@ -293,19 +305,35 @@ export default class Spread {
     }
   }
 
-  public async removeSpread() {
+  public async removeSpread(isInput: boolean, isOutput: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isSpread = false;
     })
 
+    let name: string;
+
+    if (isInput) {
+      name = 'Input';
+      await this.deleteSpread(name);
+    }
+
+    if (isOutput) {
+      name = 'Output';
+      await this.deleteSpread(name);
+    }
+  }
+
+  public async deleteSpread(name: string) {
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       var charts = sheet.charts;
-      charts.load("items/$none");
+      charts.load("items/name");
       return context.sync().then(function () {
         charts.items.forEach(function (chart) {
-          chart.delete();
+          if (chart.name.includes(name)) {
+            chart.delete();
+          }
         });
         return context.sync();
       });

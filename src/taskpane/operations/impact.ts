@@ -11,36 +11,62 @@ export default class Impact {
   private cells: CellProperties[];
   private commonOps: CommonOperations;
 
+
   constructor(referenceCell: CellProperties, cells: CellProperties[]) {
     this.referenceCell = referenceCell;
     this.commonOps = new CommonOperations();
     this.cells = cells;
   }
 
-  public showImpact(n: number) {
+  public showImpact(n: number, isInput: boolean, isOutput: boolean) {
 
-    this.addImpactInfo(n);
+    let type: string;
 
-    if (SheetProperties.isLikelihood) {
-      this.commonOps.deleteRectangles(this.cells);
+    if (isInput) {
+      type = 'Input';
+      if (SheetProperties.isLikelihood) {
+        this.commonOps.deleteRectangles(this.cells, type);
+      }
+
+      this.addImpactInfoInputCells(n);
+      this.showInputImpact(this.referenceCell, n);
     }
 
-    this.showInputImpact(this.referenceCell, n);
-    this.showOutputImpact(this.referenceCell, n);
+    if (isOutput) {
+      type = 'Output';
+      if (SheetProperties.isLikelihood) {
+        this.commonOps.deleteRectangles(this.cells, type);
+      }
+
+      this.addImpactInfoOutputCells(this.referenceCell, n);
+      this.showOutputImpact(this.referenceCell, n);
+    }
   }
 
-  public async removeImpact(n: number) {
+  public async removeImpact(n: number, isInput: boolean, isOutput: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isImpact = false;
     })
 
-    await this.commonOps.deleteRectangles(this.cells);
+    let type: string;
+
+    if (isInput) {
+      type = 'Input';
+      await this.commonOps.deleteRectangles(this.cells, type);
+
+    }
+
+    if (isOutput) {
+      type = 'Output';
+      await this.commonOps.deleteRectangles(this.cells, type);
+
+    }
 
     if (SheetProperties.isLikelihood) {
 
       const likelihood = new Likelihood(this.cells, this.referenceCell);
-      likelihood.showLikelihood(n);
+      likelihood.showLikelihood(n, isInput, isOutput);
     }
   }
 
@@ -49,11 +75,12 @@ export default class Impact {
     cell.inputCells.forEach((inCell: CellProperties) => {
 
       if (inCell.isImpact) {
+        console.log(cell.address + ' Returning because impact is already there');
         return;
       }
 
       inCell.isImpact = true;
-      this.commonOps.drawRectangle(inCell);
+      this.commonOps.drawRectangle(inCell, 'Input');
 
       if (i == 1) {
         return;
@@ -71,7 +98,7 @@ export default class Impact {
       }
 
       outCell.isImpact = true;
-      this.commonOps.drawRectangle(outCell);
+      this.commonOps.drawRectangle(outCell, 'Output');
 
       if (i == 1) {
         return;

@@ -32,29 +32,34 @@ export default class Relationship {
 
   private async deleteTriangles(type: string) {
 
-    this.cells.forEach((cell: CellProperties) => {
-      if (type == 'Input') {
-        cell.isInputRelationship = false;
-      }
-      if (type == 'Output') {
-        cell.isOutputRelationship = false;
-      }
-    })
+    try {
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var shapes = sheet.shapes;
-      shapes.load("items/name");
+      this.cells.forEach((cell: CellProperties) => {
+        if (type == 'Input') {
+          cell.isInputRelationship = false;
+        }
+        if (type == 'Output') {
+          cell.isOutputRelationship = false;
+        }
+      })
 
-      return context.sync().then(function () {
-        shapes.items.forEach(function (shape) {
-          if (shape.name.includes(type)) {
-            shape.delete();
-          }
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes('Relationship' + type)) {
+              shape.delete();
+            }
+          });
+          return context.sync();
         });
-        return context.sync();
       });
-    });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   private drawInputRelation(cell: CellProperties, color: string) {
@@ -66,7 +71,7 @@ export default class Relationship {
 
       type = Excel.GeometricShapeType.triangle;
       let triangle = shapes.addGeometricShape(type);
-      triangle.name = "Input";
+      triangle.name = "RelationshipInput";
       triangle.rotation = 0;
       triangle.left = cell.left;
       triangle.top = cell.top + cell.height / 4;
@@ -130,7 +135,7 @@ export default class Relationship {
 
       type = Excel.GeometricShapeType.diamond;
       let diamond = shapes.addGeometricShape(type);
-      diamond.name = "Output"
+      diamond.name = "RelationshipOutput"
       diamond.left = cell.left;
       diamond.top = cell.top + cell.height / 4;
       diamond.height = 6;

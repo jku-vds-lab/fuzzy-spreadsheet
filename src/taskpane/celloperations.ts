@@ -35,28 +35,28 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  showImpact(n: number) {
-    this.impact.showImpact(n);
+  showImpact(n: number, isInput: boolean, isOutput: boolean) {
+    this.impact.showImpact(n, isInput, isOutput);
   }
 
-  async removeImpact(n: number) {
-    await this.impact.removeImpact(n);
+  async removeImpact(n: number, isInput: boolean, isOutput: boolean) {
+    await this.impact.removeImpact(n, isInput, isOutput);
   }
 
-  showLikelihood(n: number) {
-    this.likelihood.showLikelihood(n);
+  showLikelihood(n: number, isInput: boolean, isOutput: boolean) {
+    this.likelihood.showLikelihood(n, isInput, isOutput);
   }
 
-  async removeLikelihood(n: number) {
-    await this.likelihood.removeLikelihood(n);
+  async removeLikelihood(n: number, isInput: boolean, isOutput: boolean) {
+    await this.likelihood.removeLikelihood(n, isInput, isOutput);
   }
 
-  showSpread(n: number) {
-    this.spread.showSpread(n);
+  showSpread(n: number, isInput: boolean, isOutput: boolean) {
+    this.spread.showSpread(n, isInput, isOutput);
   }
 
-  async removeSpread() {
-    await this.spread.removeSpread();
+  async removeSpread(isInput: boolean, isOutput: boolean) {
+    await this.spread.removeSpread(isInput, isOutput);
   }
 
   showInputRelationship(n: number) {

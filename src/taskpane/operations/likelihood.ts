@@ -18,35 +18,52 @@ export default class Likelihood {
     this.commonOps = new CommonOperations();
   }
 
-  public showLikelihood(n: number) {
-
-    this.addLikelihoodInfo();
+  public showLikelihood(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
 
-      if (SheetProperties.isImpact) {
-        this.commonOps.deleteRectangles(this.cells);
+      if (!(isInput || isOutput)) {
+        this.removeLikelihood(n, isInput, isOutput);
+        return;
       }
 
-      this.showInputLikelihood(this.referenceCell, n);
-      this.showOutputLikelihood(this.referenceCell, n);
+      this.addLikelihoodInfo();
 
+      if (isInput) {
+        if (SheetProperties.isImpact) {
+          this.commonOps.deleteRectangles(this.cells, 'Input');
+        }
+        this.showInputLikelihood(this.referenceCell, n);
+      }
+
+      if (isOutput) {
+        if (SheetProperties.isImpact) {
+          this.commonOps.deleteRectangles(this.cells, 'Output');
+        }
+        this.showOutputLikelihood(this.referenceCell, n);
+      }
     } catch (error) {
       console.log(error);
     }
   }
 
-  public async removeLikelihood(n: number) {
+  public async removeLikelihood(n: number, isInput: boolean, isOutput: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isLikelihood = false;
     })
 
-    await this.commonOps.deleteRectangles(this.cells);
+    if (isInput) {
+      await this.commonOps.deleteRectangles(this.cells, 'Input');
+    }
+
+    if (isOutput) {
+      await this.commonOps.deleteRectangles(this.cells, 'Output');
+    }
 
     if (SheetProperties.isImpact) {
       const impact = new Impact(this.referenceCell, this.cells);
-      impact.showImpact(n);
+      impact.showImpact(n, isInput, isOutput);
     }
   }
 
@@ -59,7 +76,7 @@ export default class Likelihood {
       }
 
       inCell.isLikelihood = true;
-      this.commonOps.drawRectangle(inCell);
+      this.commonOps.drawRectangle(inCell, 'Input');
 
       if (n == 1) {
         return;
@@ -78,7 +95,7 @@ export default class Likelihood {
       }
 
       outCell.isLikelihood = true;
-      this.commonOps.drawRectangle(outCell);
+      this.commonOps.drawRectangle(outCell, 'Output');
 
       if (n == 1) {
         return;

@@ -18,8 +18,9 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
-  document.getElementById("inputRelationship").onclick = showInputRelationship;
-  document.getElementById("outputRelationship").onclick = showOutputRelationship;
+  document.getElementById("relationship").onclick = relationship;
+  document.getElementById("inputRelationship").onclick = inputRelationship;
+  document.getElementById("outputRelationship").onclick = outputRelationship;
   document.getElementById("first").onchange = first;
   document.getElementById("second").onchange = second;
   document.getElementById("third").onchange = third;
@@ -84,46 +85,85 @@ async function markAsReferenceCell() {
   }
 }
 
-function showInputRelationship() {
+function relationship() {
+
+  var element = <HTMLInputElement>document.getElementById("relationship");
+
+  if (element.checked) {
+    SheetProperties.isRelationship = true;
+    showInputRelationshipIcons();
+    showOutputRelationshipIcons();
+  } else {
+    SheetProperties.isRelationship = false;
+    removeInputRelationshipIcons();
+    removeOutputRelationshipIcons();
+  }
+}
+
+function inputRelationship() {
   try {
-    console.log('Degree of neighbourhood: ' + SheetProperties.degreeOfNeighbourhood);
 
     var element = <HTMLInputElement>document.getElementById("inputRelationship");
 
     if (element.checked) {
       showAllOptions();
       SheetProperties.isInputRelationship = true;
-      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isInputRelationship = false;
-      SheetProperties.cellOp.removeInputRelationship();
     }
+
+    displayOptions();
   } catch (error) {
     console.error(error);
   }
 }
 
-function showOutputRelationship() {
+function outputRelationship() {
   try {
     var element = <HTMLInputElement>document.getElementById("outputRelationship");
 
     if (element.checked) {
       showAllOptions();
       SheetProperties.isOutputRelationship = true;
-      SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
     } else {
       SheetProperties.isOutputRelationship = false;
-      SheetProperties.cellOp.removeOutputRelationship();
     }
+    displayOptions();
   } catch (error) {
     console.error(error);
   }
 }
 
+function showInputRelationshipIcons() {
+
+  if (SheetProperties.isInputRelationship == true) {
+    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+  } else {
+    SheetProperties.cellOp.removeInputRelationship();
+  }
+}
+
+function removeInputRelationshipIcons() {
+  SheetProperties.cellOp.removeInputRelationship();
+}
+
+
+function showOutputRelationshipIcons() {
+  if (SheetProperties.isOutputRelationship == true) {
+    SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+  } else {
+    removeOutputRelationshipIcons();
+  }
+}
+
+function removeOutputRelationshipIcons() {
+  SheetProperties.cellOp.removeOutputRelationship();
+}
+
+
 function first() {
 
   SheetProperties.degreeOfNeighbourhood = 1;
-  console.log('First');
   removeShapesFromReferenceCell();
   displayOptions();
 }
@@ -131,7 +171,6 @@ function first() {
 
 function second() {
   SheetProperties.degreeOfNeighbourhood = 2;
-  console.log('Second');
   removeShapesFromReferenceCell();
   displayOptions();
 }
@@ -139,7 +178,6 @@ function second() {
 
 function third() {
   SheetProperties.degreeOfNeighbourhood = 3;
-  console.log('Third');
   removeShapesFromReferenceCell();
   displayOptions();
 }
@@ -150,13 +188,33 @@ async function impact() {
 
     if (element.checked) {
       SheetProperties.isImpact = true;
-      SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
+      await inputImpact();
+      await outputImpact();
+
     } else {
       SheetProperties.isImpact = false;
-      await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     }
   } catch (error) {
     console.error(error);
+  }
+}
+
+async function inputImpact() {
+
+  if (SheetProperties.isInputRelationship) {
+    SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  } else {
+    await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+}
+
+async function outputImpact() {
+
+  if (SheetProperties.isOutputRelationship) {
+    SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  } else {
+    await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 }
 
@@ -166,10 +224,10 @@ async function likelihood() {
 
     if (element.checked) {
       SheetProperties.isLikelihood = true;
-      SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
+      SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
-      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     }
   } catch (error) {
     console.error(error);
@@ -183,11 +241,11 @@ async function spread() {
 
     if (element.checked) {
       SheetProperties.isSpread = true;
-      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     } else {
       // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;
-      await SheetProperties.cellOp.removeSpread();
+      await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     }
   } catch (error) {
     console.error(error);
@@ -256,7 +314,7 @@ async function whatIfProcess() {
   whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
   console.log('Computing new spread');
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood);
+  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
 
   // console.log('Calculating updated number');
 
@@ -283,7 +341,6 @@ async function whatIfProcess() {
   // }
 }
 
-
 function displayOptions() {
   if (SheetProperties.isImpact) {
     impact();
@@ -294,11 +351,8 @@ function displayOptions() {
   if (SheetProperties.isSpread) {
     spread();
   }
-  if (SheetProperties.isInputRelationship) {
-    showInputRelationship();
-  }
-  if (SheetProperties.isOutputRelationship) {
-    showOutputRelationship();
+  if (SheetProperties.isRelationship) {
+    relationship();
   }
 }
 
@@ -401,23 +455,4 @@ async function clearPreviousReferenceCell() {
   })
 }
 
-async function removeAll() {
-
-  clearPreviousReferenceCell();
-
-  var element1 = <HTMLInputElement>document.getElementById("impact");
-  var element2 = <HTMLInputElement>document.getElementById("likelihood");
-  var element3 = <HTMLInputElement>document.getElementById("spread");
-  var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
-  var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
-  var element6 = <HTMLInputElement>document.getElementById("relationship");
-
-  element1.checked = false;
-  element2.checked = false;
-  element3.checked = false;
-  element4.checked = false;
-  element5.checked = false;
-  element6.checked = false;
-  await removeShapesFromReferenceCell();
-}
 

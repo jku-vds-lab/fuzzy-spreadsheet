@@ -137,7 +137,7 @@ export default class WhatIf {
   }
 
   // check the variance & likelihood
-  async drawChangedSpread(referenceCell: CellProperties, degreeOfNeighbourhood: number) {
+  async drawChangedSpread(referenceCell: CellProperties, degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
     let newReferenceCell = null;
 
     this.newCells.forEach((cell: CellProperties) => {
@@ -149,6 +149,6 @@ export default class WhatIf {
 
     const spread: Spread = new Spread(this.newCells, newReferenceCell, 'red');
 
-    spread.showSpread(degreeOfNeighbourhood);
+    spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
   }
 }

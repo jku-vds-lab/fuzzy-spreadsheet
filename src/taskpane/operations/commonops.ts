@@ -5,7 +5,7 @@ import SheetProperties from "../sheetproperties";
 
 export default class CommonOperations {
 
-  drawRectangle(cell: CellProperties) {
+  drawRectangle(cell: CellProperties, type: string) {
 
     Excel.run((context) => {
 
@@ -16,7 +16,7 @@ export default class CommonOperations {
       let width = 5;
 
       cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-      cell.rect.name = "Shape" + i;
+      cell.rect.name = "Shape" + type + i;
       cell.rect.left = cell.left + MARGIN;
       cell.rect.top = cell.top + cell.height / 4;
 
@@ -38,28 +38,30 @@ export default class CommonOperations {
     });
   }
 
-  async deleteRectangles(cells: CellProperties[]) {
+  async deleteRectangles(cells: CellProperties[], type: string) {
 
-    // remove both impact and likelihood here?
+    try {
+      cells.forEach((cell: CellProperties) => {
+        cell.isImpact = false;
+        cell.isLikelihood = false;
+      })
 
-    cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
-      cell.isLikelihood = false;
-    })
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var shapes = sheet.shapes;
-      shapes.load("items/name");
-
-      return context.sync().then(function () {
-        shapes.items.forEach(function (shape) {
-          if (shape.name.includes('Shape')) {
-            shape.delete();
-          }
-        });
-        return context.sync();
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes('Shape' + type)) {
+              shape.delete();
+            }
+          });
+        }).catch((reason: any) => console.log('Could not delete the shape: ' + reason));
       });
-    });
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
