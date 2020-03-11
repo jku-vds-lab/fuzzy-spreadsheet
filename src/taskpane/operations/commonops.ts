@@ -42,18 +42,15 @@ export default class CommonOperations {
 
     try {
 
-      Excel.run(function (context) {
+      Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         var shapes = sheet.shapes;
         shapes.load("items/name");
 
         return context.sync().then(function () {
-
-          // console.log('Length of shapes: ' + shapes.items.length);
-          // console.log('Is null object: ' + shapes.isNullObject);
-
           shapes.items.forEach(function (shape) {
             if (shape.name.includes('Shape' + type)) {
+              console.log('Name: ' + shape.name);
               shape.delete();
             }
           });

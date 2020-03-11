@@ -24,7 +24,7 @@ export default class Impact {
 
       if (SheetProperties.isLikelihood) {
         console.log('Removing likelihood inputs');
-        this.commonOps.deleteRectangles(this.cells, 'Input')
+        this.commonOps.deleteRectangles(this.cells, 'InputLikelihood')
       }
 
       this.displayInputImpact(this.referenceCell, n);
@@ -41,7 +41,7 @@ export default class Impact {
 
       if (SheetProperties.isLikelihood) {
         console.log('Removing likelihood outputs');
-        this.commonOps.deleteRectangles(this.cells, 'Output')
+        this.commonOps.deleteRectangles(this.cells, 'OutputLikelihood')
       }
 
       this.displayOutputImpact(this.referenceCell, n);
@@ -54,7 +54,7 @@ export default class Impact {
   public removeInputImpact(n: number) {
 
     try {
-      const type = 'Input';
+      const type = 'InputImpact';
       this.removeInputImpactInfo(this.referenceCell, n);
       this.commonOps.deleteRectangles(this.cells, type);
 
@@ -87,12 +87,13 @@ export default class Impact {
   public removeOutputImpact(n: number) {
 
     try {
-      const type = 'Output';
+      const type = 'OutputImpact';
       this.removeOutputImpactInfo(this.referenceCell, n);
       this.commonOps.deleteRectangles(this.cells, type);
 
       if (SheetProperties.isLikelihood && SheetProperties.isOutputRelationship) {
         const likelihood = new Likelihood(this.cells, this.referenceCell);
+        console.log('Redrawing output likelihood');
         likelihood.redrawOutputLikelihood(n);
       }
 
@@ -126,7 +127,7 @@ export default class Impact {
       }
 
       inCell.isImpact = true;
-      this.commonOps.drawRectangle(inCell, 'Input');
+      this.commonOps.drawRectangle(inCell, 'InputImpact');
 
       if (i == 1) {
         return;
@@ -144,7 +145,7 @@ export default class Impact {
       }
 
       outCell.isImpact = true;
-      this.commonOps.drawRectangle(outCell, 'Output');
+      this.commonOps.drawRectangle(outCell, 'OutputImpact');
 
       if (i == 1) {
         return;
@@ -155,6 +156,7 @@ export default class Impact {
 
   public redrawInputImpact(n: number) {
 
+    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
     this.removeInputImpactInfo(this.referenceCell, n);
     this.addImpactInfoInputCells(n);
     this.displayInputImpact(this.referenceCell, n);
@@ -163,6 +165,7 @@ export default class Impact {
 
   public redrawOutputImpact(n: number) {
 
+    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
     this.removeOutputImpactInfo(this.referenceCell, n);
     this.addImpactInfoOutputCells(this.referenceCell, n);
     this.displayOutputImpact(this.referenceCell, n);
@@ -173,9 +176,9 @@ export default class Impact {
       cell.isImpact = false;
     })
     console.log('Removing all impact inputs');
-    this.commonOps.deleteRectangles(this.cells, 'Input');
+    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
     console.log('Removing all impact outputs');
-    this.commonOps.deleteRectangles(this.cells, 'Output');
+    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
 
   }
 

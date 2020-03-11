@@ -93,7 +93,7 @@ async function inputRelationship() {
     if (element.checked) {
       showAllOptions();
       SheetProperties.isInputRelationship = true;
-      await showInputRelationForOptions();
+      showInputRelationForOptions();
     } else {
       SheetProperties.isInputRelationship = false;
       await removeInputRelationFromOptions();
@@ -110,7 +110,7 @@ async function outputRelationship() {
     if (element.checked) {
       showAllOptions();
       SheetProperties.isOutputRelationship = true;
-      await showOutputRelationForOptions();
+      showOutputRelationForOptions();
     } else {
       SheetProperties.isOutputRelationship = false;
       await removeOutputRelationFromOptions();
@@ -320,11 +320,11 @@ async function whatIfProcess() {
 
 function displayOptions() {
   if (SheetProperties.isImpact) {
-    SheetProperties.cellOp.removeAllImpacts();
+    // SheetProperties.cellOp.removeAllImpacts();
     impact();
   }
   if (SheetProperties.isLikelihood) {
-    SheetProperties.cellOp.removeAllLikelihoods();
+    // SheetProperties.cellOp.removeAllLikelihoods();
     likelihood();
   }
   if (SheetProperties.isSpread) {
@@ -335,7 +335,7 @@ function displayOptions() {
   }
 }
 
-async function showInputRelationForOptions() {
+function showInputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -352,7 +352,7 @@ async function showInputRelationForOptions() {
 
 }
 
-async function showOutputRelationForOptions() {
+function showOutputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
     SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
