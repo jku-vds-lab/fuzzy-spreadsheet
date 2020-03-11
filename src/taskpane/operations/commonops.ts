@@ -41,10 +41,6 @@ export default class CommonOperations {
   async deleteRectangles(cells: CellProperties[], type: string) {
 
     try {
-      // cells.forEach((cell: CellProperties) => {
-      //   cell.isImpact = false;
-      //   cell.isLikelihood = false;
-      // })
 
       await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
