@@ -52,12 +52,20 @@ export default class CellOperations {
     await this.impact.removeOutputImpact(n);
   }
 
-  showLikelihood(n: number, isInput: boolean, isOutput: boolean) {
-    this.likelihood.showLikelihood(n, isInput, isOutput);
+  showInputLikelihood(n: number) {
+    this.likelihood.showInputLikelihood(n);
   }
 
-  async removeLikelihood(n: number, isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
-    await this.likelihood.removeLikelihood(n, isInput, isOutput, isRemoveAll);
+  showOutputLikelihood(n: number) {
+    this.likelihood.showOutputLikelihood(n);
+  }
+
+  async removeInputLikelihood(n: number) {
+    await this.likelihood.removeInputLikelihood(n);
+  }
+
+  async removeOutputLikelihood(n: number) {
+    await this.likelihood.removeOutputLikelihood(n);
   }
 
   showSpread(n: number, isInput: boolean, isOutput: boolean) {
