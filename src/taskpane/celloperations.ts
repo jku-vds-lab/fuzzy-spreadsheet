@@ -35,28 +35,37 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  showImpact(n: number, isInput: boolean, isOutput: boolean) {
-    this.impact.showImpact(n, isInput, isOutput);
+  showInputImpact(n: number) {
+    this.impact.showInputImpact(n);
   }
 
-  async removeImpact(n: number, isInput: boolean, isOutput: boolean) {
-    await this.impact.removeImpact(n, isInput, isOutput);
+
+  showOutputImpact(n: number) {
+    this.impact.showOutputImpact(n);
+  }
+
+  async removeInputImpact(n: number) {
+    await this.impact.removeInputImpact(n);
+  }
+
+  async removeOutputImpact(n: number) {
+    await this.impact.removeOutputImpact(n);
   }
 
   showLikelihood(n: number, isInput: boolean, isOutput: boolean) {
     this.likelihood.showLikelihood(n, isInput, isOutput);
   }
 
-  async removeLikelihood(n: number, isInput: boolean, isOutput: boolean) {
-    await this.likelihood.removeLikelihood(n, isInput, isOutput);
+  async removeLikelihood(n: number, isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+    await this.likelihood.removeLikelihood(n, isInput, isOutput, isRemoveAll);
   }
 
   showSpread(n: number, isInput: boolean, isOutput: boolean) {
     this.spread.showSpread(n, isInput, isOutput);
   }
 
-  async removeSpread(isInput: boolean, isOutput: boolean) {
-    await this.spread.removeSpread(isInput, isOutput);
+  async removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+    await this.spread.removeSpread(isInput, isOutput, isRemoveAll);
   }
 
   showInputRelationship(n: number) {

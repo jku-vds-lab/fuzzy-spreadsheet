@@ -22,11 +22,6 @@ export default class Likelihood {
 
     try {
 
-      if (!(isInput || isOutput)) {
-        this.removeLikelihood(n, isInput, isOutput);
-        return;
-      }
-
       this.addLikelihoodInfo();
 
       if (isInput) {
@@ -47,24 +42,30 @@ export default class Likelihood {
     }
   }
 
-  public async removeLikelihood(n: number, isInput: boolean, isOutput: boolean) {
+  public async removeLikelihood(n: number, isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isLikelihood = false;
     })
 
-    if (isInput) {
+    if (!isInput) {
       await this.commonOps.deleteRectangles(this.cells, 'Input');
     }
 
-    if (isOutput) {
+    if (!isOutput) {
       await this.commonOps.deleteRectangles(this.cells, 'Output');
     }
 
-    if (SheetProperties.isImpact) {
-      const impact = new Impact(this.referenceCell, this.cells);
-      impact.showImpact(n, isInput, isOutput);
+    if (isRemoveAll) {
+
+      await this.commonOps.deleteRectangles(this.cells, 'Input');
+      await this.commonOps.deleteRectangles(this.cells, 'Output');
     }
+
+    // if (SheetProperties.isImpact) {
+    //   const impact = new Impact(this.referenceCell, this.cells);
+    //   impact.showImpact(n, isInput, isOutput);
+    // }
   }
 
   private showInputLikelihood(cell: CellProperties, n: number) {

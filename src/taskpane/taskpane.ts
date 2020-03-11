@@ -18,7 +18,7 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
-  document.getElementById("relationship").onclick = relationship;
+  document.getElementById("relationship").onclick = relationshipIcons;
   document.getElementById("inputRelationship").onclick = inputRelationship;
   document.getElementById("outputRelationship").onclick = outputRelationship;
   document.getElementById("first").onchange = first;
@@ -85,22 +85,7 @@ async function markAsReferenceCell() {
   }
 }
 
-function relationship() {
-
-  var element = <HTMLInputElement>document.getElementById("relationship");
-
-  if (element.checked) {
-    SheetProperties.isRelationship = true;
-    showInputRelationshipIcons();
-    showOutputRelationshipIcons();
-  } else {
-    SheetProperties.isRelationship = false;
-    removeInputRelationshipIcons();
-    removeOutputRelationshipIcons();
-  }
-}
-
-function inputRelationship() {
+async function inputRelationship() {
   try {
 
     var element = <HTMLInputElement>document.getElementById("inputRelationship");
@@ -108,58 +93,33 @@ function inputRelationship() {
     if (element.checked) {
       showAllOptions();
       SheetProperties.isInputRelationship = true;
+      await showInputRelationForOptions();
     } else {
       SheetProperties.isInputRelationship = false;
+      await removeInputRelationFromOptions();
     }
-
-    displayOptions();
   } catch (error) {
     console.error(error);
   }
 }
 
-function outputRelationship() {
+async function outputRelationship() {
   try {
     var element = <HTMLInputElement>document.getElementById("outputRelationship");
 
     if (element.checked) {
       showAllOptions();
       SheetProperties.isOutputRelationship = true;
+      await showOutputRelationForOptions();
     } else {
       SheetProperties.isOutputRelationship = false;
+      await removeOutputRelationFromOptions();
     }
-    displayOptions();
+
   } catch (error) {
     console.error(error);
   }
 }
-
-function showInputRelationshipIcons() {
-
-  if (SheetProperties.isInputRelationship == true) {
-    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-  } else {
-    SheetProperties.cellOp.removeInputRelationship();
-  }
-}
-
-function removeInputRelationshipIcons() {
-  SheetProperties.cellOp.removeInputRelationship();
-}
-
-
-function showOutputRelationshipIcons() {
-  if (SheetProperties.isOutputRelationship == true) {
-    SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
-  } else {
-    removeOutputRelationshipIcons();
-  }
-}
-
-function removeOutputRelationshipIcons() {
-  SheetProperties.cellOp.removeOutputRelationship();
-}
-
 
 function first() {
 
@@ -182,39 +142,27 @@ function third() {
   displayOptions();
 }
 
+
 async function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
 
     if (element.checked) {
       SheetProperties.isImpact = true;
-      await inputImpact();
-      await outputImpact();
+      if (SheetProperties.isInputRelationship) {
+        SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+      }
 
+      if (SheetProperties.isOutputRelationship) {
+        SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+      }
     } else {
       SheetProperties.isImpact = false;
-      await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      await SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+      await SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
-  }
-}
-
-async function inputImpact() {
-
-  if (SheetProperties.isInputRelationship) {
-    SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-  } else {
-    await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-  }
-}
-
-async function outputImpact() {
-
-  if (SheetProperties.isOutputRelationship) {
-    SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-  } else {
-    await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 }
 
@@ -227,7 +175,7 @@ async function likelihood() {
       SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship); // should be available on click
     } else {
       SheetProperties.isLikelihood = false;
-      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
     }
   } catch (error) {
     console.error(error);
@@ -243,12 +191,33 @@ async function spread() {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     } else {
-      // eslint-disable-next-line require-atomic-updates
       SheetProperties.isSpread = false;
-      await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
     }
   } catch (error) {
     console.error(error);
+  }
+}
+
+function relationshipIcons() {
+
+  var element = <HTMLInputElement>document.getElementById("relationship");
+
+  if (element.checked) {
+
+    SheetProperties.isRelationship = true;
+
+    if (SheetProperties.isInputRelationship) {
+      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }
+
+    if (SheetProperties.isOutputRelationship) {
+      SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }
+  } else {
+    SheetProperties.isRelationship = false;
+    SheetProperties.cellOp.removeInputRelationship();
+    SheetProperties.cellOp.removeOutputRelationship();
   }
 }
 
@@ -352,7 +321,72 @@ function displayOptions() {
     spread();
   }
   if (SheetProperties.isRelationship) {
-    relationship();
+    relationshipIcons();
+  }
+}
+
+async function showInputRelationForOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship); // should be available on click
+  }
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+  }
+
+}
+
+async function showOutputRelationForOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship); // should be available on click
+  }
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+  }
+}
+
+async function removeInputRelationFromOptions() {
+
+  if (SheetProperties.isImpact) {
+    await SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isSpread) {
+    await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.removeInputRelationship();
+  }
+}
+
+async function removeOutputRelationFromOptions() {
+
+  if (SheetProperties.isImpact) {
+    await SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isSpread) {
+    await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.removeOutputRelationship();
   }
 }
 

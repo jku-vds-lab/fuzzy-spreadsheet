@@ -18,59 +18,81 @@ export default class Impact {
     this.cells = cells;
   }
 
-  public showImpact(n: number, isInput: boolean, isOutput: boolean) {
+  public showInputImpact(n: number) {
 
-    let type: string;
+    // const type = 'Input';
 
-    if (isInput) {
-      type = 'Input';
-      if (SheetProperties.isLikelihood) {
-        this.commonOps.deleteRectangles(this.cells, type);
-      }
+    // if (SheetProperties.isLikelihood) {
+    //   this.commonOps.deleteRectangles(this.cells, type);
+    // }
 
-      this.addImpactInfoInputCells(n);
-      this.showInputImpact(this.referenceCell, n);
-    }
-
-    if (isOutput) {
-      type = 'Output';
-      if (SheetProperties.isLikelihood) {
-        this.commonOps.deleteRectangles(this.cells, type);
-      }
-
-      this.addImpactInfoOutputCells(this.referenceCell, n);
-      this.showOutputImpact(this.referenceCell, n);
-    }
+    this.addImpactInfoInputCells(n);
+    this.displayInputImpact(this.referenceCell, n);
   }
 
-  public async removeImpact(n: number, isInput: boolean, isOutput: boolean) {
+  public showOutputImpact(n: number) {
 
-    this.cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
+    // const type = 'Output';
+
+    // if (SheetProperties.isLikelihood) {
+    //   this.commonOps.deleteRectangles(this.cells, type);
+    // }
+
+    this.addImpactInfoOutputCells(this.referenceCell, n);
+    this.displayOutputImpact(this.referenceCell, n);
+  }
+
+  public async removeInputImpact(n: number) {
+
+    const type = 'Input';
+    this.removeInputImpactInfo(this.referenceCell, n);
+    await this.commonOps.deleteRectangles(this.cells, type);
+
+    // if (SheetProperties.isLikelihood) {
+    //   const likelihood = new Likelihood(this.cells, this.referenceCell);
+    //   likelihood.showLikelihood(n, false, false);
+    // }
+  }
+
+  private removeInputImpactInfo(cell: CellProperties, n: number) {
+
+    cell.inputCells.forEach((inCell: CellProperties) => {
+
+      if (inCell.isImpact) {
+        inCell.isImpact = false;
+      }
+
+      if (n == 1) {
+        return;
+      }
+      this.removeInputImpactInfo(inCell, n - 1);
     })
-
-    let type: string;
-
-    if (isInput) {
-      type = 'Input';
-      await this.commonOps.deleteRectangles(this.cells, type);
-
-    }
-
-    if (isOutput) {
-      type = 'Output';
-      await this.commonOps.deleteRectangles(this.cells, type);
-
-    }
-
-    if (SheetProperties.isLikelihood) {
-
-      const likelihood = new Likelihood(this.cells, this.referenceCell);
-      likelihood.showLikelihood(n, isInput, isOutput);
-    }
   }
 
-  private showInputImpact(cell: CellProperties, i: number) {
+
+  public async removeOutputImpact(n: number) {
+
+    const type = 'Output';
+    this.removeOutputImpactInfo(this.referenceCell, n);
+    await this.commonOps.deleteRectangles(this.cells, type);
+  }
+
+  private removeOutputImpactInfo(cell: CellProperties, n: number) {
+
+    cell.outputCells.forEach((outCell: CellProperties) => {
+
+      if (outCell.isImpact) {
+        outCell.isImpact = false;
+      }
+
+      if (n == 1) {
+        return;
+      }
+      this.removeOutputImpactInfo(outCell, n - 1);
+    })
+  }
+
+  private displayInputImpact(cell: CellProperties, i: number) {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
@@ -85,11 +107,11 @@ export default class Impact {
       if (i == 1) {
         return;
       }
-      this.showInputImpact(inCell, i - 1);
+      this.displayInputImpact(inCell, i - 1);
     })
   }
 
-  private showOutputImpact(cell: CellProperties, i: number) {
+  private displayOutputImpact(cell: CellProperties, i: number) {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
@@ -103,7 +125,7 @@ export default class Impact {
       if (i == 1) {
         return;
       }
-      this.showOutputImpact(outCell, i - 1);
+      this.displayOutputImpact(outCell, i - 1);
     })
   }
 

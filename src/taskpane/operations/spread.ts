@@ -25,11 +25,6 @@ export default class Spread {
 
       this.showReferenceCellSpread();
 
-      if (!(isInput || isOutput)) {
-        this.removeSpread(isInput, isOutput);
-        return;
-      }
-
       if (isInput) {
         this.showInputSpread(this.referenceCell.inputCells, n);
       }
@@ -305,7 +300,7 @@ export default class Spread {
     }
   }
 
-  public async removeSpread(isInput: boolean, isOutput: boolean) {
+  public async removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isSpread = false;
@@ -313,14 +308,19 @@ export default class Spread {
 
     let name: string;
 
-    if (isInput) {
+    if (!isInput) {
       name = 'Input';
       await this.deleteSpread(name);
     }
 
-    if (isOutput) {
+    if (!isOutput) {
       name = 'Output';
       await this.deleteSpread(name);
+    }
+
+    if (isRemoveAll) {
+      await this.deleteSpread('Input');
+      await this.deleteSpread('Output');
     }
   }
 
