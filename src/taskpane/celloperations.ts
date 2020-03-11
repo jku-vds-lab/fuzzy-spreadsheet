@@ -80,8 +80,12 @@ export default class CellOperations {
     this.spread.showSpread(n, isInput, isOutput);
   }
 
-  async removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
-    await this.spread.removeSpread(isInput, isOutput, isRemoveAll);
+  removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+    this.spread.removeSpread(isInput, isOutput, isRemoveAll);
+  }
+
+  removeSpreadFromReferenceCell() {
+    this.spread.removeSpreadFromReferenceCell();
   }
 
   showInputRelationship(n: number) {

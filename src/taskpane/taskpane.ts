@@ -85,7 +85,7 @@ async function markAsReferenceCell() {
   }
 }
 
-async function inputRelationship() {
+function inputRelationship() {
   try {
 
     var element = <HTMLInputElement>document.getElementById("inputRelationship");
@@ -96,14 +96,14 @@ async function inputRelationship() {
       showInputRelationForOptions();
     } else {
       SheetProperties.isInputRelationship = false;
-      await removeInputRelationFromOptions();
+      removeInputRelationFromOptions();
     }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function outputRelationship() {
+function outputRelationship() {
   try {
     var element = <HTMLInputElement>document.getElementById("outputRelationship");
 
@@ -113,7 +113,7 @@ async function outputRelationship() {
       showOutputRelationForOptions();
     } else {
       SheetProperties.isOutputRelationship = false;
-      await removeOutputRelationFromOptions();
+      removeOutputRelationFromOptions();
     }
 
   } catch (error) {
@@ -190,7 +190,7 @@ function likelihood() {
   }
 }
 
-async function spread() {
+function spread() {
   try {
 
     var element = <HTMLInputElement>document.getElementById("spread");
@@ -200,7 +200,8 @@ async function spread() {
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     } else {
       SheetProperties.isSpread = false;
-      await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
+      SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
+      SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
   } catch (error) {
     console.error(error);
@@ -368,7 +369,7 @@ function showOutputRelationForOptions() {
   }
 }
 
-async function removeInputRelationFromOptions() {
+function removeInputRelationFromOptions() {
 
   if (SheetProperties.isImpact) {
     SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -377,14 +378,14 @@ async function removeInputRelationFromOptions() {
     SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
-    await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+    SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
   }
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.removeInputRelationship();
   }
 }
 
-async function removeOutputRelationFromOptions() {
+function removeOutputRelationFromOptions() {
 
   if (SheetProperties.isImpact) {
     SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -393,7 +394,7 @@ async function removeOutputRelationFromOptions() {
     SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
-    await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+    SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
   }
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.removeOutputRelationship();

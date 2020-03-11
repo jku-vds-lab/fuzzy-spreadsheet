@@ -43,7 +43,7 @@ export default class Spread {
     try {
 
       this.addSamplesToCell(this.referenceCell);
-      this.drawBarCodePlot(this.referenceCell, 'Reference');
+      this.drawBarCodePlot(this.referenceCell, 'ReferenceChart');
 
     } catch (error) {
       console.log('Error in Show Reference Cell Spread', error);
@@ -62,7 +62,7 @@ export default class Spread {
 
         cell.isSpread = true;
         this.addSamplesToCell(cell);
-        this.drawBarCodePlot(cell, 'Input');
+        this.drawBarCodePlot(cell, 'InputChart');
 
         if (i == 1) {
           return;
@@ -88,7 +88,7 @@ export default class Spread {
 
         cell.isSpread = true;
         this.addSamplesToCell(cell);
-        this.drawBarCodePlot(cell, 'Output');
+        this.drawBarCodePlot(cell, 'OutputChart');
         if (i == 1) {
           return;
         }
@@ -300,7 +300,7 @@ export default class Spread {
     }
   }
 
-  public async removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+  public removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isSpread = false;
@@ -309,34 +309,48 @@ export default class Spread {
     let name: string;
 
     if (!isInput) {
-      name = 'Input';
-      await this.deleteSpread(name);
+      name = 'InputChart';
+      this.deleteBarCodePlot(name);
     }
 
     if (!isOutput) {
-      name = 'Output';
-      await this.deleteSpread(name);
+      name = 'OutputChart';
+      this.deleteBarCodePlot(name);
     }
 
     if (isRemoveAll) {
-      await this.deleteSpread('Input');
-      await this.deleteSpread('Output');
+      this.deleteBarCodePlot('InputChart');
+      this.deleteBarCodePlot('OutputChart');
     }
   }
 
-  public async deleteSpread(name: string) {
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var charts = sheet.charts;
-      charts.load("items/name");
-      return context.sync().then(function () {
-        charts.items.forEach(function (chart) {
-          if (chart.name.includes(name)) {
-            chart.delete();
-          }
+  public removeSpreadFromReferenceCell() {
+    this.deleteBarCodePlot('ReferenceChart');
+  }
+
+
+  deleteBarCodePlot(name: string) {
+
+    try {
+
+      Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes(name)) {
+              shape.delete();
+            }
+          });
+          return context.sync();
+        }).catch((reason: any) => {
+          console.log('Step 1:', reason, name)
         });
-        return context.sync();
       });
-    });
+    } catch (error) {
+      console.log('Step 2:', error);
+    }
   }
 }
