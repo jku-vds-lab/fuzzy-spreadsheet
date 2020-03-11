@@ -32,7 +32,10 @@
     "@types/jquery": "^3.3.31",
     "@types/mathjs": "^6.0.4",
     "jstat": "^1.9.2",
-    "mathjs": "^6.6.0"
+    "mathjs": "^6.6.0",
+    "vega": "^5.10.0",
+    "vega-embed": "^6.4.0",
+    "vega-lite": "^4.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",

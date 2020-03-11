@@ -2,6 +2,8 @@ import CellOperations from './celloperations';
 import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
+
+declare const vegaEmbed: any;
 // C:\Windows\SysWOW64\F12
 
 /*
@@ -190,10 +192,34 @@ function likelihood() {
   }
 }
 
-function spread() {
+async function spread() {
   try {
 
     var element = <HTMLInputElement>document.getElementById("spread");
+
+    var yourVlSpec: any = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v2.0.json',
+      description: 'A simple bar chart with embedded data.',
+      data: {
+        values: [
+          { a: 'A', b: 28 },
+          { a: 'B', b: 55 },
+          { a: 'C', b: 43 },
+          { a: 'D', b: 91 },
+          { a: 'E', b: 81 },
+          { a: 'F', b: 53 },
+          { a: 'G', b: 19 },
+          { a: 'H', b: 87 },
+          { a: 'I', b: 52 }
+        ]
+      },
+      mark: 'bar',
+      encoding: {
+        x: { field: 'a', type: 'ordinal' },
+        y: { field: 'b', type: 'quantitative' }
+      }
+    };
+    await vegaEmbed(document.getElementById("vis"), yourVlSpec);
 
     if (element.checked) {
       SheetProperties.isSpread = true;

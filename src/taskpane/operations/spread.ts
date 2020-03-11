@@ -113,7 +113,7 @@ export default class Spread {
         let endLineTop = cell.top + totalHeight;
         // let endLineLeft = cell.left + totalWidth;
 
-        cell.mySamples.forEach((sample: { value: number, likelihood: number }) => {
+        cell.samples.forEach((sample: { value: number, likelihood: number }) => {
           let valueToBeAdded: number = sample.value; // Math.round((sample.value + Number.EPSILON) * 100) / 100;
 
           let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
@@ -144,27 +144,27 @@ export default class Spread {
 
     try {
 
-      cell.mySamples = new Array<{ value: number, likelihood: number }>();
+      cell.samples = new Array<{ value: number, likelihood: number }>();
 
       const mean = cell.value;
       const variance = cell.variance;
 
       if (variance == 0) {
-        cell.mySamples.push({ value: mean, likelihood: 1 });
+        cell.samples.push({ value: mean, likelihood: 1 });
       }
       else {
 
         if (cell.formula.includes('SUM')) {
-          cell.mySamples = this.addSamplesToSumCell(cell);
+          cell.samples = this.addSamplesToSumCell(cell);
           return;
         }
 
         if (cell.formula.includes('-')) {
-          cell.mySamples = this.addSamplesToSumCell(cell, true);
+          cell.samples = this.addSamplesToSumCell(cell, true);
           return;
         }
 
-        cell.mySamples = this.addSamplesToAverageCell(cell);
+        cell.samples = this.addSamplesToAverageCell(cell);
       }
     } catch (error) {
       console.log(error);
@@ -179,9 +179,9 @@ export default class Spread {
       const mean = cell.value;
       const variance = cell.variance;
 
-      cell.mySamples = new Array<{ value: number, likelihood: number }>();
+      cell.samples = new Array<{ value: number, likelihood: number }>();
 
-      cell.mySamples.push({ value: 0, likelihood: (1 - cell.likelihood) });
+      cell.samples.push({ value: 0, likelihood: (1 - cell.likelihood) });
 
       let numberOfSamples = 0;
       let i = mean - variance;
@@ -193,7 +193,7 @@ export default class Spread {
 
       for (let i = mean - variance; i <= mean + variance; i++) {
 
-        cell.mySamples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
+        cell.samples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
         cell.isLineChart = true;
       }
 
@@ -201,7 +201,7 @@ export default class Spread {
       console.log('Error in Average Spread Computation', error);
     }
 
-    return cell.mySamples;
+    return cell.samples;
   }
 
   public addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {
@@ -212,7 +212,7 @@ export default class Spread {
       let index = 0;
 
       let resultantSample = new CellProperties();
-      resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
+      resultantSample.samples = new Array<{ value: number, likelihood: number }>();
 
       if (inputCells.length > 1) {
         resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
@@ -225,33 +225,33 @@ export default class Spread {
         index = index + 1;
       }
 
-      resultantSample.mySamples.forEach((sample: { value: number, likelihood: number }) => {
-        cell.mySamples.push(sample);
+      resultantSample.samples.forEach((sample: { value: number, likelihood: number }) => {
+        cell.samples.push(sample);
       })
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
     }
-    return cell.mySamples;
+    return cell.samples;
   }
 
   private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false) {
 
     let resultantSample = new CellProperties();
-    resultantSample.mySamples = new Array<{ value: number, likelihood: number }>();
+    resultantSample.samples = new Array<{ value: number, likelihood: number }>();
 
     try {
 
-      if (sample1.mySamples == null) {
+      if (sample1.samples == null) {
         this.addSamplesToCell(sample1);
       }
 
-      if (sample2.mySamples == null) {
+      if (sample2.samples == null) {
         this.addSamplesToCell(sample2);
       }
 
-      sample1.mySamples.forEach((sampleCell1: { value: number, likelihood: number }) => {
+      sample1.samples.forEach((sampleCell1: { value: number, likelihood: number }) => {
 
-        sample2.mySamples.forEach((sampleCell2: { value: number, likelihood: number }) => {
+        sample2.samples.forEach((sampleCell2: { value: number, likelihood: number }) => {
 
           let value = sampleCell1.value + sampleCell2.value;
 
@@ -263,7 +263,7 @@ export default class Spread {
           let allowInsert = true;
 
           // code for duplicate removal
-          resultantSample.mySamples.forEach((result: { value: number, likelihood: number }) => {
+          resultantSample.samples.forEach((result: { value: number, likelihood: number }) => {
             if (result.value == value) {
               result.likelihood += likelihood;
               allowInsert = false;
@@ -272,7 +272,7 @@ export default class Spread {
           })
 
           if (allowInsert) {
-            resultantSample.mySamples.push({ value: value, likelihood: likelihood });
+            resultantSample.samples.push({ value: value, likelihood: likelihood });
           }
         })
       })
