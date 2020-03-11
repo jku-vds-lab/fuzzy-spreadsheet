@@ -150,11 +150,11 @@ async function impact() {
     if (element.checked) {
       SheetProperties.isImpact = true;
       if (SheetProperties.isInputRelationship) {
-        SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+        await SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
       }
 
       if (SheetProperties.isOutputRelationship) {
-        SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+        await SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
       }
     } else {
       SheetProperties.isImpact = false;
@@ -173,11 +173,11 @@ async function likelihood() {
     if (element.checked) {
       SheetProperties.isLikelihood = true;
       if (SheetProperties.isInputRelationship) {
-        SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+        await SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
       }
 
       if (SheetProperties.isOutputRelationship) {
-        SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+        await SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
       }
 
     } else {
@@ -336,10 +336,10 @@ function displayOptions() {
 async function showInputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
-    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+    await SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    await SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
@@ -353,10 +353,10 @@ async function showInputRelationForOptions() {
 async function showOutputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
-    SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+    await SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    await SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);

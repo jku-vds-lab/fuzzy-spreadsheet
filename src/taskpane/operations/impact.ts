@@ -11,40 +11,39 @@ export default class Impact {
   private cells: CellProperties[];
   private commonOps: CommonOperations;
 
-
   constructor(referenceCell: CellProperties, cells: CellProperties[]) {
     this.referenceCell = referenceCell;
     this.commonOps = new CommonOperations();
     this.cells = cells;
   }
 
-  public showInputImpact(n: number) {
-
-    // const type = 'Input';
-
-    // if (SheetProperties.isLikelihood) {
-    //   this.commonOps.deleteRectangles(this.cells, type);
-    // }
+  public async showInputImpact(n: number) {
 
     try {
       this.addImpactInfoInputCells(n);
+
+      if (SheetProperties.isLikelihood) {
+        await this.commonOps.deleteRectangles(this.cells, 'Input')
+      }
+
       this.displayInputImpact(this.referenceCell, n);
+
     } catch (error) {
       console.log(error);
     }
   }
 
-  public showOutputImpact(n: number) {
-
-    // const type = 'Output';
-
-    // if (SheetProperties.isLikelihood) {
-    //   this.commonOps.deleteRectangles(this.cells, type);
-    // }
+  public async showOutputImpact(n: number) {
 
     try {
       this.addImpactInfoOutputCells(this.referenceCell, n);
+
+      if (SheetProperties.isLikelihood) {
+        await this.commonOps.deleteRectangles(this.cells, 'Output')
+      }
+
       this.displayOutputImpact(this.referenceCell, n);
+
     } catch (error) {
       console.log(error);
     }
@@ -56,14 +55,15 @@ export default class Impact {
       const type = 'Input';
       this.removeInputImpactInfo(this.referenceCell, n);
       await this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isLikelihood && SheetProperties.isInputRelationship) {
+        const likelihood = new Likelihood(this.cells, this.referenceCell);
+        likelihood.redrawInputLikelihood(n);
+      }
+
     } catch (error) {
       console.log(error);
     }
-
-    // if (SheetProperties.isLikelihood) {
-    //   const likelihood = new Likelihood(this.cells, this.referenceCell);
-    //   likelihood.showLikelihood(n, false, false);
-    // }
   }
 
   private removeInputImpactInfo(cell: CellProperties, n: number) {
@@ -88,10 +88,15 @@ export default class Impact {
       const type = 'Output';
       this.removeOutputImpactInfo(this.referenceCell, n);
       await this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isLikelihood && SheetProperties.isOutputRelationship) {
+        const likelihood = new Likelihood(this.cells, this.referenceCell);
+        likelihood.redrawOutputLikelihood(n);
+      }
+
     } catch (error) {
       console.log(error);
     }
-
   }
 
   private removeOutputImpactInfo(cell: CellProperties, n: number) {
@@ -146,10 +151,19 @@ export default class Impact {
     })
   }
 
-  private addImpactInfo(n: number = 1) {
+  public redrawInputImpact(n: number) {
 
+    this.removeInputImpactInfo(this.referenceCell, n);
     this.addImpactInfoInputCells(n);
+    this.displayInputImpact(this.referenceCell, n);
+  }
+
+
+  public redrawOutputImpact(n: number) {
+
+    this.removeOutputImpactInfo(this.referenceCell, n);
     this.addImpactInfoOutputCells(this.referenceCell, n);
+    this.displayOutputImpact(this.referenceCell, n);
   }
 
   private addImpactInfoInputCells(n: number = 1) {

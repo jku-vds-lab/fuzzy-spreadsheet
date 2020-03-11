@@ -5,7 +5,6 @@ import CommonOperations from './commonops';
 import SheetProperties from '../sheetproperties';
 import Impact from './impact';
 
-
 export default class Likelihood {
 
   private cells: CellProperties[];
@@ -18,27 +17,33 @@ export default class Likelihood {
     this.commonOps = new CommonOperations();
   }
 
-  public showInputLikelihood(n: number) {
+  public async showInputLikelihood(n: number) {
 
     try {
       this.addLikelihoodInfo();
-      // if (SheetProperties.isImpact) {
-      //   this.commonOps.deleteRectangles(this.cells, 'Input');
-      // }
+
+      if (SheetProperties.isImpact) {
+        await this.commonOps.deleteRectangles(this.cells, 'Input')
+      }
+
       this.displayInputLikelihood(this.referenceCell, n);
+
     } catch (error) {
       console.log(error);
     }
   }
 
-  public showOutputLikelihood(n: number) {
+  public async showOutputLikelihood(n: number) {
 
     try {
       this.addLikelihoodInfo();
-      // if (SheetProperties.isImpact) {
-      //   this.commonOps.deleteRectangles(this.cells, 'Output');
-      // }
+
+      if (SheetProperties.isImpact) {
+        await this.commonOps.deleteRectangles(this.cells, 'Output')
+      }
+
       this.displayOutputLikelihood(this.referenceCell, n);
+
     } catch (error) {
       console.log(error);
     }
@@ -49,14 +54,15 @@ export default class Likelihood {
       const type = 'Input';
       this.removeInputLikelihoodInfo(this.referenceCell, n);
       await this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isImpact && SheetProperties.isInputRelationship) {
+        const impact = new Impact(this.referenceCell, this.cells);
+        impact.redrawInputImpact(n);
+      }
+
     } catch (error) {
       console.log(error);
     }
-
-    // if (SheetProperties.isImpact) {
-    //   const impact = new Impact(this.referenceCell, this.cells);
-    //   impact.showImpact(n, isInput, isOutput);
-    // }
   }
 
   private removeInputLikelihoodInfo(cell: CellProperties, n: number) {
@@ -81,10 +87,15 @@ export default class Likelihood {
       const type = 'Output';
       this.removeOutputLikelihoodInfo(this.referenceCell, n);
       await this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isImpact && SheetProperties.isOutputRelationship) {
+        const impact = new Impact(this.referenceCell, this.cells);
+        impact.redrawOutputImpact(n);
+      }
+
     } catch (error) {
       console.log(error);
     }
-
   }
 
   private removeOutputLikelihoodInfo(cell: CellProperties, n: number) {
@@ -138,6 +149,20 @@ export default class Likelihood {
 
       this.displayOutputLikelihood(outCell, n - 1);
     })
+  }
+
+  public redrawInputLikelihood(n: number) {
+
+    this.removeInputLikelihoodInfo(this.referenceCell, n);
+    this.addLikelihoodInfo();
+    this.displayInputLikelihood(this.referenceCell, n);
+  }
+
+  public redrawOutputLikelihood(n: number) {
+
+    this.removeOutputLikelihoodInfo(this.referenceCell, n);
+    this.addLikelihoodInfo();
+    this.displayOutputLikelihood(this.referenceCell, n);
   }
 
   private addLikelihoodInfo() {

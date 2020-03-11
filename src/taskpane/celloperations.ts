@@ -35,13 +35,13 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  showInputImpact(n: number) {
-    this.impact.showInputImpact(n);
+  async showInputImpact(n: number) {
+    await this.impact.showInputImpact(n);
   }
 
 
-  showOutputImpact(n: number) {
-    this.impact.showOutputImpact(n);
+  async showOutputImpact(n: number) {
+    await this.impact.showOutputImpact(n);
   }
 
   async removeInputImpact(n: number) {
@@ -52,12 +52,12 @@ export default class CellOperations {
     await this.impact.removeOutputImpact(n);
   }
 
-  showInputLikelihood(n: number) {
-    this.likelihood.showInputLikelihood(n);
+  async showInputLikelihood(n: number) {
+    await this.likelihood.showInputLikelihood(n);
   }
 
-  showOutputLikelihood(n: number) {
-    this.likelihood.showOutputLikelihood(n);
+  async showOutputLikelihood(n: number) {
+    await this.likelihood.showOutputLikelihood(n);
   }
 
   async removeInputLikelihood(n: number) {
