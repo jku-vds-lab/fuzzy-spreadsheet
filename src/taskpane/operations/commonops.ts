@@ -1,5 +1,5 @@
 /* global console, Excel */
-
+import * as OfficeHelpers from '@microsoft/office-js-helpers';
 import CellProperties from "../cellproperties";
 import SheetProperties from "../sheetproperties";
 
@@ -16,7 +16,7 @@ export default class CommonOperations {
       let width = 5;
 
       cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-      cell.rect.name = "Shape" + type + i;
+      cell.rect.name = "Shape" + type;
       cell.rect.left = cell.left + MARGIN;
       cell.rect.top = cell.top + cell.height / 4;
 
@@ -38,26 +38,33 @@ export default class CommonOperations {
     });
   }
 
-  async deleteRectangles(cells: CellProperties[], type: string) {
+  deleteRectangles(cells: CellProperties[], type: string) {
 
     try {
 
-      await Excel.run(async (context) => {
+      Excel.run(function (context) {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         var shapes = sheet.shapes;
         shapes.load("items/name");
 
         return context.sync().then(function () {
+
+          // console.log('Length of shapes: ' + shapes.items.length);
+          // console.log('Is null object: ' + shapes.isNullObject);
+
           shapes.items.forEach(function (shape) {
             if (shape.name.includes('Shape' + type)) {
               shape.delete();
             }
           });
-        }).catch((reason: any) => console.log('Could not delete the shape: ' + reason));
+          return context.sync();
+        }).catch((reason: any) => {
+          console.log('Step 1:', reason, type)
+        });
       });
-
     } catch (error) {
-      console.log(error);
+      console.log('Step 2:', error);
+      OfficeHelpers.Utilities.log(error);
     }
   }
 }

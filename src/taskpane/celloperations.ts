@@ -35,37 +35,45 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  async showInputImpact(n: number) {
-    await this.impact.showInputImpact(n);
+  showInputImpact(n: number) {
+    this.impact.showInputImpact(n);
   }
 
 
-  async showOutputImpact(n: number) {
-    await this.impact.showOutputImpact(n);
+  showOutputImpact(n: number) {
+    this.impact.showOutputImpact(n);
   }
 
-  async removeInputImpact(n: number) {
-    await this.impact.removeInputImpact(n);
+  removeInputImpact(n: number) {
+    this.impact.removeInputImpact(n);
   }
 
-  async removeOutputImpact(n: number) {
-    await this.impact.removeOutputImpact(n);
+  removeOutputImpact(n: number) {
+    this.impact.removeOutputImpact(n);
   }
 
-  async showInputLikelihood(n: number) {
-    await this.likelihood.showInputLikelihood(n);
+  removeAllImpacts() {
+    this.impact.removeAllImpacts();
   }
 
-  async showOutputLikelihood(n: number) {
-    await this.likelihood.showOutputLikelihood(n);
+  showInputLikelihood(n: number) {
+    this.likelihood.showInputLikelihood(n);
   }
 
-  async removeInputLikelihood(n: number) {
-    await this.likelihood.removeInputLikelihood(n);
+  showOutputLikelihood(n: number) {
+    this.likelihood.showOutputLikelihood(n);
   }
 
-  async removeOutputLikelihood(n: number) {
-    await this.likelihood.removeOutputLikelihood(n);
+  removeInputLikelihood(n: number) {
+    this.likelihood.removeInputLikelihood(n);
+  }
+
+  removeOutputLikelihood(n: number) {
+    this.likelihood.removeOutputLikelihood(n);
+  }
+
+  removeAllLikelihoods() {
+    this.likelihood.removeAllLikelihoods();
   }
 
   showSpread(n: number, isInput: boolean, isOutput: boolean) {

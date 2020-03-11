@@ -17,13 +17,14 @@ export default class Likelihood {
     this.commonOps = new CommonOperations();
   }
 
-  public async showInputLikelihood(n: number) {
+  public showInputLikelihood(n: number) {
 
     try {
       this.addLikelihoodInfo();
 
       if (SheetProperties.isImpact) {
-        await this.commonOps.deleteRectangles(this.cells, 'Input')
+        console.log('Removing impact inputs');
+        this.commonOps.deleteRectangles(this.cells, 'Input')
       }
 
       this.displayInputLikelihood(this.referenceCell, n);
@@ -33,13 +34,14 @@ export default class Likelihood {
     }
   }
 
-  public async showOutputLikelihood(n: number) {
+  public showOutputLikelihood(n: number) {
 
     try {
       this.addLikelihoodInfo();
 
       if (SheetProperties.isImpact) {
-        await this.commonOps.deleteRectangles(this.cells, 'Output')
+        console.log('Removing impact outputs');
+        this.commonOps.deleteRectangles(this.cells, 'Output')
       }
 
       this.displayOutputLikelihood(this.referenceCell, n);
@@ -49,11 +51,11 @@ export default class Likelihood {
     }
   }
 
-  public async removeInputLikelihood(n: number) {
+  public removeInputLikelihood(n: number) {
     try {
       const type = 'Input';
       this.removeInputLikelihoodInfo(this.referenceCell, n);
-      await this.commonOps.deleteRectangles(this.cells, type);
+      this.commonOps.deleteRectangles(this.cells, type);
 
       if (SheetProperties.isImpact && SheetProperties.isInputRelationship) {
         const impact = new Impact(this.referenceCell, this.cells);
@@ -81,12 +83,12 @@ export default class Likelihood {
   }
 
 
-  public async removeOutputLikelihood(n: number) {
+  public removeOutputLikelihood(n: number) {
 
     try {
       const type = 'Output';
       this.removeOutputLikelihoodInfo(this.referenceCell, n);
-      await this.commonOps.deleteRectangles(this.cells, type);
+      this.commonOps.deleteRectangles(this.cells, type);
 
       if (SheetProperties.isImpact && SheetProperties.isOutputRelationship) {
         const impact = new Impact(this.referenceCell, this.cells);
@@ -163,6 +165,18 @@ export default class Likelihood {
     this.removeOutputLikelihoodInfo(this.referenceCell, n);
     this.addLikelihoodInfo();
     this.displayOutputLikelihood(this.referenceCell, n);
+  }
+
+  public removeAllLikelihoods() {
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isLikelihood = false;
+    })
+
+    console.log('Removing all likelihood inputs');
+    this.commonOps.deleteRectangles(this.cells, 'Input');
+    console.log('Removing all likelihood outputs');
+    this.commonOps.deleteRectangles(this.cells, 'Output');
+
   }
 
   private addLikelihoodInfo() {

@@ -143,47 +143,47 @@ function third() {
 }
 
 
-async function impact() {
+function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
 
     if (element.checked) {
       SheetProperties.isImpact = true;
       if (SheetProperties.isInputRelationship) {
-        await SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+        SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
       }
 
       if (SheetProperties.isOutputRelationship) {
-        await SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+        SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
       }
     } else {
       SheetProperties.isImpact = false;
-      await SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
-      await SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function likelihood() {
+function likelihood() {
   try {
     var element = <HTMLInputElement>document.getElementById("likelihood");
 
     if (element.checked) {
       SheetProperties.isLikelihood = true;
       if (SheetProperties.isInputRelationship) {
-        await SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+        SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
       }
 
       if (SheetProperties.isOutputRelationship) {
-        await SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+        SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
       }
 
     } else {
       SheetProperties.isLikelihood = false;
-      await SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
-      await SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
     }
   } catch (error) {
     console.error(error);
@@ -320,9 +320,11 @@ async function whatIfProcess() {
 
 function displayOptions() {
   if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.removeAllImpacts();
     impact();
   }
   if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.removeAllLikelihoods();
     likelihood();
   }
   if (SheetProperties.isSpread) {
@@ -336,10 +338,10 @@ function displayOptions() {
 async function showInputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
-    await SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    await SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
@@ -353,10 +355,10 @@ async function showInputRelationForOptions() {
 async function showOutputRelationForOptions() {
 
   if (SheetProperties.isImpact) {
-    await SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    await SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
@@ -369,10 +371,10 @@ async function showOutputRelationForOptions() {
 async function removeInputRelationFromOptions() {
 
   if (SheetProperties.isImpact) {
-    await SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    await SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
@@ -385,10 +387,10 @@ async function removeInputRelationFromOptions() {
 async function removeOutputRelationFromOptions() {
 
   if (SheetProperties.isImpact) {
-    await SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isLikelihood) {
-    await SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
   if (SheetProperties.isSpread) {
     await SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);

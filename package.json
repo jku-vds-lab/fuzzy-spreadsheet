@@ -28,6 +28,7 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "@microsoft/office-js-helpers": "^1.0.2",
     "@types/jquery": "^3.3.31",
     "@types/mathjs": "^6.0.4",
     "jstat": "^1.9.2",
