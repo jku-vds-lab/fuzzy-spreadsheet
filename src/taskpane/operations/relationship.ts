@@ -69,17 +69,16 @@ export default class Relationship {
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.triangle;
-      let triangle = shapes.addGeometricShape(type);
-      triangle.name = "RelationshipInput";
-      triangle.rotation = 0;
-      triangle.left = cell.left;
-      triangle.top = cell.top + cell.height / 4;
-      triangle.height = 3;
-      triangle.width = 6;
-      triangle.lineFormat.weight = 0;
-      triangle.lineFormat.color = color;
-      triangle.fill.setSolidColor(color);
+      type = Excel.GeometricShapeType.diamond;
+      let diamond = shapes.addGeometricShape(type);
+      diamond.name = "RelationshipOutput"
+      diamond.left = cell.left;
+      diamond.top = cell.top + cell.height / 4;
+      diamond.height = 6;
+      diamond.width = 6;
+      diamond.lineFormat.weight = 0;
+      diamond.lineFormat.color = color;
+      diamond.fill.setSolidColor(color);
 
       await context.sync();
     })
@@ -133,16 +132,16 @@ export default class Relationship {
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.diamond;
-      let diamond = shapes.addGeometricShape(type);
-      diamond.name = "RelationshipOutput"
-      diamond.left = cell.left;
-      diamond.top = cell.top + cell.height / 4;
-      diamond.height = 6;
-      diamond.width = 6;
-      diamond.lineFormat.weight = 0;
-      diamond.lineFormat.color = color;
-      diamond.fill.setSolidColor(color);
+      type = Excel.GeometricShapeType.ellipse;
+      let circle = shapes.addGeometricShape(type);
+      circle.name = "RelationshipOutput"
+      circle.left = cell.left;
+      circle.top = cell.top + cell.height / 4;
+      circle.height = 6;
+      circle.width = 6;
+      circle.lineFormat.weight = 0;
+      circle.lineFormat.color = color;
+      circle.fill.setSolidColor(color);
       await context.sync();
     })
   }
