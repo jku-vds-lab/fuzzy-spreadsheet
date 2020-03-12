@@ -2,10 +2,8 @@ import CellOperations from './celloperations';
 import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
-
-declare const vegaEmbed: any;
-// C:\Windows\SysWOW64\F12
-
+import * as d3 from 'd3';
+import { xml } from 'd3';
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -15,7 +13,7 @@ declare const vegaEmbed: any;
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("parseSheet").onclick = parseSheet;
+  document.getElementById("parseSheet").onclick = d3code;
   document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -194,32 +192,7 @@ function likelihood() {
 
 async function spread() {
   try {
-
     var element = <HTMLInputElement>document.getElementById("spread");
-
-    var yourVlSpec: any = {
-      $schema: 'https://vega.github.io/schema/vega-lite/v2.0.json',
-      description: 'A simple bar chart with embedded data.',
-      data: {
-        values: [
-          { a: 'A', b: 28 },
-          { a: 'B', b: 55 },
-          { a: 'C', b: 43 },
-          { a: 'D', b: 91 },
-          { a: 'E', b: 81 },
-          { a: 'F', b: 53 },
-          { a: 'G', b: 19 },
-          { a: 'H', b: 87 },
-          { a: 'I', b: 52 }
-        ]
-      },
-      mark: 'bar',
-      encoding: {
-        x: { field: 'a', type: 'ordinal' },
-        y: { field: 'b', type: 'quantitative' }
-      }
-    };
-    await vegaEmbed(document.getElementById("vis"), yourVlSpec);
 
     if (element.checked) {
       SheetProperties.isSpread = true;
@@ -233,6 +206,169 @@ async function spread() {
     console.error(error);
   }
 }
+
+async function d3code() {
+
+  let margin = { top: 20, right: 20, bottom: 70, left: 40 };
+  let width = 600 - margin.left - margin.right;
+  let height = 300 - margin.top - margin.bottom;
+
+
+  // let x = d3.scaleOrdinal([0, width]);
+  let x = d3.scaleBand().range([0, width]);
+  let y = d3.scaleLinear().range([height, 0]);
+
+  let xAxis = d3.axisBottom(x).scale(x);
+
+  let yAxis = d3.axisLeft(y).ticks(10);
+
+  let svg = d3.select('body').append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform',
+      'translate (' + margin.left + ',' + margin.top + ')');
+
+  let data =
+    [{
+      "Letter": "A",
+      "Freq": 20
+    },
+    {
+      "Letter": "B",
+      "Freq": 12
+    },
+    {
+      "Letter": "C",
+      "Freq": 47
+    },
+    {
+      "Letter": "D",
+      "Freq": 34
+    },
+    {
+      "Letter": "E",
+      "Freq": 54
+    },
+    {
+      "Letter": "F",
+      "Freq": 21
+    },
+    {
+      "Letter": "G",
+      "Freq": 57
+    },
+    {
+      "Letter": "H",
+      "Freq": 31
+    },
+    {
+      "Letter": "I",
+      "Freq": 17
+    },
+    {
+      "Letter": "J",
+      "Freq": 5
+    },
+    {
+      "Letter": "K",
+      "Freq": 23
+    },
+    {
+      "Letter": "L",
+      "Freq": 39
+    },
+    {
+      "Letter": "M",
+      "Freq": 29
+    },
+    {
+      "Letter": "N",
+      "Freq": 33
+    },
+    {
+      "Letter": "O",
+      "Freq": 18
+    },
+    {
+      "Letter": "P",
+      "Freq": 35
+    },
+    {
+      "Letter": "Q",
+      "Freq": 11
+    },
+    {
+      "Letter": "R",
+      "Freq": 45
+    },
+    {
+      "Letter": "S",
+      "Freq": 43
+    },
+    {
+      "Letter": "T",
+      "Freq": 28
+    },
+    {
+      "Letter": "U",
+      "Freq": 26
+    },
+    {
+      "Letter": "V",
+      "Freq": 30
+    },
+    {
+      "Letter": "X",
+      "Freq": 5
+    },
+    {
+      "Letter": "Y",
+      "Freq": 4
+    },
+    {
+      "Letter": "Z",
+      "Freq": 2
+    }
+    ];
+
+  data.forEach(function (d) {
+    d.Freq = +d.Freq;
+  });
+
+  x.domain(data.map((d) => d.Letter));
+  y.domain([0, 60]);
+  svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis)
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", "-.55em")
+    .attr("transform", "rotate(-90)");
+
+  svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 5)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Frequency");
+
+  svg.selectAll("bar")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", (d: any) => x(d.Letter))
+    .attr("width", x.bandwidth())
+    .attr("y", (d: any) => y(d.Freq))
+    .attr("height", (d: any) => height - y(d.Freq));
+
+}
+
 
 function relationshipIcons() {
 

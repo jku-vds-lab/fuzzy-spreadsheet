@@ -29,13 +29,12 @@
   },
   "dependencies": {
     "@microsoft/office-js-helpers": "^1.0.2",
+    "@types/d3": "^5.7.2",
     "@types/jquery": "^3.3.31",
     "@types/mathjs": "^6.0.4",
+    "d3": "^5.15.0",
     "jstat": "^1.9.2",
-    "mathjs": "^6.6.0",
-    "vega": "^5.10.0",
-    "vega-embed": "^6.4.0",
-    "vega-lite": "^4.5.1"
+    "mathjs": "^6.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",
