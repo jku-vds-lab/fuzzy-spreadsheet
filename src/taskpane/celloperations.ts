@@ -122,8 +122,6 @@ export default class CellOperations {
     })
   }
 
-
-
   async showPopUpWindow(address: string) {
     // this.removePopUps();
     // console.log(address);

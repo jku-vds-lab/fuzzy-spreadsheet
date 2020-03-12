@@ -3,7 +3,7 @@ import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
 import * as d3 from 'd3';
-import { xml } from 'd3';
+
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -13,7 +13,7 @@ import { xml } from 'd3';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("parseSheet").onclick = d3code; //parseSheet;
+  document.getElementById("parseSheet").onclick = parseSheet;
   document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -50,6 +50,7 @@ async function parseSheet() {
     showReferenceCellOption();
   }
 }
+
 
 async function markAsReferenceCell() {
   try {
@@ -197,7 +198,8 @@ async function spread() {
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-      d3code();
+      checkCellChanged();
+      showSpreadInTaskPane(SheetProperties.referenceCell);
     } else {
       SheetProperties.isSpread = false;
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
@@ -208,59 +210,38 @@ async function spread() {
   }
 }
 
-function d3code() {
+function showSpreadInTaskPane(cell: CellProperties) {
 
-  let margin = { top: 20, right: 20, bottom: 70, left: 40 };
-  let width = 600 - margin.left - margin.right;
-  let height = 100;
+  let data = cell.samples;
+  data.forEach(function (d) {
+    d.likelihood = +d.likelihood;
+  });
 
+  const margin = { top: 0, right: 0, bottom: 30, left: 0 };
 
+  const width = 100 - margin.left - margin.right;
+  const height = 125 - margin.top - margin.bottom;
 
-  //Creates the xScale
-  var xScale = d3.scaleTime()
+  //Create the xScale
+  const xScale = d3.scaleTime()
     .range([0, width]);
 
-  //Creates the yScale
-  var yScale = d3.scaleLinear()
+  //Create the yScale
+  const yScale = d3.scaleLinear()
     .range([height, 0]);
 
-  //Defines the y axis styles`
-  var xAxis = d3.axisBottom(xScale)
-    .tickPadding(8)
-    .ticks(8)
-    .tickFormat(function (d: number) { return d * 1 + "%" })
+  const svg = d3.select(".g-chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
-  let svg = d3.select('body').append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform',
-      'translate (' + margin.left + ',' + margin.top + ')');
-
-  let data = [
-    {
-      value: 10,
-      likelihood: 0.5
-    }, {
-      value: 12,
-      likelihood: 0.04
-    }, {
-      value: 13,
-      likelihood: 0.03
-    }, {
-      value: 14,
-      likelihood: 0.01
-    }
-  ]
-
-  // let data = SheetProperties.referenceCell.samples;
-  // data.forEach(function (d) {
-  //   d.likelihood = +d.likelihood;
-  // });
+  const div = d3.select(".g-chart").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
   //Organizes the data
-  var maxX = d3.max(data, function (d) { return d.value; });
+  d3.max(data, function (d) { return d.value; });
 
   //Defines the xScale max
   xScale.domain(d3.extent(data, function (d) { return d.value; }));
@@ -268,25 +249,52 @@ function d3code() {
   //Defines the yScale max
   yScale.domain([0, 100]);
 
-
-  var xAxisGroup = svg.append("g")
+  svg.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
 
-
-  var drawstrips = svg.selectAll("line.percent")
+  svg.selectAll("line.percent")
     .data(data)
     .enter()
     .append("line")
     .attr("class", "percentline")
-    .attr("x1", function (d, i) { return xScale(d.value); })
-    .attr("x2", function (d) { return xScale(d.value); })
+    .attr("x1", (d) => { return xScale(d.value); })
+    .attr("x2", (d) => { return xScale(d.value); })
     .attr("y1", 50)
     .attr("y2", 100)
     .style("stroke", "#cc0000")
     .style("stroke-width", 2)
     .style("opacity", (d) => { return d.likelihood })
+    .on("mouseover", (d) => {
+
+      var right = true;
+      d3.select(this)
+        .transition().duration(100)
+        .attr("y1", 0)
+        .style("stroke-width", 3)
+        .style("opacity", 1);
+
+      div.transition()
+        .style("opacity", 1)
+      div.html("<span class='bolded'>" + d.value + ": </span>" + d.likelihood * 100 + "%")
+
+      let offset = right ? div.node().offsetWidth + 5 : -5;
+
+      div
+        .style("left", (d3.event.pageX - offset) + "px")
+        .style("top", (height - 80) + "px")
+
+    })
+    .on("mouseout", () => {
+      d3.select(this)
+        .transition().duration(100)
+        .attr("y1", 50)
+        .style("stroke-width", 2)
+        .style("opacity", 0.4);
+
+      div.transition()
+        .style("opacity", 0)
+    })
 }
 
 
@@ -582,4 +590,37 @@ async function clearPreviousReferenceCell() {
   })
 }
 
+function checkCellChanged() {
+  Excel.run(function (context) {
+    var worksheet = context.workbook.worksheets.getActiveWorksheet();
+    var eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
 
+    return context.sync()
+      .then(function () {
+        console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+      });
+  }).catch((reason: any) => { console.log(reason) });
+
+}
+
+function handleSelectionChange(event) {
+  return Excel.run(function (context) {
+    return context.sync()
+      .then(function () {
+        console.log("Address of current selection: " + event.address);
+
+        if (SheetProperties.cells == null) {
+          console.log('Returning because cells is undefined');
+          return;
+        }
+        SheetProperties.cells.forEach((cell: CellProperties) => {
+          if (cell.address == event.address) {
+            console.log('Found a matching cell');
+
+          }
+        })
+
+
+      });
+  }).catch((reason: any) => { console.log(reason) });
+}
