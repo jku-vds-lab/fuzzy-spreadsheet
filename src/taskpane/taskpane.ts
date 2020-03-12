@@ -144,6 +144,8 @@ function third() {
 }
 
 
+
+
 function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
@@ -162,6 +164,7 @@ function impact() {
       SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
     }
+    selectSomethingElse();
   } catch (error) {
     console.error(error);
   }
@@ -186,6 +189,7 @@ function likelihood() {
       SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
     }
+    selectSomethingElse();
   } catch (error) {
     console.error(error);
   }
@@ -204,6 +208,7 @@ async function spread() {
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
+    selectSomethingElse();
   } catch (error) {
     console.error(error);
   }
@@ -330,6 +335,7 @@ function relationshipIcons() {
     SheetProperties.cellOp.removeInputRelationship();
     SheetProperties.cellOp.removeOutputRelationship();
   }
+  selectSomethingElse();
 }
 
 async function startWhatIf() {
@@ -436,6 +442,7 @@ function displayOptions() {
   if (SheetProperties.isRelationship) {
     relationshipIcons();
   }
+  selectSomethingElse();
 }
 
 function showInputRelationForOptions() {
@@ -452,6 +459,7 @@ function showInputRelationForOptions() {
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
   }
+  selectSomethingElse();
 
 }
 
@@ -469,6 +477,7 @@ function showOutputRelationForOptions() {
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
   }
+  selectSomethingElse();
 }
 
 function removeInputRelationFromOptions() {
@@ -485,6 +494,7 @@ function removeInputRelationFromOptions() {
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.removeInputRelationship();
   }
+  selectSomethingElse();
 }
 
 function removeOutputRelationFromOptions() {
@@ -501,6 +511,7 @@ function removeOutputRelationFromOptions() {
   if (SheetProperties.isRelationship) {
     SheetProperties.cellOp.removeOutputRelationship();
   }
+  selectSomethingElse();
 }
 
 function hideOptions() {
@@ -638,4 +649,18 @@ function handleSelectionChange(event) {
 
       });
   }).catch((reason: any) => { console.log(reason) });
+}
+
+function selectSomethingElse() {
+  Excel.run(function (context) {
+
+    var sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    var range = sheet.getRange(SheetProperties.referenceCell.address);
+
+    range.select();
+    console.log('Select something else');
+
+    return context.sync();
+  })
 }
