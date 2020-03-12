@@ -199,7 +199,6 @@ async function spread() {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
       checkCellChanged();
-      showSpreadInTaskPane(SheetProperties.referenceCell);
     } else {
       SheetProperties.isSpread = false;
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
@@ -212,89 +211,102 @@ async function spread() {
 
 function showSpreadInTaskPane(cell: CellProperties) {
 
-  let data = cell.samples;
-  data.forEach(function (d) {
-    d.likelihood = +d.likelihood;
-  });
+  try {
 
-  const margin = { top: 0, right: 0, bottom: 30, left: 0 };
+    // d3.selectAll("svg > *").remove();
+    d3.select("svg").remove();
 
-  const width = 100 - margin.left - margin.right;
-  const height = 125 - margin.top - margin.bottom;
+    // delete old data
+    let data = cell.samples;
+    data.forEach(function (d) {
+      d.likelihood = +d.likelihood;
+    });
 
-  //Create the xScale
-  const xScale = d3.scaleTime()
-    .range([0, width]);
+    const margin = { top: 0, right: 0, bottom: 30, left: 0 };
 
-  //Create the yScale
-  const yScale = d3.scaleLinear()
-    .range([height, 0]);
+    const width = 100 - margin.left - margin.right;
+    const height = 125; // 125 - margin.top - margin.bottom;
 
-  const svg = d3.select(".g-chart").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    //Create the xScale
+    const xScale = d3.scaleTime()
+      .range([0, width]);
 
-  const div = d3.select(".g-chart").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
+    //Create the yScale
+    const yScale = d3.scaleLinear()
+      .range([height, 0]);
 
-  //Organizes the data
-  d3.max(data, function (d) { return d.value; });
+    const svg = d3.select(".g-chart").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  //Defines the xScale max
-  xScale.domain(d3.extent(data, function (d) { return d.value; }));
+    const div = d3.select(".g-chart").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
 
-  //Defines the yScale max
-  yScale.domain([0, 100]);
+    //Organizes the data
+    d3.max(data, function (d) { return d.value; });
 
-  svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
+    //Defines the xScale max
+    xScale.domain(d3.extent(data, function (d) { return d.value; }));
 
-  svg.selectAll("line.percent")
-    .data(data)
-    .enter()
-    .append("line")
-    .attr("class", "percentline")
-    .attr("x1", (d) => { return xScale(d.value); })
-    .attr("x2", (d) => { return xScale(d.value); })
-    .attr("y1", 50)
-    .attr("y2", 100)
-    .style("stroke", "#cc0000")
-    .style("stroke-width", 2)
-    .style("opacity", (d) => { return d.likelihood })
-    .on("mouseover", (d) => {
+    //Defines the yScale max
+    yScale.domain([0, 100]);
 
-      var right = true;
-      d3.select(this)
-        .transition().duration(100)
-        .attr("y1", 0)
-        .style("stroke-width", 3)
-        .style("opacity", 1);
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
 
-      div.transition()
-        .style("opacity", 1)
-      div.html("<span class='bolded'>" + d.value + ": </span>" + d.likelihood * 100 + "%")
+    svg.selectAll("line.percent")
+      .data(data)
+      .enter()
+      .append("line")
+      .attr("class", "percentline")
+      .attr("x1", (d) => { return xScale(d.value); })
+      .attr("x2", (d) => { return xScale(d.value); })
+      .attr("y1", 50)
+      .attr("y2", 100)
+      .style("stroke", "#cc0000")
+      .style("stroke-width", 2)
+      .style("opacity", (d) => { return d.likelihood })
+      .on("mouseover", (d) => {
 
-      let offset = right ? div.node().offsetWidth + 5 : -5;
+        try {
+          var right = true;
+          d3.select(this)
+            .transition().duration(100)
+            .attr("y1", 0)
+            .style("stroke-width", 3)
+            .style("opacity", 1);
 
-      div
-        .style("left", (d3.event.pageX - offset) + "px")
-        .style("top", (height - 80) + "px")
+          div.transition()
+            .style("opacity", 1)
+          div.html("<span class='bolded'>" + d.value + ": </span>" + d.likelihood * 100 + "%")
 
-    })
-    .on("mouseout", () => {
-      d3.select(this)
-        .transition().duration(100)
-        .attr("y1", 50)
-        .style("stroke-width", 2)
-        .style("opacity", 0.4);
+          let offset = right ? div.node().offsetWidth + 5 : -5;
 
-      div.transition()
-        .style("opacity", 0)
-    })
+          div
+            .style("left", (d3.event.pageX - offset) + "px")
+            .style("top", 425 + "px")
+        } catch (error) {
+          console.log(error);
+        }
+
+      })
+      .on("mouseout", () => {
+        d3.select(this)
+          .transition().duration(100)
+          .attr("y1", 50)
+          .style("stroke-width", 2)
+          .style("opacity", 0.4);
+
+        div.transition()
+          .style("opacity", 0)
+      })
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 
@@ -614,9 +626,12 @@ function handleSelectionChange(event) {
           return;
         }
         SheetProperties.cells.forEach((cell: CellProperties) => {
-          if (cell.address == event.address) {
-            console.log('Found a matching cell');
+          if (cell.address.includes(event.address)) {
 
+            console.log('Found a matching cell');
+            if (cell.isSpread) {
+              showSpreadInTaskPane(cell);
+            }
           }
         })
 

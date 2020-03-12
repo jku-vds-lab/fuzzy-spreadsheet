@@ -241,6 +241,7 @@ hr {
 body {
     font-family: sans-serif;
     margin: 0;
+    align: left;
 }
 
 .y.axis line {

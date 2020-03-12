@@ -41,7 +41,7 @@ export default class Spread {
   public showReferenceCellSpread() {
 
     try {
-
+      this.referenceCell.isSpread = true;
       this.addSamplesToCell(this.referenceCell);
       this.drawBarCodePlot(this.referenceCell, 'ReferenceChart');
 
