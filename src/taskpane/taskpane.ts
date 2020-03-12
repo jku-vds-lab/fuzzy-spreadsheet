@@ -13,7 +13,7 @@ import { xml } from 'd3';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("parseSheet").onclick = d3code;
+  document.getElementById("parseSheet").onclick = d3code; //parseSheet;
   document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -197,6 +197,7 @@ async function spread() {
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      d3code();
     } else {
       SheetProperties.isSpread = false;
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
@@ -207,20 +208,28 @@ async function spread() {
   }
 }
 
-async function d3code() {
+function d3code() {
 
   let margin = { top: 20, right: 20, bottom: 70, left: 40 };
   let width = 600 - margin.left - margin.right;
-  let height = 300 - margin.top - margin.bottom;
+  let height = 100;
 
 
-  // let x = d3.scaleOrdinal([0, width]);
-  let x = d3.scaleBand().range([0, width]);
-  let y = d3.scaleLinear().range([height, 0]);
 
-  let xAxis = d3.axisBottom(x).scale(x);
+  //Creates the xScale
+  var xScale = d3.scaleTime()
+    .range([0, width]);
 
-  let yAxis = d3.axisLeft(y).ticks(10);
+  //Creates the yScale
+  var yScale = d3.scaleLinear()
+    .range([height, 0]);
+
+  //Defines the y axis styles`
+  var xAxis = d3.axisBottom(xScale)
+    .tickPadding(8)
+    .ticks(8)
+    .tickFormat(function (d: number) { return d * 1 + "%" })
+
 
   let svg = d3.select('body').append('svg')
     .attr('width', width + margin.left + margin.right)
@@ -229,144 +238,55 @@ async function d3code() {
     .attr('transform',
       'translate (' + margin.left + ',' + margin.top + ')');
 
-  let data =
-    [{
-      "Letter": "A",
-      "Freq": 20
-    },
+  let data = [
     {
-      "Letter": "B",
-      "Freq": 12
-    },
-    {
-      "Letter": "C",
-      "Freq": 47
-    },
-    {
-      "Letter": "D",
-      "Freq": 34
-    },
-    {
-      "Letter": "E",
-      "Freq": 54
-    },
-    {
-      "Letter": "F",
-      "Freq": 21
-    },
-    {
-      "Letter": "G",
-      "Freq": 57
-    },
-    {
-      "Letter": "H",
-      "Freq": 31
-    },
-    {
-      "Letter": "I",
-      "Freq": 17
-    },
-    {
-      "Letter": "J",
-      "Freq": 5
-    },
-    {
-      "Letter": "K",
-      "Freq": 23
-    },
-    {
-      "Letter": "L",
-      "Freq": 39
-    },
-    {
-      "Letter": "M",
-      "Freq": 29
-    },
-    {
-      "Letter": "N",
-      "Freq": 33
-    },
-    {
-      "Letter": "O",
-      "Freq": 18
-    },
-    {
-      "Letter": "P",
-      "Freq": 35
-    },
-    {
-      "Letter": "Q",
-      "Freq": 11
-    },
-    {
-      "Letter": "R",
-      "Freq": 45
-    },
-    {
-      "Letter": "S",
-      "Freq": 43
-    },
-    {
-      "Letter": "T",
-      "Freq": 28
-    },
-    {
-      "Letter": "U",
-      "Freq": 26
-    },
-    {
-      "Letter": "V",
-      "Freq": 30
-    },
-    {
-      "Letter": "X",
-      "Freq": 5
-    },
-    {
-      "Letter": "Y",
-      "Freq": 4
-    },
-    {
-      "Letter": "Z",
-      "Freq": 2
+      value: 10,
+      likelihood: 0.5
+    }, {
+      value: 12,
+      likelihood: 0.04
+    }, {
+      value: 13,
+      likelihood: 0.03
+    }, {
+      value: 14,
+      likelihood: 0.01
     }
-    ];
+  ]
 
-  data.forEach(function (d) {
-    d.Freq = +d.Freq;
-  });
+  // let data = SheetProperties.referenceCell.samples;
+  // data.forEach(function (d) {
+  //   d.likelihood = +d.likelihood;
+  // });
 
-  x.domain(data.map((d) => d.Letter));
-  y.domain([0, 60]);
-  svg.append("g")
+  //Organizes the data
+  var maxX = d3.max(data, function (d) { return d.value; });
+
+  //Defines the xScale max
+  xScale.domain(d3.extent(data, function (d) { return d.value; }));
+
+  //Defines the yScale max
+  yScale.domain([0, 100]);
+
+
+  var xAxisGroup = svg.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
-    .call(xAxis)
-    .selectAll("text")
-    .style("text-anchor", "end")
-    .attr("dx", "-.8em")
-    .attr("dy", "-.55em")
-    .attr("transform", "rotate(-90)");
+    .call(xAxis);
 
-  svg.append("g")
-    .attr("class", "y axis")
-    .call(yAxis)
-    .append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 5)
-    .attr("dy", ".71em")
-    .style("text-anchor", "end")
-    .text("Frequency");
 
-  svg.selectAll("bar")
+  var drawstrips = svg.selectAll("line.percent")
     .data(data)
-    .enter().append("rect")
-    .attr("class", "bar")
-    .attr("x", (d: any) => x(d.Letter))
-    .attr("width", x.bandwidth())
-    .attr("y", (d: any) => y(d.Freq))
-    .attr("height", (d: any) => height - y(d.Freq));
-
+    .enter()
+    .append("line")
+    .attr("class", "percentline")
+    .attr("x1", function (d, i) { return xScale(d.value); })
+    .attr("x2", function (d) { return xScale(d.value); })
+    .attr("y1", 50)
+    .attr("y2", 100)
+    .style("stroke", "#cc0000")
+    .style("stroke-width", 2)
+    .style("opacity", (d) => { return d.likelihood })
 }
 
 
