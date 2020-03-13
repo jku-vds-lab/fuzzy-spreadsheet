@@ -664,3 +664,12 @@ function selectSomethingElse() {
     return context.sync();
   })
 }
+
+function moveDivElement() {
+
+  var div = document.getElementById('legend');
+  console.log(div.style);
+  div.style.position = 'relative';
+  div.style.left = 5 + 'px';
+
+}
