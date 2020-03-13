@@ -3,6 +3,7 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
+import { max } from 'd3';
 
 // the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
 export default class Spread {
@@ -105,20 +106,40 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        // let totalWidth = cell.width;
+        let totalWidth = cell.width;
         let totalHeight = cell.height;
 
         let startLineTop = cell.top;
         let startLineLeft = cell.left + 10;
         let endLineTop = cell.top + totalHeight;
-        // let endLineLeft = cell.left + totalWidth;
+        let endLineLeft = cell.left + totalWidth;
+
+        let minSample = 100;
+        let maxSample = -10;
+
+        cell.samples.forEach((sample: { value: number, likelihood: number }) => {
+          if (sample.value > maxSample) {
+            maxSample = sample.value;
+          }
+          if (sample.value < minSample) {
+            minSample = sample.value;
+          }
+        });
+
 
         cell.samples.forEach((sample: { value: number, likelihood: number }) => {
           let valueToBeAdded: number = sample.value; // Math.round((sample.value + Number.EPSILON) * 100) / 100;
 
+          let lineWeight = 3;
+          // if (isChangeValue) {
+          //   valueToBeAdded = valueToBeAdded * 0.1;
+          //   lineWeight = 1;
+          // }
+
           let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
           line.lineFormat.transparency = 1 - sample.likelihood;
           line.name = name;
+          line.lineFormat.weight = lineWeight;
 
           if (sample.likelihood < 0.1) {
             line.lineFormat.transparency = 0.9;

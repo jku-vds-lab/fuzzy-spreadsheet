@@ -279,7 +279,7 @@ body {
 }
 
 .line {
-    stroke: #262626;
+    stroke: #2e0cc5d3;
     stroke-width: 2px;
     fill: none;
 }
@@ -303,7 +303,7 @@ body {
 }
 
 .mc-kicker {
-    color: #a6a6a6;
+    color: #1115e9;
     text-transform: uppercase;
     font-size: 12px;
     margin: 0;
@@ -311,11 +311,11 @@ body {
 
 .bolded {
     font-weight: 500;
-    color: #262626;
+    color: #1613cf;
 }
 
 .mc-head {
-    color: #262626;
+    color: #1e3dec;
     font-size: 24px;
     font-weight: 300;
     margin: 0 0 10px 0;

@@ -272,8 +272,8 @@ function showSpreadInTaskPane(cell: CellProperties) {
       .attr("x2", (d) => { return xScale(d.value); })
       .attr("y1", 50)
       .attr("y2", 100)
-      .style("stroke", "#cc0000")
-      .style("stroke-width", 2)
+      .style("stroke", "#002499")
+      .style("stroke-width", 3)
       .style("opacity", (d) => { return d.likelihood })
       .on("mouseover", (d) => {
 
@@ -287,7 +287,7 @@ function showSpreadInTaskPane(cell: CellProperties) {
 
           div.transition()
             .style("opacity", 1)
-          div.html("<span class='bolded'>" + d.value + ": </span>" + d.likelihood * 100 + "%")
+          div.html("<span class='bolded'>" + (d.value).toFixed(2) + ": </span>" + (d.likelihood * 100).toFixed(2) + "%")
 
           let offset = right ? div.node().offsetWidth + 5 : -5;
 
