@@ -3,7 +3,7 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
-import { max } from 'd3';
+import { max, min } from 'd3';
 
 // the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
 export default class Spread {
@@ -42,6 +42,10 @@ export default class Spread {
   public showReferenceCellSpread() {
 
     try {
+
+      if (this.referenceCell.isSpread) {
+        return;
+      }
       this.referenceCell.isSpread = true;
       this.addSamplesToCell(this.referenceCell);
       this.drawBarCodePlot(this.referenceCell, 'ReferenceChart');
@@ -110,7 +114,7 @@ export default class Spread {
         let totalHeight = cell.height;
 
         let startLineTop = cell.top;
-        let startLineLeft = cell.left + 10;
+        let startLineLeft = cell.left + 20;
         let endLineTop = cell.top + totalHeight;
         let endLineLeft = cell.left + totalWidth;
 
@@ -126,15 +130,26 @@ export default class Spread {
           }
         });
 
+        console.log('Width : ' + cell.width);
+
+        let range = (totalWidth - 20) / (maxSample - minSample);
+
+        console.log('Range: ' + range);
+
+        if (minSample < 0) {
+          startLineLeft = startLineLeft + 10;
+        }
+
+
 
         cell.samples.forEach((sample: { value: number, likelihood: number }) => {
           let valueToBeAdded: number = sample.value; // Math.round((sample.value + Number.EPSILON) * 100) / 100;
 
           let lineWeight = 3;
-          // if (isChangeValue) {
-          //   valueToBeAdded = valueToBeAdded * 0.1;
-          //   lineWeight = 1;
-          // }
+          if (minSample < 0) {
+            valueToBeAdded = valueToBeAdded * range;
+            lineWeight = 1;
+          }
 
           let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
           line.lineFormat.transparency = 1 - sample.likelihood;
@@ -322,6 +337,7 @@ export default class Spread {
   }
 
   public removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+    debugger;
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isSpread = false;
@@ -346,6 +362,7 @@ export default class Spread {
   }
 
   public removeSpreadFromReferenceCell() {
+    this.referenceCell.isSpread = false;
     this.deleteBarCodePlot('ReferenceChart');
   }
 

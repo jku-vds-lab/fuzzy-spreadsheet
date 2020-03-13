@@ -64,7 +64,7 @@ export default class Relationship {
 
   private drawInputRelation(cell: CellProperties, color: string) {
 
-    Excel.run(async (context) => {
+    Excel.run(function (context) {
 
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
@@ -80,7 +80,7 @@ export default class Relationship {
       diamond.lineFormat.color = color;
       diamond.fill.setSolidColor(color);
 
-      await context.sync();
+      return context.sync().then(() => { console.log('Success in drawing relationship') }).catch((reason: any) => console.log('Could not draw relationship: ' + reason));
     })
   }
 

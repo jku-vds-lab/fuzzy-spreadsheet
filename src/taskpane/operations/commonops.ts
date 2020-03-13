@@ -11,7 +11,7 @@ export default class CommonOperations {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       let i = 0;
-      let MARGIN = 5;
+      let MARGIN = 10;
       let height = 5;
       let width = 5;
 

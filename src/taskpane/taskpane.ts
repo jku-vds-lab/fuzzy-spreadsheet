@@ -399,27 +399,22 @@ async function whatIfProcess() {
   const whatif = new WhatIf();
   whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
-  console.log('Computing new spread');
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  // console.log('Computing new spread');
+  // await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
 
-  // console.log('Calculating updated number');
+  console.log('Calculating updated number');
 
-  // await whatif.calculateUpdatedNumber();
+  await whatif.calculateUpdatedNumber();
 
-  // if (!SheetProperties.referenceCell.whatIf) {
-  //   console.log('Returning because what if is null');
-  //   return;
-  // }
+  if (!SheetProperties.referenceCell.whatIf) {
+    console.log('Returning because what if is null');
+    return;
+  }
 
-  // const updatedValue = SheetProperties.referenceCell.whatIf.value;
+  SheetProperties.cellOp.deleteUpdateshapes();
+  whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood);
 
-  // if (updatedValue == 0) {
-  //   console.log('No update in value');
-  // } else {
-  //   console.log("CHANGE: " + updatedValue);
-  //   SheetProperties.cellOp.deleteUpdateshapes();
-  //   // SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
-  // }
+
 
   // if (SheetProperties.isSpread) {
   //   console.log('Computing new spread');
