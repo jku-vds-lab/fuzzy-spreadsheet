@@ -3,13 +3,14 @@ import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
 import * as d3 from 'd3';
+import { max } from 'd3';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
 /* global console, document, Excel, Office */
-
+// discrete samples and continuous samples
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
@@ -75,7 +76,6 @@ async function markAsReferenceCell() {
       SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
       SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
       SheetProperties.isReferenceCell = true;
-
       console.log('Done Marking a reference cell');
       showVisualizationOption();
     });
@@ -217,11 +217,12 @@ async function spread() {
 function showSpreadInTaskPane(cell: CellProperties) {
 
   try {
-
-    // d3.selectAll("svg > *").remove();
     d3.select("svg").remove();
+    var element = document.getElementById('tooltip')
+    if (element) {
+      element.remove();
+    }
 
-    // delete old data
     let data = cell.samples;
     data.forEach(function (d) {
       d.likelihood = +d.likelihood;
@@ -314,6 +315,87 @@ function showSpreadInTaskPane(cell: CellProperties) {
   }
 }
 
+function showSpreadAsColumnChartInTaskPane(cell: CellProperties) {
+  d3.select("svg").remove();
+  let data = cell.samples;
+  let maxLikelihood = 0;
+  data.forEach(function (d) {
+    d.likelihood = (d.likelihood * 100) / 100;
+    if (d.likelihood > maxLikelihood) {
+      maxLikelihood = d.likelihood;
+    }
+    d.likelihood = +d.likelihood;
+  });
+
+  let margin = { top: 20, right: 20, bottom: 70, left: 40 };
+
+  const width = 600 - margin.left - margin.right;
+  const height = 300 - margin.top - margin.bottom;
+
+  //Create the xScale
+  const xScale = d3.scaleBand()
+    .range([0, width]);
+
+  //Create the yScale
+  const yScale = d3.scaleLinear()
+    .range([height, 0]);
+
+  var xAxis = d3.axisBottom(xScale).scale(xScale);
+
+  var yAxis = d3.axisLeft(yScale).ticks(10);
+
+  const svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // const div = d3.select(".g-chart").append("div")
+  //   .attr("class", "tooltip")
+  //   .style("opacity", 0);
+
+  //Organizes the data
+  d3.max(data, function (d) { return d.value; });
+
+  //Defines the xScale max
+  xScale.domain(data.map((d) => d.value.toString()));
+
+  //Defines the yScale max
+  yScale.domain([0, maxLikelihood]);
+
+  svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis)
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", "-.55em")
+    .attr("transform", "rotate(-90)");
+
+  svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 5)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Frequency");
+
+
+  svg.selectAll("bar")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", function (d) { return xScale(d.value.toString()); })
+    .attr("width", xScale.bandwidth())
+    .attr("y", function (d) {
+      return yScale(d.likelihood
+      );
+    })
+    .attr("height", function (d) { return height - yScale(d.likelihood); });
+}
 
 function relationshipIcons() {
 
@@ -636,7 +718,8 @@ function handleSelectionChange(event) {
 
             console.log('Found a matching cell');
             if (cell.isSpread) {
-              showSpreadInTaskPane(cell);
+              // showSpreadInTaskPane(cell);
+              showSpreadAsColumnChartInTaskPane(cell);
             }
           }
         })
@@ -668,3 +751,25 @@ function moveDivElement() {
   div.style.left = 5 + 'px';
 
 }
+
+function testSomething() {
+  Excel.run(function (context) {
+    var sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    let startLineLeft = 315.75;
+    let startLineTop = 117;
+    let endLineTop = startLineTop + 15;
+    let width = 75.5;
+
+    for (let i = 0; i < 5; i++) {
+      let line = sheet.shapes.addLine(startLineLeft + 2 * i, startLineTop, startLineLeft + 2 * i, endLineTop);
+      line.lineFormat.color = '#E0E0E0';
+      line.lineFormat.weight = 2;
+    }
+    return context.sync();
+  })
+}
+
+// Top: 117
+// Left: 315.75
+// Width: 75.5

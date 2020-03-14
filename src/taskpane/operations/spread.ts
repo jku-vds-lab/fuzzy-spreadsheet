@@ -110,59 +110,42 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let totalWidth = cell.width;
         let totalHeight = cell.height;
 
         let startLineTop = cell.top;
         let startLineLeft = cell.left + 20;
         let endLineTop = cell.top + totalHeight;
-        let endLineLeft = cell.left + totalWidth;
 
-        let minSample = 100;
-        let maxSample = -10;
-
-        cell.samples.forEach((sample: { value: number, likelihood: number }) => {
-          if (sample.value > maxSample) {
-            maxSample = sample.value;
-          }
-          if (sample.value < minSample) {
-            minSample = sample.value;
-          }
-        });
-
-        console.log('Width : ' + cell.width);
-
-        let range = (totalWidth - 20) / (maxSample - minSample);
-
-        console.log('Range: ' + range);
-
-        if (minSample < 0) {
-          startLineLeft = startLineLeft + 10;
-        }
-
-
+        let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
+        let k = 0;
 
         cell.samples.forEach((sample: { value: number, likelihood: number }) => {
-          let valueToBeAdded: number = sample.value; // Math.round((sample.value + Number.EPSILON) * 100) / 100;
 
-          let lineWeight = 3;
-          if (minSample < 0) {
-            valueToBeAdded = valueToBeAdded * range;
-            lineWeight = 1;
+          let i = 0;
+
+          let valueToBeAdded: number = sample.value;
+
+          if (sample.likelihood >= 0.8) {
+            i = 0;
+          } else if (sample.likelihood >= 0.5) {
+            i = 1;
+          } else if (sample.likelihood >= 0.3) {
+            i = 2;
+          } else if (sample.likelihood >= 0.2) {
+            i = 3;
+          } else {
+            i = 4;
           }
 
-          let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded, startLineTop, startLineLeft + valueToBeAdded, endLineTop);
-          line.lineFormat.transparency = 1 - sample.likelihood;
+          if (sample.likelihood < 0.05) {
+            return;
+          }
+
+          let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
+          line.lineFormat.color = colors[i];
           line.name = name;
-          line.lineFormat.weight = lineWeight;
-
-          if (sample.likelihood < 0.1) {
-            line.lineFormat.transparency = 0.9;
-          }
-
-          if (this.color) {
-            line.lineFormat.color = this.color;
-          }
+          line.lineFormat.weight = 3;
+          k++;
         })
 
         return context.sync().then(() => {
