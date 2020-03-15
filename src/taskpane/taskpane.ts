@@ -485,23 +485,33 @@ async function processWhatIf() {
   }
 }
 
-function useNewValues() {
-  SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas, true);
+async function useNewValues() {
+  await parseSheet();
 }
 
 async function dismissValues() {
-  // Error so far
+
   await Excel.run(async (context) => {
     const sheet = context.workbook.worksheets.getActiveWorksheet();
-    const range = sheet.getUsedRange();
-    const values = new Array<any>();
+    let cellRanges = new Array<Excel.Range>();
+    let cellValues = new Array<number>();
 
     SheetProperties.cells.forEach((cell: CellProperties) => {
-      values.push(cell.value);
+
+      let range = sheet.getRange(cell.address);
+      cellRanges.push(range.load('values'));
+      cellValues.push(cell.value);
     })
 
-    range.values = [values];
     await context.sync();
+
+    let i = 0;
+
+    cellRanges.forEach((cellRange: Excel.Range) => {
+      cellRange.values = [[cellValues[i]]];
+      i++;
+    })
+
   });
 }
 

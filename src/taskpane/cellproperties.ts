@@ -117,7 +117,7 @@ export default class CellProperties {
     }
   }
 
-  updateNewValues(newValues: any[][], newFormulas: any[][], isUpdate: boolean = false) {
+  updateNewValues(newValues: any[][], newFormulas: any[][]) {
 
     console.log('Update Values');
     try {
@@ -154,14 +154,7 @@ export default class CellProperties {
       this.checkUncertainty(this.newCells);
 
       this.getRelationshipOfCells(this.newCells);
-      // check if the reference cell is uncertain or not
 
-      if (isUpdate) {
-        console.log('Update everything');
-        this.cells = this.newCells;
-
-        this.getRelationshipOfCells();
-      }
     } catch (error) {
       console.log('Error: ' + error);
     }
