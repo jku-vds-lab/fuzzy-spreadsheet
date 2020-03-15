@@ -25,7 +25,7 @@ Office.initialize = () => {
   document.getElementById("first").onchange = first;
   document.getElementById("second").onchange = second;
   document.getElementById("third").onchange = third;
-  document.getElementById("startWhatIf").onchange = startWhatIf;
+  document.getElementById("startWhatIf").onclick = startWhatIf;
   document.getElementById("useNewValues").onclick = useNewValues;
   document.getElementById("dismissValues").onclick = dismissValues;
 }
@@ -421,14 +421,69 @@ function relationshipIcons() {
 }
 
 async function startWhatIf() {
-  (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = true;
-  document.getElementById('useNewValues').hidden = true;
-  document.getElementById('dismissValues').hidden = true;
-  await whatIfProcess();
-  document.getElementById('useNewValues').hidden = false;
-  document.getElementById('dismissValues').hidden = false;
+  try {
+    (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = true;
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    performWhatIf();
+    await processWhatIf();
+    document.getElementById('useNewValues').hidden = false;
+    document.getElementById('dismissValues').hidden = false;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
+function performWhatIf() {
+  Excel.run(function (context) {
+    var worksheet = context.workbook.worksheets.getActiveWorksheet();
+    console.log('Worksheet has changed');
+    worksheet.onCalculated.add(processWhatIf);
+
+    return context.sync()
+      .then(function () {
+        console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+      });
+  }).catch((reason: any) => { console.log(reason) });
+}
+
+
+async function processWhatIf() {
+
+  console.log('------------------Processing what-if');
+
+  if (SheetProperties.referenceCell == null) {
+    console.log('Returning because reference cell is null');
+    return;
+  }
+
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    const range = sheet.getUsedRange(true);
+    range.load(['formulas', 'values']);
+    await context.sync();
+    SheetProperties.newValues = range.values;
+    SheetProperties.newFormulas = range.formulas;
+  });
+
+  let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
+  const whatif = new WhatIf();
+
+  whatif.setNewCells(newCells, SheetProperties.cells, SheetProperties.referenceCell);
+
+  console.log('Calculating the change');
+
+  whatif.calculateChange();
+
+  SheetProperties.cellOp.deleteUpdateshapes();
+
+  whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+
+  if (SheetProperties.isSpread) {
+    console.log('Computing new spread');
+    whatif.showNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+}
 
 function useNewValues() {
   SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas, true);
@@ -448,60 +503,6 @@ async function dismissValues() {
     range.values = [values];
     await context.sync();
   });
-}
-
-async function whatIfProcess() {
-
-  console.log('Registered data changed');
-
-  if (SheetProperties.referenceCell == null) {
-    console.log('Returning because reference cell is null');
-    return;
-  }
-
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    const range = sheet.getUsedRange(true);
-    range.load(['formulas', 'values']);
-    await context.sync();
-    SheetProperties.newValues = range.values;
-    SheetProperties.newFormulas = range.formulas;
-  });
-
-  let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
-
-  newCells.forEach((nC: CellProperties) => {
-    if (nC.id == SheetProperties.referenceCell.id) {
-      console.log('New cell id:' + nC.value);
-    }
-  })
-
-  console.log('Updated values');
-
-  const whatif = new WhatIf();
-  whatif.setNewCells(newCells, SheetProperties.referenceCell);
-
-  // console.log('Computing new spread');
-  // await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-
-  console.log('Calculating updated number');
-
-  await whatif.calculateUpdatedNumber();
-
-  if (!SheetProperties.referenceCell.whatIf) {
-    console.log('Returning because what if is null');
-    return;
-  }
-
-  SheetProperties.cellOp.deleteUpdateshapes();
-  whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood);
-
-
-
-  // if (SheetProperties.isSpread) {
-  //   console.log('Computing new spread');
-  //   await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
-  // }
 }
 
 function displayOptions() {
@@ -700,7 +701,6 @@ function checkCellChanged() {
         console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
       });
   }).catch((reason: any) => { console.log(reason) });
-
 }
 
 function handleSelectionChange(event) {
@@ -718,8 +718,8 @@ function handleSelectionChange(event) {
 
             console.log('Found a matching cell');
             if (cell.isSpread) {
-              // showSpreadInTaskPane(cell);
-              showSpreadAsColumnChartInTaskPane(cell);
+              showSpreadInTaskPane(cell);
+              // showSpreadAsColumnChartInTaskPane(cell);
             }
           }
         })

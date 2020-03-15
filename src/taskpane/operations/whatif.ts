@@ -2,6 +2,7 @@ import CellProperties from "../cellproperties";
 import Spread from "./spread";
 import { increment } from "src/functions/functions";
 
+// only new cells contain what if values
 /* global console, Excel */
 export default class WhatIf {
   public value: number = 0;
@@ -9,81 +10,132 @@ export default class WhatIf {
   public likelihood: number = 0;
   public spreadRange: string = null;
   private newCells: CellProperties[];
+  private oldCells: CellProperties[];
   private referenceCell: CellProperties;
+  private newReferenceCell: CellProperties;
 
-  setNewCells(newCells: CellProperties[], referenceCell: CellProperties) {
+  setNewCells(newCells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
     this.newCells = newCells;
+    this.oldCells = oldCells;
     this.referenceCell = referenceCell;
+    this.newReferenceCell = referenceCell;
   }
 
-  async calculateUpdatedNumber() {
+  calculateChange() {
 
+    let i = 0;
     try {
-      this.newCells.forEach(async (newCell: CellProperties, index: number) => {
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
 
-        newCell.whatIf = new WhatIf();
-        newCell.whatIf.value = newCell.value - this.referenceCell.value;
-
+        newCell.whatIf.value = newCell.value - this.oldCells[index].value;
+        // newCell.whatIf.variance = this.newCells[index + 1].value - newCell.variance;
 
         if (this.referenceCell.id == newCell.id) {
-          this.referenceCell.whatIf = new WhatIf();
-          this.referenceCell.whatIf.value = newCell.value - this.referenceCell.value;
-          console.log('Reference Cell value: ' + this.referenceCell.value + ' and new cell value: ' + newCell.value);
-          this.referenceCell.whatIf.variance = this.newCells[index + 1].value - this.referenceCell.variance;
-
+          this.newReferenceCell = newCell;
         }
+        i++;
       })
 
     } catch (error) {
-      console.log('Error: ', error);
+      console.log('calculateChange Error at ' + this.newCells[i].address, error);
     }
   }
 
-  showUpdateTextInCells(n: number = 1) {
+  showUpdateTextInCells(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
-      this.newCells.forEach((newCell: CellProperties) => {
 
-        if (n == 1) {
+      this.showUpdateTextInReferenceCell();
 
-          newCell.inputCells.forEach((inCell: CellProperties) => {
-            this.addTextBoxOnUpdate(inCell, inCell.whatIf.value);
-          })
+      if (isInput) {
+        this.showUpdateTextInInputCells(this.newReferenceCell.inputCells, n)
+      }
 
-          newCell.outputCells.forEach((outCell: CellProperties) => {
-            this.addTextBoxOnUpdate(outCell, outCell.whatIf.value);
-          })
+      if (isOutput) {
+        this.showUpdateTextInOutputCells(this.newReferenceCell.outputCells, n)
+      }
 
-        }
-
-      })
     } catch (error) {
       console.log(error);
     }
   }
 
-  showUpdateTextInInputCells(cells: CellProperties, n: number) {
+  showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
 
-    // try {
+    try {
+      const spread: Spread = new Spread(this.newCells, this.newReferenceCell, 'red');
 
-    //   cells.forEach((newCell: CellProperties) => {
-    //     if (newCell.whatIf.value) {
+      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
-    //     }
-    //   })
-
-    // } catch (error) {
-    //   console.log(error);
-    // }
-
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  showUpdateTextInOutputCells(n: number) {
-    // try {
+  showUpdateTextInReferenceCell() {
 
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+
+      const updatedValue = this.newReferenceCell.whatIf.value;
+
+      if (updatedValue == 0) {
+        return;
+      }
+
+      this.addTextBoxOnUpdate(this.newReferenceCell, updatedValue);
+
+    } catch (error) {
+      console.log('showUpdateTextInReferenceCell: ' + error);
+    }
+  }
+
+  showUpdateTextInInputCells(cells: CellProperties[], n: number) {
+
+    try {
+
+      cells.forEach((inCell: CellProperties) => {
+
+        const updatedValue = inCell.whatIf.value;
+
+        if (updatedValue == 0) {
+          return;
+        }
+
+        this.addTextBoxOnUpdate(inCell, inCell.whatIf.value);
+
+        if (n == 1) {
+          return;
+        }
+
+        this.showUpdateTextInInputCells(inCell.inputCells, n - 1);
+      })
+    } catch (error) {
+      console.log('showUpdateTextInInputCells: ' + error);
+    }
+  }
+
+  showUpdateTextInOutputCells(cells: CellProperties[], n: number) {
+
+    try {
+      cells.forEach((outCell: CellProperties) => {
+
+        const updatedValue = outCell.whatIf.value;
+
+        if (updatedValue == 0) {
+          return;
+        }
+
+        this.addTextBoxOnUpdate(outCell, outCell.whatIf.value);
+
+        if (n == 1) {
+          return;
+        }
+
+        this.showUpdateTextInOutputCells(outCell.outputCells, n - 1);
+      })
+    } catch (error) {
+      console.log('showUpdateTextInOutputCells: ' + error);
+    }
   }
 
 
@@ -106,7 +158,7 @@ export default class WhatIf {
 
         const textbox = sheet.shapes.addTextBox(text);
         textbox.name = "Update1";
-        textbox.left = cell.left;
+        textbox.left = cell.left + 5;
         textbox.top = cell.top;
         textbox.height = cell.height + 4;
         textbox.width = cell.width / 2;
@@ -134,21 +186,5 @@ export default class WhatIf {
     } catch (error) {
       console.log(error);
     }
-  }
-
-  // check the variance & likelihood
-  async drawChangedSpread(referenceCell: CellProperties, degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-    let newReferenceCell = null;
-
-    this.newCells.forEach((cell: CellProperties) => {
-      cell.isSpread = false;
-      if (referenceCell.id == cell.id) {
-        newReferenceCell = cell;
-      }
-    });
-
-    const spread: Spread = new Spread(this.newCells, newReferenceCell, 'red');
-
-    spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
   }
 }
