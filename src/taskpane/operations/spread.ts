@@ -4,6 +4,11 @@ import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
 import { max, min } from 'd3';
+import { range, dotMultiply, Matrix } from 'mathjs';
+import { Bernoulli } from 'discrete-sampling';
+import * as jStat from 'jstat';
+import { increment } from 'src/functions/functions';
+
 
 // the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
 export default class Spread {
@@ -106,56 +111,56 @@ export default class Spread {
   }
 
   public drawBarCodePlot(cell: CellProperties, name: string) {
-    try {
-      Excel.run((context) => {
+    // try {
+    //   Excel.run((context) => {
 
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let totalHeight = cell.height;
+    //     const sheet = context.workbook.worksheets.getActiveWorksheet();
+    //     let totalHeight = cell.height;
 
-        let startLineTop = cell.top;
-        let startLineLeft = cell.left + 20;
-        let endLineTop = cell.top + totalHeight;
+    //     let startLineTop = cell.top;
+    //     let startLineLeft = cell.left + 20;
+    //     let endLineTop = cell.top + totalHeight;
 
-        let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
-        let k = 0;
+    //     let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
+    //     let k = 0;
 
-        cell.samples.forEach((sample: { value: number, likelihood: number }) => {
+    //     cell.samples.forEach((sample: number) => {
 
-          let i = 0;
+    //       let i = 0;
 
-          let valueToBeAdded: number = sample.value;
+    //       let valueToBeAdded: number = sample;
 
-          if (sample.likelihood >= 0.8) {
-            i = 0;
-          } else if (sample.likelihood >= 0.5) {
-            i = 1;
-          } else if (sample.likelihood >= 0.3) {
-            i = 2;
-          } else if (sample.likelihood >= 0.2) {
-            i = 3;
-          } else {
-            i = 4;
-          }
+    //       // if (sample.likelihood >= 0.8) {
+    //       //   i = 0;
+    //       // } else if (sample.likelihood >= 0.5) {
+    //       //   i = 1;
+    //       // } else if (sample.likelihood >= 0.3) {
+    //       //   i = 2;
+    //       // } else if (sample.likelihood >= 0.2) {
+    //       //   i = 3;
+    //       // } else {
+    //       //   i = 4;
+    //       // }
 
-          if (sample.likelihood < 0.05) {
-            return;
-          }
+    //       // if (sample.likelihood < 0.05) {
+    //       //   return;
+    //       // }
 
-          let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
-          line.lineFormat.color = colors[i];
-          line.name = name;
-          line.lineFormat.weight = 3;
-          k++;
-        })
+    //       let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
+    //       line.lineFormat.color = colors[i];
+    //       line.name = name;
+    //       line.lineFormat.weight = 3;
+    //       k++;
+    //     })
 
-        return context.sync().then(() => {
-          console.log('Finished drawing the bar code plot')
-        }).
-          catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
-      });
-    } catch (error) {
-      console.log('Could not draw the bar code plot because of the following error', error);
-    }
+    //     return context.sync().then(() => {
+    //       console.log('Finished drawing the bar code plot')
+    //     }).
+    //       catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
+    //   });
+    // } catch (error) {
+    //   console.log('Could not draw the bar code plot because of the following error', error);
+    // }
 
   }
 
@@ -163,13 +168,13 @@ export default class Spread {
 
     try {
 
-      cell.samples = new Array<{ value: number, likelihood: number }>();
+      cell.samples = new Array<number>();
 
       const mean = cell.value;
       const variance = cell.variance;
 
       if (variance == 0) {
-        cell.samples.push({ value: mean, likelihood: 1 });
+        cell.samples.push(mean);
       }
       else {
 
@@ -192,29 +197,29 @@ export default class Spread {
 
   public addSamplesToAverageCell(cell: CellProperties) {
 
-
     try {
 
       const mean = cell.value;
       const variance = cell.variance;
 
-      cell.samples = new Array<{ value: number, likelihood: number }>();
+      cell.samples = new Array<number>();
 
-      cell.samples.push({ value: 0, likelihood: (1 - cell.likelihood) });
+      let normalSamples = new Array<number>();
+      const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
 
-      let numberOfSamples = 0;
-      let i = mean - variance;
+      values.forEach((val: number) => {
+        normalSamples.push(jStat.normal.inv(val, mean, variance));
+      })
 
-      while (i <= mean + variance) {
-        numberOfSamples++;
-        i++;
-      }
+      const sampleLength = normalSamples.length;
+      console.log('SampleLength: ' + sampleLength);
 
-      for (let i = mean - variance; i <= mean + variance; i++) {
+      const bern = Bernoulli(cell.likelihood);
+      bern.draw();
 
-        cell.samples.push({ value: i, likelihood: (cell.likelihood / numberOfSamples) });
-        cell.isLineChart = true;
-      }
+      const bernoulliSamples = bern.sample(sampleLength);
+
+      cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
 
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
@@ -228,10 +233,19 @@ export default class Spread {
     try {
 
       let inputCells = cell.inputCells;
+
+
+      cell.inputCells.forEach((inCell: CellProperties) => {
+
+        if (inCell.samples == null) {
+          this.addSamplesToCell(inCell);
+        }
+      })
+
       let index = 0;
 
       let resultantSample = new CellProperties();
-      resultantSample.samples = new Array<{ value: number, likelihood: number }>();
+      resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
         resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
@@ -244,9 +258,12 @@ export default class Spread {
         index = index + 1;
       }
 
-      resultantSample.samples.forEach((sample: { value: number, likelihood: number }) => {
+      resultantSample.samples.forEach((sample: number) => {
         cell.samples.push(sample);
       })
+
+      console.log('Length: ' + resultantSample.samples.length);
+      console.log(resultantSample.samples);
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
     }
@@ -256,44 +273,20 @@ export default class Spread {
   private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false) {
 
     let resultantSample = new CellProperties();
-    resultantSample.samples = new Array<{ value: number, likelihood: number }>();
+    resultantSample.samples = new Array<number>();
 
     try {
 
-      if (sample1.samples == null) {
-        this.addSamplesToCell(sample1);
-      }
+      sample1.samples.forEach((sampleCell1: number, index: number) => {
 
-      if (sample2.samples == null) {
-        this.addSamplesToCell(sample2);
-      }
+        let value = sampleCell1 + sample2.samples[index];
 
-      sample1.samples.forEach((sampleCell1: { value: number, likelihood: number }) => {
+        if (isDifference) {
+          value = sampleCell1 - sample2.samples[index];
+        }
 
-        sample2.samples.forEach((sampleCell2: { value: number, likelihood: number }) => {
+        resultantSample.samples.push(value);
 
-          let value = sampleCell1.value + sampleCell2.value;
-
-          if (isDifference) {
-            value = sampleCell1.value - sampleCell2.value;
-          }
-          const likelihood = sampleCell1.likelihood * sampleCell2.likelihood;
-
-          let allowInsert = true;
-
-          // code for duplicate removal
-          resultantSample.samples.forEach((result: { value: number, likelihood: number }) => {
-            if (result.value == value) {
-              result.likelihood += likelihood;
-              allowInsert = false;
-              return;
-            }
-          })
-
-          if (allowInsert) {
-            resultantSample.samples.push({ value: value, likelihood: likelihood });
-          }
-        })
       })
     } catch (error) {
       console.log(error);
@@ -320,7 +313,6 @@ export default class Spread {
   }
 
   public removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
-    debugger;
 
     this.cells.forEach((cell: CellProperties) => {
       cell.isSpread = false;

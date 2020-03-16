@@ -17,7 +17,7 @@ import { Bernoulli } from 'discrete-sampling';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("parseSheet").onclick = testjStatDistribution; //parseSheet;
+  document.getElementById("parseSheet").onclick = parseSheet;
   document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -31,110 +31,6 @@ Office.initialize = () => {
   document.getElementById("startWhatIf").onclick = startWhatIf;
   document.getElementById("useNewValues").onclick = useNewValues;
   document.getElementById("dismissValues").onclick = dismissValues;
-}
-
-
-function testjStatDistribution() {
-
-  try {
-
-    let normalSamples = new Array<number>();
-
-    let values = range(0, 1, 0.01).toArray();
-
-    values.forEach((el) => {
-      normalSamples.push(jStat.normal.inv(el, 12, 1));
-    })
-
-    let sampleLength = normalSamples.length;
-
-    var bern1 = Bernoulli(0.9);
-    bern1.draw();
-    let bernoulliSamples1 = bern1.sample(sampleLength);
-
-    let samples1: any = dotMultiply(normalSamples, bernoulliSamples1);
-
-    console.log(samples1.length);
-
-    var bern2 = Bernoulli(0.9);
-    bern2.draw();
-    let bernoulliSamples2 = bern2.sample(sampleLength);
-
-    let samples2: any = dotMultiply(normalSamples, bernoulliSamples2);
-
-    let samples = new Array<number>();
-
-    samples1.forEach((sample1, index: number) => {
-      samples.push(sample1 + samples2[index]);
-    })
-
-
-    drawHistogram(samples);
-
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function drawHistogram(data: number[]) {
-
-  var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-  // append the svg object to the body of the page
-  var svg = d3.select("body")
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform",
-      "translate(" + margin.left + "," + margin.top + ")");
-
-  // get the data
-  // X axis: scale and draw:
-
-  let domain = d3.max(data, function (d) { return +d })
-  var x = d3.scaleLinear()
-    .domain([0, domain])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
-    .range([0, width]);
-
-  svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
-
-  // set the parameters for the histogram
-  var histogram = d3.histogram()
-    .value(function (d) { return d })   // I need to give the vector of value
-    .domain([0, domain])  // then the domain of the graphic
-    .thresholds(x.ticks(100)); // then the numbers of bins
-
-  // And apply this function to data to get the bins
-  var bins = histogram(data);
-
-  // Y axis: scale and draw:
-  var y = d3.scaleLinear()
-    .range([height, 0]);
-
-
-  y.domain([0, 100]);   // d3.hist has to be called before the Y axis obviously
-  // y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
-
-  svg.append("g")
-    .call(d3.axisLeft(y));
-
-  // append the bar rectangles to the svg element
-  svg.selectAll("rect")
-    .data(bins)
-    .enter()
-    .append("rect")
-    .attr("x", 1)
-    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-    .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
-    .attr("height", function (d) { return height - y(d.length); })
-    .style("fill", "#69b3a2")
-
-
 }
 
 async function parseSheet() {
@@ -320,187 +216,165 @@ async function spread() {
   }
 }
 
+// function showSpreadInTaskPane(cell: CellProperties) {
+
+//   try {
+//     d3.select("svg").remove();
+//     var element = document.getElementById('tooltip')
+//     if (element) {
+//       element.remove();
+//     }
+
+//     let data = cell.samples;
+//     data.forEach(function (d) {
+//       d.likelihood = +d.likelihood;
+//     });
+
+//     const margin = { top: 0, right: 0, bottom: 30, left: 0 };
+
+//     const width = 100 - margin.left - margin.right;
+//     const height = 125; // 125 - margin.top - margin.bottom;
+
+//     //Create the xScale
+//     const xScale = d3.scaleTime()
+//       .range([0, width]);
+
+//     //Create the yScale
+//     const yScale = d3.scaleLinear()
+//       .range([height, 0]);
+
+//     const svg = d3.select(".g-chart").append("svg")
+//       .attr("width", width + margin.left + margin.right)
+//       .attr("height", height)
+//       .append("g")
+//       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//     const div = d3.select(".g-chart").append("div")
+//       .attr("class", "tooltip")
+//       .style("opacity", 0);
+
+//     //Organizes the data
+//     d3.max(data, function (d) { return d.value; });
+
+//     //Defines the xScale max
+//     xScale.domain(d3.extent(data, function (d) { return d.value; }));
+
+//     //Defines the yScale max
+//     yScale.domain([0, 100]);
+
+//     svg.append("g")
+//       .attr("class", "x axis")
+//       .attr("transform", "translate(0," + height + ")")
+
+//     svg.selectAll("line.percent")
+//       .data(data)
+//       .enter()
+//       .append("line")
+//       .attr("class", "percentline")
+//       .attr("x1", (d) => { return xScale(d.value); })
+//       .attr("x2", (d) => { return xScale(d.value); })
+//       .attr("y1", 50)
+//       .attr("y2", 100)
+//       .style("stroke", "#002499")
+//       .style("stroke-width", 3)
+//       .style("opacity", (d) => { return d.likelihood })
+//       .on("mouseover", (d) => {
+
+//         try {
+//           var right = true;
+//           d3.select(this)
+//             .transition().duration(100)
+//             .attr("y1", 0)
+//             .style("stroke-width", 3)
+//             .style("opacity", 1);
+
+//           div.transition()
+//             .style("opacity", 1)
+//           div.html("<span class='bolded'>" + (d.value).toFixed(2) + ": </span>" + (d.likelihood * 100).toFixed(2) + "%")
+
+//           let offset = right ? div.node().offsetWidth + 5 : -5;
+
+//           div
+//             .style("left", (d3.event.pageX - offset) + "px")
+//             .style("top", 425 + "px")
+//         } catch (error) {
+//           console.log(error);
+//         }
+
+//       })
+//       .on("mouseout", () => {
+//         d3.select(this)
+//           .transition().duration(100)
+//           .attr("y1", 50)
+//           .style("stroke-width", 2)
+//           .style("opacity", 0.4);
+
+//         div.transition()
+//           .style("opacity", 0)
+//       })
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
 function showSpreadInTaskPane(cell: CellProperties) {
 
-  try {
-    d3.select("svg").remove();
-    var element = document.getElementById('tooltip')
-    if (element) {
-      element.remove();
-    }
-
-    let data = cell.samples;
-    data.forEach(function (d) {
-      d.likelihood = +d.likelihood;
-    });
-
-    const margin = { top: 0, right: 0, bottom: 30, left: 0 };
-
-    const width = 100 - margin.left - margin.right;
-    const height = 125; // 125 - margin.top - margin.bottom;
-
-    //Create the xScale
-    const xScale = d3.scaleTime()
-      .range([0, width]);
-
-    //Create the yScale
-    const yScale = d3.scaleLinear()
-      .range([height, 0]);
-
-    const svg = d3.select(".g-chart").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    const div = d3.select(".g-chart").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-
-    //Organizes the data
-    d3.max(data, function (d) { return d.value; });
-
-    //Defines the xScale max
-    xScale.domain(d3.extent(data, function (d) { return d.value; }));
-
-    //Defines the yScale max
-    yScale.domain([0, 100]);
-
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-
-    svg.selectAll("line.percent")
-      .data(data)
-      .enter()
-      .append("line")
-      .attr("class", "percentline")
-      .attr("x1", (d) => { return xScale(d.value); })
-      .attr("x2", (d) => { return xScale(d.value); })
-      .attr("y1", 50)
-      .attr("y2", 100)
-      .style("stroke", "#002499")
-      .style("stroke-width", 3)
-      .style("opacity", (d) => { return d.likelihood })
-      .on("mouseover", (d) => {
-
-        try {
-          var right = true;
-          d3.select(this)
-            .transition().duration(100)
-            .attr("y1", 0)
-            .style("stroke-width", 3)
-            .style("opacity", 1);
-
-          div.transition()
-            .style("opacity", 1)
-          div.html("<span class='bolded'>" + (d.value).toFixed(2) + ": </span>" + (d.likelihood * 100).toFixed(2) + "%")
-
-          let offset = right ? div.node().offsetWidth + 5 : -5;
-
-          div
-            .style("left", (d3.event.pageX - offset) + "px")
-            .style("top", 425 + "px")
-        } catch (error) {
-          console.log(error);
-        }
-
-      })
-      .on("mouseout", () => {
-        d3.select(this)
-          .transition().duration(100)
-          .attr("y1", 50)
-          .style("stroke-width", 2)
-          .style("opacity", 0.4);
-
-        div.transition()
-          .style("opacity", 0)
-      })
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function showSpreadAsColumnChartInTaskPane(cell: CellProperties) {
-  d3.select("svg").remove();
   let data = cell.samples;
-  let maxLikelihood = 0;
-  data.forEach(function (d) {
-    d.likelihood = (d.likelihood * 100) / 100;
-    if (d.likelihood > maxLikelihood) {
-      maxLikelihood = d.likelihood;
-    }
-    d.likelihood = +d.likelihood;
-  });
 
-  let margin = { top: 20, right: 20, bottom: 70, left: 40 };
+  d3.select("svg").remove();
+  var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-  const width = 600 - margin.left - margin.right;
-  const height = 300 - margin.top - margin.bottom;
-
-  //Create the xScale
-  const xScale = d3.scaleBand()
-    .range([0, width]);
-
-  //Create the yScale
-  const yScale = d3.scaleLinear()
-    .range([height, 0]);
-
-  var xAxis = d3.axisBottom(xScale).scale(xScale);
-
-  var yAxis = d3.axisLeft(yScale).ticks(10);
-
-  const svg = d3.select("body").append("svg")
+  // append the svg object to the body of the page
+  var svg = d3.select("body")
+    .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
 
-  // const div = d3.select(".g-chart").append("div")
-  //   .attr("class", "tooltip")
-  //   .style("opacity", 0);
+  let domain = d3.max(data, function (d) { return +d })
 
-  //Organizes the data
-  d3.max(data, function (d) { return d.value; });
-
-  //Defines the xScale max
-  xScale.domain(data.map((d) => d.value.toString()));
-
-  //Defines the yScale max
-  yScale.domain([0, maxLikelihood]);
+  var x = d3.scaleLinear()
+    .domain([0, domain])
+    .range([0, width]);
 
   svg.append("g")
-    .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
-    .call(xAxis)
-    .selectAll("text")
-    .style("text-anchor", "end")
-    .attr("dx", "-.8em")
-    .attr("dy", "-.55em")
-    .attr("transform", "rotate(-90)");
+    .call(d3.axisBottom(x));
+
+  // set the parameters for the histogram
+  var histogram = d3.histogram()
+    .value(function (d) { return d })
+    .domain([0, domain])
+    .thresholds(x.ticks(100));
+
+  // And apply this function to data to get the bins
+  var bins = histogram(data);
+
+  // Y axis: scale and draw:
+  var y = d3.scaleLinear()
+    .range([height, 0]);
+
+
+  y.domain([0, 100]);
+  // y.domain([0, d3.max(bins, function (d) { return d.length; })]);
 
   svg.append("g")
-    .attr("class", "y axis")
-    .call(yAxis)
-    .append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 5)
-    .attr("dy", ".71em")
-    .style("text-anchor", "end")
-    .text("Frequency");
+    .call(d3.axisLeft(y));
 
-
-  svg.selectAll("bar")
-    .data(data)
-    .enter().append("rect")
-    .attr("class", "bar")
-    .attr("x", function (d) { return xScale(d.value.toString()); })
-    .attr("width", xScale.bandwidth())
-    .attr("y", function (d) {
-      return yScale(d.likelihood
-      );
-    })
-    .attr("height", function (d) { return height - yScale(d.likelihood); });
+  // append the bar rectangles to the svg element
+  svg.selectAll("rect")
+    .data(bins)
+    .enter()
+    .append("rect")
+    .attr("x", 1)
+    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+    .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+    .attr("height", function (d) { return height - y(d.length); })
+    .style("fill", "#69b3a2")
 }
 
 function relationshipIcons() {
