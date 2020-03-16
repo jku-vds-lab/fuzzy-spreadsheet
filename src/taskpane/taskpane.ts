@@ -40,116 +40,86 @@ function testjStatDistribution() {
 
     let normalSamples = new Array<number>();
 
-    let values = range(11, 13, 0.01).toArray();
+    let values = range(0, 1, 0.01).toArray();
 
     values.forEach((el) => {
-      normalSamples.push(jStat.normal.pdf(el, 12, 1));
+      normalSamples.push(jStat.normal.inv(el, 12, 1));
     })
 
     let sampleLength = normalSamples.length;
 
-    var bern = Bernoulli(0.9);
+    var bern = Bernoulli(0.5);
     bern.draw();
     let bernoulliSamples = bern.sample(sampleLength);
 
-    let finalLikelihood = dotMultiply(normalSamples, bernoulliSamples);
-    // console.log(finalSamples);
-
-    let data = new Array<{ value: string, likelihood: number }>();
-
-    values.forEach((value, index: number) => {
-
-      let likelihood = finalLikelihood[index];
-      let val = value.toString();
-
-      if (likelihood == 0) {
-        val = 0;
-        likelihood = 1;
-      }
-
-      const el = { value: val, likelihood: likelihood };
-
-      data.push(el);
-    })
-
-    console.log(data);
-
-
-    let margin = { top: 20, right: 20, bottom: 70, left: 40 };
-
-    const width = 600 - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
-
-    const svg = d3.select("body").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    //Create the xScale
-    const xScale = d3.scaleLinear()
-      .range([0, width]);
-
-    //Create the yScale
-    const yScale = d3.scaleLinear()
-      .range([height, 0]);
-
-    var histogram = d3.histogram()
-      .value(function (d) { return d.likelihood; })   // I need to give the vector of value
-      .domain(x.domain())  // then the domain of the graphic
-      .thresholds(x.ticks(70)); // then the numbers of bins
-
-    // And apply this function to data to get the bins
-    var bins = histogram(data);
-
-    var xAxis = d3.axisBottom(xScale).scale(xScale);
-
-    var yAxis = d3.axisLeft(yScale).ticks(10);
-
-
-
-
-    //Defines the yScale max
-    yScale.domain([0, 1]);
-
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-      .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.55em")
-      .attr("transform", "rotate(-90)");
-
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 5)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Frequency");
-
-
-    svg.selectAll("bar")
-      .data(data)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function (d) { return xScale(d.value.toString()); })
-      .attr("width", xScale.bandwidth())
-      .attr("y", function (d) {
-        return yScale(d.likelihood
-        );
-      })
-      .attr("height", function (d) { return height - yScale(d.likelihood); });
-
-
+    let finalLikelihood: any = dotMultiply(normalSamples, bernoulliSamples);
+    console.log(finalLikelihood.length);
+    drawHistogram(finalLikelihood);
 
   } catch (error) {
     console.log(error);
   }
+}
+
+function drawHistogram(data: number[]) {
+
+  var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+  // append the svg object to the body of the page
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+  // get the data
+  // X axis: scale and draw:
+
+  let domain = d3.max(data, function (d) { return +d })
+  var x = d3.scaleLinear()
+    .domain([0, domain])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+    .range([0, width]);
+
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  // set the parameters for the histogram
+  var histogram = d3.histogram()
+    .value(function (d) { return d })   // I need to give the vector of value
+    .domain([0, domain])  // then the domain of the graphic
+    .thresholds(x.ticks(100)); // then the numbers of bins
+
+  // And apply this function to data to get the bins
+  var bins = histogram(data);
+
+  // Y axis: scale and draw:
+  var y = d3.scaleLinear()
+    .range([height, 0]);
+
+
+  y.domain([0, 100]);   // d3.hist has to be called before the Y axis obviously
+  // y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // append the bar rectangles to the svg element
+  svg.selectAll("rect")
+    .data(bins)
+    .enter()
+    .append("rect")
+    .attr("x", 1)
+    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+    .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+    .attr("height", function (d) { return height - y(d.length); })
+    .style("fill", "#69b3a2")
+
+
 }
 
 async function parseSheet() {
