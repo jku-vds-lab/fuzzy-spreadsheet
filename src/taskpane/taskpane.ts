@@ -48,13 +48,28 @@ function testjStatDistribution() {
 
     let sampleLength = normalSamples.length;
 
-    var bern = Bernoulli(0.5);
-    bern.draw();
-    let bernoulliSamples = bern.sample(sampleLength);
+    var bern1 = Bernoulli(0.9);
+    bern1.draw();
+    let bernoulliSamples1 = bern1.sample(sampleLength);
 
-    let finalLikelihood: any = dotMultiply(normalSamples, bernoulliSamples);
-    console.log(finalLikelihood.length);
-    drawHistogram(finalLikelihood);
+    let samples1: any = dotMultiply(normalSamples, bernoulliSamples1);
+
+    console.log(samples1.length);
+
+    var bern2 = Bernoulli(0.9);
+    bern2.draw();
+    let bernoulliSamples2 = bern2.sample(sampleLength);
+
+    let samples2: any = dotMultiply(normalSamples, bernoulliSamples2);
+
+    let samples = new Array<number>();
+
+    samples1.forEach((sample1, index: number) => {
+      samples.push(sample1 + samples2[index]);
+    })
+
+
+    drawHistogram(samples);
 
   } catch (error) {
     console.log(error);
