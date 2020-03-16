@@ -3,11 +3,11 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
-import { max, min } from 'd3';
-import { range, dotMultiply, Matrix } from 'mathjs';
+
+import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
-import { increment } from 'src/functions/functions';
+import * as d3 from 'd3';
 
 
 // the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
@@ -110,57 +110,92 @@ export default class Spread {
     }
   }
 
+  binSomething() {
+    var data = [1, 2, 3, 4, 4.7];
+    var count = 2;
+    var x = d3.scaleLinear().domain(d3.extent(data)).nice(count);
+    let domain = d3.max(data, function (d) { return +d })
+    var histogram = d3.histogram().domain([0, domain]).thresholds(x.ticks(count));
+    var bins = histogram(data);
+    console.log('bins:', bins);
+    console.log("bin widths: " + bins.map(b => b.x1 - b.x0));
+
+  }
+
   public drawBarCodePlot(cell: CellProperties, name: string) {
-    // try {
-    //   Excel.run((context) => {
+    try {
+      Excel.run((context) => {
 
-    //     const sheet = context.workbook.worksheets.getActiveWorksheet();
-    //     let totalHeight = cell.height;
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let totalHeight = cell.height;
 
-    //     let startLineTop = cell.top;
-    //     let startLineLeft = cell.left + 20;
-    //     let endLineTop = cell.top + totalHeight;
+        let startLineTop = cell.top;
+        let startLineLeft = cell.left + 20;
+        let endLineTop = cell.top + totalHeight;
 
-    //     let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
-    //     let k = 0;
+        let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
 
-    //     cell.samples.forEach((sample: number) => {
+        var count = 5;
+        let data = cell.samples;
 
-    //       let i = 0;
+        let domain = d3.max(data, function (d) { return +d })
 
-    //       let valueToBeAdded: number = sample;
+        var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
-    //       // if (sample.likelihood >= 0.8) {
-    //       //   i = 0;
-    //       // } else if (sample.likelihood >= 0.5) {
-    //       //   i = 1;
-    //       // } else if (sample.likelihood >= 0.3) {
-    //       //   i = 2;
-    //       // } else if (sample.likelihood >= 0.2) {
-    //       //   i = 3;
-    //       // } else {
-    //       //   i = 4;
-    //       // }
+        var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
+        var bins = histogram(data);
 
-    //       // if (sample.likelihood < 0.05) {
-    //       //   return;
-    //       // }
+        console.log('Bins for ' + cell.address);
 
-    //       let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
-    //       line.lineFormat.color = colors[i];
-    //       line.name = name;
-    //       line.lineFormat.weight = 3;
-    //       k++;
-    //     })
+        bins.forEach((bin) => {
+          // console.log('Bin: ', bin);
+          console.log('x0: ', bin.x0);
+          console.log('width: ', bin.x1 - bin.x0);
+          console.log('freq: ', bin.length);
 
-    //     return context.sync().then(() => {
-    //       console.log('Finished drawing the bar code plot')
-    //     }).
-    //       catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
-    //   });
-    // } catch (error) {
-    //   console.log('Could not draw the bar code plot because of the following error', error);
-    // }
+        })
+
+        console.log('-------------------------------');
+
+        // let k = 0;
+
+        // cell.samples.forEach((sample: number) => {
+
+        //   let i = 0;
+
+        //   let valueToBeAdded: number = sample;
+
+        //   // if (sample.likelihood >= 0.8) {
+        //   //   i = 0;
+        //   // } else if (sample.likelihood >= 0.5) {
+        //   //   i = 1;
+        //   // } else if (sample.likelihood >= 0.3) {
+        //   //   i = 2;
+        //   // } else if (sample.likelihood >= 0.2) {
+        //   //   i = 3;
+        //   // } else {
+        //   //   i = 4;
+        //   // }
+
+        //   // if (sample.likelihood < 0.05) {
+        //   //   return;
+        //   // }
+
+        //   let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
+        //   line.lineFormat.color = colors[i];
+        //   line.name = name;
+        //   line.lineFormat.weight = 3;
+        //   k++;
+        // })
+
+        return context.sync().then(() => {
+          console.log('Finished drawing the bar code plot')
+        }).
+          catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
+      });
+    } catch (error) {
+      console.log('Could not draw the bar code plot because of the following error', error);
+    }
 
   }
 

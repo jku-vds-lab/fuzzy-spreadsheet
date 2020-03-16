@@ -338,7 +338,7 @@ function showSpreadInTaskPane(cell: CellProperties) {
   let domain = d3.max(data, function (d) { return +d })
 
   var x = d3.scaleLinear()
-    .domain([0, domain])
+    .domain([0, domain]) // problem with you because of negative values??
     .range([0, width]);
 
   svg.append("g")
