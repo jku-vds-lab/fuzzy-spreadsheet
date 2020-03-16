@@ -3,7 +3,10 @@ import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
 import * as d3 from 'd3';
-import { max } from 'd3';
+import * as jStat from 'jstat';
+import { max, histogram } from 'd3';
+import { range, dotMultiply, Matrix } from 'mathjs';
+import { Bernoulli } from 'discrete-sampling';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -14,7 +17,7 @@ import { max } from 'd3';
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("parseSheet").onclick = parseSheet;
+  document.getElementById("parseSheet").onclick = testjStatDistribution; //parseSheet;
   document.getElementById("referenceCell").onclick = markAsReferenceCell;
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
@@ -30,6 +33,124 @@ Office.initialize = () => {
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
+
+function testjStatDistribution() {
+
+  try {
+
+    let normalSamples = new Array<number>();
+
+    let values = range(11, 13, 0.01).toArray();
+
+    values.forEach((el) => {
+      normalSamples.push(jStat.normal.pdf(el, 12, 1));
+    })
+
+    let sampleLength = normalSamples.length;
+
+    var bern = Bernoulli(0.9);
+    bern.draw();
+    let bernoulliSamples = bern.sample(sampleLength);
+
+    let finalLikelihood = dotMultiply(normalSamples, bernoulliSamples);
+    // console.log(finalSamples);
+
+    let data = new Array<{ value: string, likelihood: number }>();
+
+    values.forEach((value, index: number) => {
+
+      let likelihood = finalLikelihood[index];
+      let val = value.toString();
+
+      if (likelihood == 0) {
+        val = 0;
+        likelihood = 1;
+      }
+
+      const el = { value: val, likelihood: likelihood };
+
+      data.push(el);
+    })
+
+    console.log(data);
+
+
+    let margin = { top: 20, right: 20, bottom: 70, left: 40 };
+
+    const width = 600 - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("body").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //Create the xScale
+    const xScale = d3.scaleLinear()
+      .range([0, width]);
+
+    //Create the yScale
+    const yScale = d3.scaleLinear()
+      .range([height, 0]);
+
+    var histogram = d3.histogram()
+      .value(function (d) { return d.likelihood; })   // I need to give the vector of value
+      .domain(x.domain())  // then the domain of the graphic
+      .thresholds(x.ticks(70)); // then the numbers of bins
+
+    // And apply this function to data to get the bins
+    var bins = histogram(data);
+
+    var xAxis = d3.axisBottom(xScale).scale(xScale);
+
+    var yAxis = d3.axisLeft(yScale).ticks(10);
+
+
+
+
+    //Defines the yScale max
+    yScale.domain([0, 1]);
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)");
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+
+    svg.selectAll("bar")
+      .data(data)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function (d) { return xScale(d.value.toString()); })
+      .attr("width", xScale.bandwidth())
+      .attr("y", function (d) {
+        return yScale(d.likelihood
+        );
+      })
+      .attr("height", function (d) { return height - yScale(d.likelihood); });
+
+
+
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function parseSheet() {
 
@@ -761,25 +882,3 @@ function moveDivElement() {
   div.style.left = 5 + 'px';
 
 }
-
-function testSomething() {
-  Excel.run(function (context) {
-    var sheet = context.workbook.worksheets.getActiveWorksheet();
-
-    let startLineLeft = 315.75;
-    let startLineTop = 117;
-    let endLineTop = startLineTop + 15;
-    let width = 75.5;
-
-    for (let i = 0; i < 5; i++) {
-      let line = sheet.shapes.addLine(startLineLeft + 2 * i, startLineTop, startLineLeft + 2 * i, endLineTop);
-      line.lineFormat.color = '#E0E0E0';
-      line.lineFormat.weight = 2;
-    }
-    return context.sync();
-  })
-}
-
-// Top: 117
-// Left: 315.75
-// Width: 75.5
