@@ -35,28 +35,57 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
-  showImpact(n: number) {
-    this.impact.showImpact(n);
+  showInputImpact(n: number) {
+    this.impact.showInputImpact(n);
   }
 
-  async removeImpact(n: number) {
-    await this.impact.removeImpact(n);
+
+  showOutputImpact(n: number) {
+    this.impact.showOutputImpact(n);
   }
 
-  showLikelihood(n: number) {
-    this.likelihood.showLikelihood(n);
+  removeInputImpact(n: number) {
+    this.impact.removeInputImpact(n);
   }
 
-  async removeLikelihood(n: number) {
-    await this.likelihood.removeLikelihood(n);
+  removeOutputImpact(n: number) {
+    this.impact.removeOutputImpact(n);
   }
 
-  showSpread(n: number) {
-    this.spread.showSpread(n);
+  removeAllImpacts() {
+    this.impact.removeAllImpacts();
   }
 
-  async removeSpread() {
-    await this.spread.removeSpread();
+  showInputLikelihood(n: number) {
+    this.likelihood.showInputLikelihood(n);
+  }
+
+  showOutputLikelihood(n: number) {
+    this.likelihood.showOutputLikelihood(n);
+  }
+
+  removeInputLikelihood(n: number) {
+    this.likelihood.removeInputLikelihood(n);
+  }
+
+  removeOutputLikelihood(n: number) {
+    this.likelihood.removeOutputLikelihood(n);
+  }
+
+  removeAllLikelihoods() {
+    this.likelihood.removeAllLikelihoods();
+  }
+
+  showSpread(n: number, isInput: boolean, isOutput: boolean) {
+    this.spread.showSpread(n, isInput, isOutput);
+  }
+
+  removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
+    this.spread.removeSpread(isInput, isOutput, isRemoveAll);
+  }
+
+  removeSpreadFromReferenceCell() {
+    this.spread.removeSpreadFromReferenceCell();
   }
 
   showInputRelationship(n: number) {
@@ -92,8 +121,6 @@ export default class CellOperations {
 
     })
   }
-
-
 
   async showPopUpWindow(address: string) {
     // this.removePopUps();

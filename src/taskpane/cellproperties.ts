@@ -21,10 +21,10 @@ export default class CellProperties {
   public inputCells: CellProperties[];
   public outputCells: CellProperties[];
   public impact: number = 0;
-  public likelihood: number = 10;
+  public likelihood: number = 1;
   public spreadRange: string;
   public variance: number = 0;
-  public mySamples: { value: number, likelihood: number }[] = null;
+  public samples: number[] = null;
   public samplesLikelihood: number[];
   public isLineChart: boolean = false;
   // for impact and likelihood
@@ -117,7 +117,7 @@ export default class CellProperties {
     }
   }
 
-  updateNewValues(newValues: any[][], newFormulas: any[][], isUpdate: boolean = false) {
+  updateNewValues(newValues: any[][], newFormulas: any[][]) {
 
     console.log('Update Values');
     try {
@@ -142,6 +142,10 @@ export default class CellProperties {
 
         this[index].value = newValues[rowIndex][colIndex];
         this[index].formula = newFormulas[rowIndex][colIndex];
+        this[index].inputCells = new Array<CellProperties>();
+        this[index].outputCells = new Array<CellProperties>();
+        this[index].whatIf = new WhatIf();
+
         if (this[index].formula == this[index].value) {
           this[index].formula = "";
         }
@@ -150,14 +154,7 @@ export default class CellProperties {
       this.checkUncertainty(this.newCells);
 
       this.getRelationshipOfCells(this.newCells);
-      // check if the reference cell is uncertain or not
 
-      if (isUpdate) {
-        console.log('Update everything');
-        this.cells = this.newCells;
-
-        this.getRelationshipOfCells();
-      }
     } catch (error) {
       console.log('Error: ' + error);
     }
@@ -240,7 +237,7 @@ export default class CellProperties {
             cellRangeAddresses.push(rangeAddress);
           }
 
-          const cellsFromRange = this.getCellsFromRangeAddress(cellRangeAddresses);
+          const cellsFromRange = this.getCellsFromRangeAddress(cells, cellRangeAddresses);
 
 
           cellsFromRange.forEach((cellInRange: CellProperties) => {
@@ -253,15 +250,15 @@ export default class CellProperties {
   }
 
   // can be optimised further
-  private getCellsFromRangeAddress(cellRangeAddresses: string[]) {
+  private getCellsFromRangeAddress(cells: CellProperties[], cellRangeAddresses: string[]) {
 
     let cellsInRange = new Array<CellProperties>();
 
     for (let i = 0; i < cellRangeAddresses.length; i++) {
-      for (let j = 0; j < this.cells.length; j++) {
+      for (let j = 0; j < cells.length; j++) {
 
-        if (this.cells[j].address.includes(cellRangeAddresses[i])) {
-          cellsInRange.push(this.cells[j]);
+        if (cells[j].address.includes(cellRangeAddresses[i])) {
+          cellsInRange.push(cells[j]);
           break;
         }
       }

@@ -17,52 +17,126 @@ export default class Impact {
     this.cells = cells;
   }
 
-  public showImpact(n: number) {
+  public showInputImpact(n: number) {
 
-    this.addImpactInfo(n);
+    try {
+      this.addImpactInfoInputCells(n);
 
-    if (SheetProperties.isLikelihood) {
-      this.commonOps.deleteRectangles(this.cells);
-    }
+      if (SheetProperties.isLikelihood) {
+        console.log('Removing likelihood inputs');
+        this.commonOps.deleteRectangles(this.cells, 'InputLikelihood')
+      }
 
-    this.showInputImpact(this.referenceCell, n);
-    this.showOutputImpact(this.referenceCell, n);
-  }
+      this.displayInputImpact(this.referenceCell, n);
 
-  public async removeImpact(n: number) {
-
-    this.cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
-    })
-
-    await this.commonOps.deleteRectangles(this.cells);
-
-    if (SheetProperties.isLikelihood) {
-
-      const likelihood = new Likelihood(this.cells, this.referenceCell);
-      likelihood.showLikelihood(n);
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  private showInputImpact(cell: CellProperties, i: number) {
+  public showOutputImpact(n: number) {
+
+    try {
+      this.addImpactInfoOutputCells(this.referenceCell, n);
+
+      if (SheetProperties.isLikelihood) {
+        console.log('Removing likelihood outputs');
+        this.commonOps.deleteRectangles(this.cells, 'OutputLikelihood')
+      }
+
+      this.displayOutputImpact(this.referenceCell, n);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public removeInputImpact(n: number) {
+
+    try {
+      const type = 'InputImpact';
+      this.removeInputImpactInfo(this.referenceCell, n);
+      this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isLikelihood && SheetProperties.isInputRelationship) {
+        const likelihood = new Likelihood(this.cells, this.referenceCell);
+        likelihood.redrawInputLikelihood(n);
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private removeInputImpactInfo(cell: CellProperties, n: number) {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
       if (inCell.isImpact) {
+        inCell.isImpact = false;
+      }
+
+      if (n == 1) {
+        return;
+      }
+      this.removeInputImpactInfo(inCell, n - 1);
+    })
+  }
+
+
+  public removeOutputImpact(n: number) {
+
+    try {
+      const type = 'OutputImpact';
+      this.removeOutputImpactInfo(this.referenceCell, n);
+      this.commonOps.deleteRectangles(this.cells, type);
+
+      if (SheetProperties.isLikelihood && SheetProperties.isOutputRelationship) {
+        const likelihood = new Likelihood(this.cells, this.referenceCell);
+        console.log('Redrawing output likelihood');
+        likelihood.redrawOutputLikelihood(n);
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private removeOutputImpactInfo(cell: CellProperties, n: number) {
+
+    cell.outputCells.forEach((outCell: CellProperties) => {
+
+      if (outCell.isImpact) {
+        outCell.isImpact = false;
+      }
+
+      if (n == 1) {
+        return;
+      }
+      this.removeOutputImpactInfo(outCell, n - 1);
+    })
+  }
+
+  private displayInputImpact(cell: CellProperties, i: number) {
+
+    cell.inputCells.forEach((inCell: CellProperties) => {
+
+      if (inCell.isImpact) {
+        console.log(cell.address + ' Returning because impact is already there');
         return;
       }
 
       inCell.isImpact = true;
-      this.commonOps.drawRectangle(inCell);
+      this.commonOps.drawRectangle(inCell, 'InputImpact');
 
       if (i == 1) {
         return;
       }
-      this.showInputImpact(inCell, i - 1);
+      this.displayInputImpact(inCell, i - 1);
     })
   }
 
-  private showOutputImpact(cell: CellProperties, i: number) {
+  private displayOutputImpact(cell: CellProperties, i: number) {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
@@ -71,19 +145,41 @@ export default class Impact {
       }
 
       outCell.isImpact = true;
-      this.commonOps.drawRectangle(outCell);
+      this.commonOps.drawRectangle(outCell, 'OutputImpact');
 
       if (i == 1) {
         return;
       }
-      this.showOutputImpact(outCell, i - 1);
+      this.displayOutputImpact(outCell, i - 1);
     })
   }
 
-  private addImpactInfo(n: number = 1) {
+  public redrawInputImpact(n: number) {
 
+    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
+    this.removeInputImpactInfo(this.referenceCell, n);
     this.addImpactInfoInputCells(n);
+    this.displayInputImpact(this.referenceCell, n);
+  }
+
+
+  public redrawOutputImpact(n: number) {
+
+    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
+    this.removeOutputImpactInfo(this.referenceCell, n);
     this.addImpactInfoOutputCells(this.referenceCell, n);
+    this.displayOutputImpact(this.referenceCell, n);
+  }
+
+  public removeAllImpacts() {
+    this.cells.forEach((cell: CellProperties) => {
+      cell.isImpact = false;
+    })
+    console.log('Removing all impact inputs');
+    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
+    console.log('Removing all impact outputs');
+    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
+
   }
 
   private addImpactInfoInputCells(n: number = 1) {

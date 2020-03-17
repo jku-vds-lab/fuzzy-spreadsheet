@@ -2,13 +2,18 @@ import CellOperations from './celloperations';
 import CellProperties from './cellproperties';
 import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
-// C:\Windows\SysWOW64\F12
+import * as d3 from 'd3';
+import * as jStat from 'jstat';
+import { max, histogram } from 'd3';
+import { range, dotMultiply, Matrix } from 'mathjs';
+import { Bernoulli } from 'discrete-sampling';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
 /* global console, document, Excel, Office */
+// discrete samples and continuous samples
 Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
@@ -17,55 +22,316 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = impact;
   document.getElementById("likelihood").onclick = likelihood;
   document.getElementById("spread").onclick = spread;
-  document.getElementById("relationship").onclick = showRelationship;
-  document.getElementById("inputRelationship").onclick = showInputRelationship;
-  document.getElementById("outputRelationship").onclick = showOutputRelationship;
-  document.getElementById("removeAll").onclick = removeAll;
+  document.getElementById("relationship").onclick = relationshipIcons;
+  document.getElementById("inputRelationship").onclick = inputRelationship;
+  document.getElementById("outputRelationship").onclick = outputRelationship;
   document.getElementById("first").onchange = first;
   document.getElementById("second").onchange = second;
   document.getElementById("third").onchange = third;
-  document.getElementById("useNewValues").onclick = handleDataChanged;
+  document.getElementById("startWhatIf").onclick = startWhatIf;
+  document.getElementById("useNewValues").onclick = useNewValues;
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
-// Excel.run(function (context) {
+async function parseSheet() {
 
-//   var worksheet = context.workbook.worksheets.getActiveWorksheet();
-//   eventResult = worksheet.onChanged.add(handleDataChanged);
+  SheetProperties.isSheetParsed = true;
 
-//   return context.sync()
-//     .then(function () {
-//       console.log(eventResult);
-//       console.log('Got the range properties');
+  try {
+    hideOptions();
+    console.log("Start parsing the sheet");
 
-//     });
-// }).catch(errorHandlerFunction);
+    SheetProperties.cellProp = new CellProperties();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cells = await SheetProperties.cellProp.getCells();
+    SheetProperties.cellProp.getRelationshipOfCells();
 
-
-function useNewValues() {
-  SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas, true);
+    console.log('Done parsing the sheet');
+    showReferenceCellOption();
+  } catch (error) {
+    console.log(error);
+    showReferenceCellOption();
+  }
 }
 
-async function dismissValues() {
-  // Error so far
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    const range = sheet.getUsedRange();
-    const values = new Array<any>();
 
-    SheetProperties.cells.forEach((cell: CellProperties) => {
-      values.push(cell.value);
+async function markAsReferenceCell() {
+  try {
+
+    if (SheetProperties.isReferenceCell) {
+      removeShapesFromReferenceCell();
+    }
+
+    clearPreviousReferenceCell();
+
+    let range: Excel.Range;
+    Excel.run(async context => {
+
+      range = context.workbook.getSelectedRange();
+      range.load("address");
+      range.format.fill.color = "lightgrey";
+      await context.sync();
+
+      console.log('Marking a reference cell');
+
+      SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(range.address);
+      SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
+      SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
+      SheetProperties.isReferenceCell = true;
+      console.log('Done Marking a reference cell');
+      showVisualizationOption();
+    });
+
+  } catch (error) {
+    console.error(error);
+    showVisualizationOption();
+  }
+}
+
+function inputRelationship() {
+  try {
+
+    var element = <HTMLInputElement>document.getElementById("inputRelationship");
+
+    if (element.checked) {
+      showAllOptions();
+      SheetProperties.isInputRelationship = true;
+      showInputRelationForOptions();
+    } else {
+      SheetProperties.isInputRelationship = false;
+      removeInputRelationFromOptions();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function outputRelationship() {
+  try {
+    var element = <HTMLInputElement>document.getElementById("outputRelationship");
+
+    if (element.checked) {
+      showAllOptions();
+      SheetProperties.isOutputRelationship = true;
+      showOutputRelationForOptions();
+    } else {
+      SheetProperties.isOutputRelationship = false;
+      removeOutputRelationFromOptions();
+    }
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function first() {
+
+  SheetProperties.degreeOfNeighbourhood = 1;
+  removeShapesFromReferenceCell();
+  displayOptions();
+}
+
+
+function second() {
+  SheetProperties.degreeOfNeighbourhood = 2;
+  removeShapesFromReferenceCell();
+  displayOptions();
+}
+
+
+function third() {
+  SheetProperties.degreeOfNeighbourhood = 3;
+  removeShapesFromReferenceCell();
+  displayOptions();
+}
+
+function impact() {
+  try {
+    var element = <HTMLInputElement>document.getElementById("impact");
+
+    if (element.checked) {
+      SheetProperties.isImpact = true;
+      if (SheetProperties.isInputRelationship) {
+        SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+      }
+
+      if (SheetProperties.isOutputRelationship) {
+        SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+      }
+    } else {
+      SheetProperties.isImpact = false;
+      SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
+    }
+    selectSomethingElse();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function likelihood() {
+  try {
+    var element = <HTMLInputElement>document.getElementById("likelihood");
+
+    if (element.checked) {
+      SheetProperties.isLikelihood = true;
+      if (SheetProperties.isInputRelationship) {
+        SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+      }
+
+      if (SheetProperties.isOutputRelationship) {
+        SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+      }
+
+    } else {
+      SheetProperties.isLikelihood = false;
+      SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+      SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+    }
+    selectSomethingElse();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function spread() {
+  try {
+    var element = <HTMLInputElement>document.getElementById("spread");
+
+    if (element.checked) {
+      SheetProperties.isSpread = true;
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      checkCellChanged();
+    } else {
+      SheetProperties.isSpread = false;
+      SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
+      SheetProperties.cellOp.removeSpreadFromReferenceCell();
+    }
+    selectSomethingElse();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function showSpreadInTaskPane(cell: CellProperties) {
+
+  let data = cell.samples;
+
+  d3.select("svg").remove();
+  var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    width = 460 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom;
+
+  // append the svg object to the body of the page
+  var svg = d3.select(".g-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+  let maxDomain = d3.max(data)
+  let minDomain = d3.min(data)
+
+  var x = d3.scaleLinear()
+    .domain([minDomain, maxDomain]) // problem with you because of negative values??
+    .range([0, width]);
+
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  // set the parameters for the histogram
+  var histogram = d3.histogram()
+    .value(function (d) { return d })
+    .domain([minDomain, maxDomain])
+    .thresholds(x.ticks(100));
+
+  // And apply this function to data to get the bins
+  var bins = histogram(data);
+
+  // Y axis: scale and draw:
+  var y = d3.scaleLinear()
+    .range([height, 0]);
+
+
+  // y.domain([0, 100]);
+  y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // append the bar rectangles to the svg element
+  svg.selectAll("rect")
+    .data(bins)
+    .enter()
+    .append("rect")
+    .attr("x", 1)
+    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+    .attr("width", function (d) {
+      if (x(d.x0) == x(d.x1)) {
+        return 1;
+      }
+      return x(d.x1) - x(d.x0) - 1;
     })
-
-    range.values = [values];
-    await context.sync();
-  });
+    .attr("height", function (d) { return height - y(d.length); })
+    .style("fill", "#69b3a2")
 }
 
-async function handleDataChanged() {
+function relationshipIcons() {
+
+  var element = <HTMLInputElement>document.getElementById("relationship");
+
+  if (element.checked) {
+
+    SheetProperties.isRelationship = true;
+
+    if (SheetProperties.isInputRelationship) {
+      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }
+
+    if (SheetProperties.isOutputRelationship) {
+      SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }
+  } else {
+    SheetProperties.isRelationship = false;
+    SheetProperties.cellOp.removeInputRelationship();
+    SheetProperties.cellOp.removeOutputRelationship();
+  }
+  selectSomethingElse();
+}
+
+async function startWhatIf() {
+  try {
+    (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = true;
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    performWhatIf();
+    document.getElementById('useNewValues').hidden = false;
+    document.getElementById('dismissValues').hidden = false;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function performWhatIf() {
+  Excel.run(function (context) {
+    var worksheet = context.workbook.worksheets.getActiveWorksheet();
+    console.log('Worksheet has changed');
+    worksheet.onCalculated.add(processWhatIf);
+
+    return context.sync()
+      .then(function () {
+        console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+      });
+  }).catch((reason: any) => { console.log(reason) });
+}
 
 
-  console.log('Registered data changed');
+async function processWhatIf() {
+
+  console.log('------------------Processing what-if');
 
   if (SheetProperties.referenceCell == null) {
     console.log('Returning because reference cell is null');
@@ -82,206 +348,195 @@ async function handleDataChanged() {
   });
 
   let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
-
-  newCells.forEach((nC: CellProperties) => {
-    if (nC.id == SheetProperties.referenceCell.id) {
-      console.log('New cell id:' + nC.value);
-    }
-  })
-
-  console.log('Updated values');
-
   const whatif = new WhatIf();
-  whatif.setNewCells(newCells, SheetProperties.referenceCell);
 
-  console.log('Computing new spread');
-  await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.degreeOfNeighbourhood);
+  whatif.setNewCells(newCells, SheetProperties.cells, SheetProperties.referenceCell);
 
-  // console.log('Calculating updated number');
+  console.log('Calculating the change');
 
-  // await whatif.calculateUpdatedNumber();
+  whatif.calculateChange();
 
-  // if (!SheetProperties.referenceCell.whatIf) {
-  //   console.log('Returning because what if is null');
-  //   return;
-  // }
+  SheetProperties.cellOp.deleteUpdateshapes();
 
-  // const updatedValue = SheetProperties.referenceCell.whatIf.value;
+  whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
 
-  // if (updatedValue == 0) {
-  //   console.log('No update in value');
-  // } else {
-  //   console.log("CHANGE: " + updatedValue);
-  //   SheetProperties.cellOp.deleteUpdateshapes();
-  //   // SheetProperties.cellOp.addTextBoxOnUpdate(updatedValue);
-  // }
-
-  // if (SheetProperties.isSpread) {
-  //   console.log('Computing new spread');
-  //   await whatif.drawChangedSpread(SheetProperties.referenceCell, SheetProperties.referenceCell.variance);
-  // }
-}
-
-async function parseSheet() {
-
-  SheetProperties.isSheetParsed = true;
-
-  try {
-    disableInputs();
-    console.log("Start parsing the sheet");
-
-    SheetProperties.cellProp = new CellProperties();
-    // eslint-disable-next-line require-atomic-updates
-    SheetProperties.cells = await SheetProperties.cellProp.getCells();
-    console.log('Cells', SheetProperties.cells);
-    SheetProperties.cellProp.getRelationshipOfCells();
-
-    console.log('Done parsing the sheet');
-    enableInputs();
-  } catch (error) {
-    console.log(error);
-    enableInputs();
+  if (SheetProperties.isSpread) {
+    console.log('Computing new spread');
+    whatif.showNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 }
 
-async function markAsReferenceCell() {
-  try {
+async function useNewValues() {
+  await parseSheet();
+}
 
-    if (!SheetProperties.isSheetParsed) {
-      await parseSheet();
-    }
+async function dismissValues() {
 
-    if (SheetProperties.isReferenceCell) {
-      removeShapesFromReferenceCell();
-    }
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    let cellRanges = new Array<Excel.Range>();
+    let cellValues = new Array<number>();
 
-    clearPreviousReferenceCell();
+    SheetProperties.cells.forEach((cell: CellProperties) => {
 
-    let range: Excel.Range;
-    Excel.run(async context => {
+      let range = sheet.getRange(cell.address);
+      cellRanges.push(range.load('values'));
+      cellValues.push(cell.value);
+    })
 
-      range = context.workbook.getSelectedRange();
-      range.load("address");
-      range.format.fill.color = "lightgrey";
-      await context.sync();
+    await context.sync();
 
-      disableInputs();
-      console.log('Marking a reference cell');
+    let i = 0;
 
-      SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(range.address);
-      SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
-      SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
-      SheetProperties.isReferenceCell = true;
+    cellRanges.forEach((cellRange: Excel.Range) => {
+      cellRange.values = [[cellValues[i]]];
+      i++;
+    })
 
-      console.log('Done Marking a reference cell');
-      enableInputs();
-      displayOptions();
-    });
-
-  } catch (error) {
-    console.error(error);
-    enableInputs();
-  }
+  });
 }
 
 function displayOptions() {
   if (SheetProperties.isImpact) {
+    // SheetProperties.cellOp.removeAllImpacts();
     impact();
   }
   if (SheetProperties.isLikelihood) {
+    // SheetProperties.cellOp.removeAllLikelihoods();
     likelihood();
   }
   if (SheetProperties.isSpread) {
     spread();
   }
-  if (SheetProperties.isInputRelationship) {
-    showInputRelationship();
+  if (SheetProperties.isRelationship) {
+    relationshipIcons();
   }
-  if (SheetProperties.isOutputRelationship) {
-    showOutputRelationship();
+  selectSomethingElse();
+}
+
+function showInputRelationForOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   }
-}
-
-function disableInputs() {
-
-  document.getElementById('loading').hidden = false;
-  (<HTMLInputElement>document.getElementById("impact")).disabled = true;
-  (<HTMLInputElement>document.getElementById("likelihood")).disabled = true;
-  (<HTMLInputElement>document.getElementById("spread")).disabled = true;
-  (<HTMLInputElement>document.getElementById("relationship")).disabled = true;
-  (<HTMLInputElement>document.getElementById("inputRelationship")).disabled = true;
-  (<HTMLInputElement>document.getElementById("outputRelationship")).disabled = true;
-  (<HTMLInputElement>document.getElementById("removeAll")).disabled = true;
-  (<HTMLInputElement>document.getElementById("first")).disabled = true;
-  (<HTMLInputElement>document.getElementById("second")).disabled = true;
-  (<HTMLInputElement>document.getElementById("third")).disabled = true;
-
-}
-
-function enableInputs() {
-  document.getElementById('loading').hidden = true;
-  (<HTMLInputElement>document.getElementById("impact")).disabled = false;
-  (<HTMLInputElement>document.getElementById("likelihood")).disabled = false;
-  (<HTMLInputElement>document.getElementById("spread")).disabled = false;
-  (<HTMLInputElement>document.getElementById("relationship")).disabled = false;
-  (<HTMLInputElement>document.getElementById("inputRelationship")).disabled = false;
-  (<HTMLInputElement>document.getElementById("outputRelationship")).disabled = false;
-  (<HTMLInputElement>document.getElementById("removeAll")).disabled = false;
-  (<HTMLInputElement>document.getElementById("first")).disabled = false;
-  (<HTMLInputElement>document.getElementById("second")).disabled = false;
-  (<HTMLInputElement>document.getElementById("third")).disabled = false;
-}
-
-async function impact() {
-  try {
-    var element = <HTMLInputElement>document.getElementById("impact");
-
-    if (element.checked) {
-      SheetProperties.isImpact = true;
-      SheetProperties.cellOp.showImpact(SheetProperties.degreeOfNeighbourhood);
-    } else {
-      SheetProperties.isImpact = false;
-      await SheetProperties.cellOp.removeImpact(SheetProperties.degreeOfNeighbourhood);
-    }
-  } catch (error) {
-    console.error(error);
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
-}
-
-
-async function likelihood() {
-  try {
-    var element = <HTMLInputElement>document.getElementById("likelihood");
-
-    if (element.checked) {
-      SheetProperties.isLikelihood = true;
-      SheetProperties.cellOp.showLikelihood(SheetProperties.degreeOfNeighbourhood); // should be available on click
-    } else {
-      SheetProperties.isLikelihood = false;
-      await SheetProperties.cellOp.removeLikelihood(SheetProperties.degreeOfNeighbourhood);
-    }
-  } catch (error) {
-    console.error(error);
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
-}
-
-async function spread() {
-  try {
-
-    var element = <HTMLInputElement>document.getElementById("spread");
-
-    if (element.checked) {
-      SheetProperties.isSpread = true;
-      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood);
-    } else {
-      // eslint-disable-next-line require-atomic-updates
-      SheetProperties.isSpread = false;
-      await SheetProperties.cellOp.removeSpread();
-    }
-  } catch (error) {
-    console.error(error);
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
   }
+  selectSomethingElse();
+
 }
+
+function showOutputRelationForOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
+  }
+  selectSomethingElse();
+}
+
+function removeInputRelationFromOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.removeInputRelationship();
+  }
+  selectSomethingElse();
+}
+
+function removeOutputRelationFromOptions() {
+
+  if (SheetProperties.isImpact) {
+    SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isLikelihood) {
+    SheetProperties.cellOp.removeOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
+  }
+  if (SheetProperties.isSpread) {
+    SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, false);
+  }
+  if (SheetProperties.isRelationship) {
+    SheetProperties.cellOp.removeOutputRelationship();
+  }
+  selectSomethingElse();
+}
+
+function hideOptions() {
+
+  document.getElementById('referenceCell').hidden = true;
+  document.getElementById('relationshipDiv').hidden = true;
+  document.getElementById('neighborhoodDiv').hidden = true;
+  document.getElementById('impactDiv').hidden = true;
+  document.getElementById('likelihoodDiv').hidden = true;
+  document.getElementById('spreadDiv').hidden = true;
+  document.getElementById('relationshipInfoDiv').hidden = true;
+  document.getElementById('startWhatIf').hidden = true;
+  document.getElementById('useNewValues').hidden = true;
+  document.getElementById('dismissValues').hidden = true;
+}
+
+function showReferenceCellOption() {
+  document.getElementById('referenceCell').hidden = false;
+}
+
+function showVisualizationOption() {
+
+  document.getElementById('relationshipDiv').hidden = false;
+  document.getElementById('neighborhoodDiv').hidden = false;
+  document.getElementById('impactDiv').hidden = false;
+  document.getElementById('likelihoodDiv').hidden = false;
+  document.getElementById('spreadDiv').hidden = false;
+  document.getElementById('relationshipInfoDiv').hidden = true;
+  document.getElementById('startWhatIf').hidden = false;
+  (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("impactDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = true;
+  (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
+}
+
+
+function showAllOptions() {
+
+  document.getElementById('relationshipDiv').hidden = false;
+  document.getElementById('neighborhoodDiv').hidden = false;
+  document.getElementById('impactDiv').hidden = false;
+  document.getElementById('likelihoodDiv').hidden = false;
+  document.getElementById('spreadDiv').hidden = false;
+  document.getElementById('relationshipInfoDiv').hidden = false;
+  document.getElementById('startWhatIf').hidden = false;
+  (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("impactDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
+  (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
+  (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
+}
+
+
 
 async function removeShapesFromReferenceCell() {
 
@@ -327,153 +582,63 @@ async function clearPreviousReferenceCell() {
   })
 }
 
-async function removeAll() {
-
-  clearPreviousReferenceCell();
-
-  var element1 = <HTMLInputElement>document.getElementById("impact");
-  var element2 = <HTMLInputElement>document.getElementById("likelihood");
-  var element3 = <HTMLInputElement>document.getElementById("spread");
-  var element4 = <HTMLInputElement>document.getElementById("inputRelationship");
-  var element5 = <HTMLInputElement>document.getElementById("outputRelationship");
-  var element6 = <HTMLInputElement>document.getElementById("relationship");
-
-  element1.checked = false;
-  element2.checked = false;
-  element3.checked = false;
-  element4.checked = false;
-  element5.checked = false;
-  element6.checked = false;
-  await removeShapesFromReferenceCell();
-
-}
-
-function showRelationship() {
-
-  var element = <HTMLInputElement>document.getElementById("relationship");
-  var element1 = <HTMLInputElement>document.getElementById("inputRelationship");
-  var element2 = <HTMLInputElement>document.getElementById("outputRelationship");
-
-  if (element.checked) {
-
-    console.log('Relationship');
-    console.log('SheetProperties.isInputRelationship' + SheetProperties.isInputRelationship);
-    console.log('SheetProperties.isOutputRelationship' + SheetProperties.isOutputRelationship);
-
-    if (SheetProperties.isInputRelationship == false) {
-      console.log('Input Relationship');
-      element1.checked = true;
-      showInputRelationship();
-    }
-
-    if (SheetProperties.isOutputRelationship == false) {
-      console.log('Output Relationship');
-      element2.checked = true;
-      showOutputRelationship();
-    }
-  } else {
-    console.log('Unchecked');
-    if (SheetProperties.isInputRelationship == true) {
-      element1.checked = false;
-      showInputRelationship();
-    }
-
-    if (SheetProperties.isOutputRelationship == true) {
-      element2.checked = false;
-      showOutputRelationship();
-    }
-  }
-
-}
-
-function showInputRelationship() {
-  try {
-    var element = <HTMLInputElement>document.getElementById("inputRelationship");
-
-    if (element.checked) {
-      SheetProperties.isInputRelationship = true;
-      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-    } else {
-      SheetProperties.isInputRelationship = false;
-      SheetProperties.cellOp.removeInputRelationship();
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function showOutputRelationship() {
-  try {
-    var element = <HTMLInputElement>document.getElementById("outputRelationship");
-
-    if (element.checked) {
-      SheetProperties.isOutputRelationship = true;
-      SheetProperties.cellOp.showOutputRelationship(SheetProperties.degreeOfNeighbourhood);
-    } else {
-      SheetProperties.isOutputRelationship = false;
-      SheetProperties.cellOp.removeOutputRelationship();
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-var eventResult;
-
-Excel.run(function (context) {
-  var worksheet = context.workbook.worksheets.getActiveWorksheet();
-  eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
-
-  return context.sync()
-    .then(function () {
-      console.log(eventResult);
-    });
-}).catch(errorHandlerFunction);
-
-async function handleSelectionChange(event) {
-  if (SheetProperties.isReferenceCell) {
-    await SheetProperties.cellOp.showPopUpWindow(event.address);
-  }
-}
-
-
-
-function remove() {
-  return Excel.run(eventResult.context, function (context) {
-    eventResult.remove();
+function checkCellChanged() {
+  Excel.run(function (context) {
+    var worksheet = context.workbook.worksheets.getActiveWorksheet();
+    var eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
 
     return context.sync()
       .then(function () {
-        eventResult = null;
-        console.log("Event handler successfully removed.");
+        console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
       });
-  }).catch(errorHandlerFunction);
+  }).catch((reason: any) => { console.log(reason) });
 }
 
-function errorHandlerFunction(callback) {
-  try {
-    callback();
-  } catch (error) {
-    console.log(error);
-  }
+function handleSelectionChange(event) {
+  return Excel.run(function (context) {
+    return context.sync()
+      .then(function () {
+        console.log("Address of current selection: " + event.address);
+
+        if (SheetProperties.cells == null) {
+          console.log('Returning because cells is undefined');
+          return;
+        }
+        SheetProperties.cells.forEach((cell: CellProperties) => {
+          if (cell.address.includes(event.address)) {
+
+            console.log('Found a matching cell');
+            if (cell.isSpread) {
+              showSpreadInTaskPane(cell);
+              // showSpreadAsColumnChartInTaskPane(cell);
+            }
+          }
+        })
+
+
+      });
+  }).catch((reason: any) => { console.log(reason) });
 }
 
-function first() {
-  SheetProperties.degreeOfNeighbourhood = 1;
-  removeShapesFromReferenceCell();
-  displayOptions();
+function selectSomethingElse() {
+  Excel.run(function (context) {
+
+    var sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    var range = sheet.getRange(SheetProperties.referenceCell.address);
+
+    range.select();
+    console.log('Select something else');
+
+    return context.sync();
+  })
 }
 
+function moveDivElement() {
 
-function second() {
-  SheetProperties.degreeOfNeighbourhood = 2;
-  removeShapesFromReferenceCell();
-  displayOptions();
-}
+  var div = document.getElementById('legend');
+  console.log(div.style);
+  div.style.position = 'relative';
+  div.style.left = 5 + 'px';
 
-
-function third() {
-  SheetProperties.degreeOfNeighbourhood = 3;
-  removeShapesFromReferenceCell();
-  displayOptions();
 }

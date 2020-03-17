@@ -5,6 +5,7 @@ export default class SheetProperties {
 
   static isInputRelationship: boolean = false;
   static isOutputRelationship: boolean = false;
+  static isRelationship: boolean = false;
   static isImpact: boolean = false;
   static isLikelihood: boolean = false;
   static isSpread: boolean = false;

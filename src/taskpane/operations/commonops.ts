@@ -1,28 +1,28 @@
 /* global console, Excel */
-
+import * as OfficeHelpers from '@microsoft/office-js-helpers';
 import CellProperties from "../cellproperties";
 import SheetProperties from "../sheetproperties";
 
 export default class CommonOperations {
 
-  drawRectangle(cell: CellProperties) {
+  drawRectangle(cell: CellProperties, type: string) {
 
     Excel.run((context) => {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       let i = 0;
-      let MARGIN = 5;
+      let MARGIN = 10;
       let height = 5;
       let width = 5;
 
       cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-      cell.rect.name = "Shape" + i;
+      cell.rect.name = "Shape" + type;
       cell.rect.left = cell.left + MARGIN;
       cell.rect.top = cell.top + cell.height / 4;
 
       if (SheetProperties.isLikelihood) {
-        height = cell.likelihood;
-        width = cell.likelihood;
+        height = cell.likelihood * 10;
+        width = cell.likelihood * 10;
       }
 
       cell.rect.height = height;
@@ -38,28 +38,30 @@ export default class CommonOperations {
     });
   }
 
-  async deleteRectangles(cells: CellProperties[]) {
+  deleteRectangles(cells: CellProperties[], type: string) {
 
-    // remove both impact and likelihood here?
+    try {
 
-    cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
-      cell.isLikelihood = false;
-    })
+      Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var shapes = sheet.shapes;
-      shapes.load("items/name");
-
-      return context.sync().then(function () {
-        shapes.items.forEach(function (shape) {
-          if (shape.name.includes('Shape')) {
-            shape.delete();
-          }
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes('Shape' + type)) {
+              console.log('Name: ' + shape.name);
+              shape.delete();
+            }
+          });
+          return context.sync();
+        }).catch((reason: any) => {
+          console.log('Step 1:', reason, type)
         });
-        return context.sync();
       });
-    });
+    } catch (error) {
+      console.log('Step 2:', error);
+      OfficeHelpers.Utilities.log(error);
+    }
   }
 }

@@ -32,51 +32,55 @@ export default class Relationship {
 
   private async deleteTriangles(type: string) {
 
-    this.cells.forEach((cell: CellProperties) => {
-      if (type == 'Input') {
-        cell.isInputRelationship = false;
-      }
-      if (type == 'Output') {
-        cell.isOutputRelationship = false;
-      }
-    })
+    try {
 
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var shapes = sheet.shapes;
-      shapes.load("items/name");
+      this.cells.forEach((cell: CellProperties) => {
+        if (type == 'Input') {
+          cell.isInputRelationship = false;
+        }
+        if (type == 'Output') {
+          cell.isOutputRelationship = false;
+        }
+      })
 
-      return context.sync().then(function () {
-        shapes.items.forEach(function (shape) {
-          if (shape.name.includes(type)) {
-            shape.delete();
-          }
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes('Relationship' + type)) {
+              shape.delete();
+            }
+          });
+          return context.sync();
         });
-        return context.sync();
       });
-    });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   private drawInputRelation(cell: CellProperties, color: string) {
 
-    Excel.run(async (context) => {
+    Excel.run(function (context) {
 
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.triangle;
-      let triangle = shapes.addGeometricShape(type);
-      triangle.name = "Input";
-      triangle.rotation = 0;
-      triangle.left = cell.left;
-      triangle.top = cell.top + cell.height / 4;
-      triangle.height = 3;
-      triangle.width = 6;
-      triangle.lineFormat.weight = 0;
-      triangle.lineFormat.color = color;
-      triangle.fill.setSolidColor(color);
+      type = Excel.GeometricShapeType.diamond;
+      let diamond = shapes.addGeometricShape(type);
+      diamond.name = "RelationshipOutput"
+      diamond.left = cell.left;
+      diamond.top = cell.top + cell.height / 4;
+      diamond.height = 6;
+      diamond.width = 6;
+      diamond.lineFormat.weight = 0;
+      diamond.lineFormat.color = color;
+      diamond.fill.setSolidColor(color);
 
-      await context.sync();
+      return context.sync().then(() => { console.log('Success in drawing relationship') }).catch((reason: any) => console.log('Could not draw relationship: ' + reason));
     })
   }
 
@@ -128,16 +132,16 @@ export default class Relationship {
       let type: Excel.GeometricShapeType;
       var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.diamond;
-      let diamond = shapes.addGeometricShape(type);
-      diamond.name = "Output"
-      diamond.left = cell.left;
-      diamond.top = cell.top + cell.height / 4;
-      diamond.height = 6;
-      diamond.width = 6;
-      diamond.lineFormat.weight = 0;
-      diamond.lineFormat.color = color;
-      diamond.fill.setSolidColor(color);
+      type = Excel.GeometricShapeType.ellipse;
+      let circle = shapes.addGeometricShape(type);
+      circle.name = "RelationshipOutput"
+      circle.left = cell.left;
+      circle.top = cell.top + cell.height / 4;
+      circle.height = 6;
+      circle.width = 6;
+      circle.lineFormat.weight = 0;
+      circle.lineFormat.color = color;
+      circle.fill.setSolidColor(color);
       await context.sync();
     })
   }
