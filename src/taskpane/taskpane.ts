@@ -224,10 +224,10 @@ function showSpreadInTaskPane(cell: CellProperties) {
   d3.select("svg").remove();
   var margin = { top: 10, right: 30, bottom: 30, left: 40 },
     width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    height = 200 - margin.top - margin.bottom;
 
   // append the svg object to the body of the page
-  var svg = d3.select("body")
+  var svg = d3.select(".g-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -262,8 +262,8 @@ function showSpreadInTaskPane(cell: CellProperties) {
     .range([height, 0]);
 
 
-  y.domain([0, 100]);
-  // y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+  // y.domain([0, 100]);
+  y.domain([0, d3.max(bins, function (d) { return d.length; })]);
 
   svg.append("g")
     .call(d3.axisLeft(y));
