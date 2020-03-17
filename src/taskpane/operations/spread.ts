@@ -3,6 +3,7 @@ import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
 import SheetProperties from '../sheetproperties';
+import * as outliers from 'outliers';
 
 import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
@@ -110,18 +111,6 @@ export default class Spread {
     }
   }
 
-  binSomething() {
-    var data = [1, 2, 3, 4, 4.7];
-    var count = 2;
-    var x = d3.scaleLinear().domain(d3.extent(data)).nice(count);
-    let domain = d3.max(data, function (d) { return +d })
-    var histogram = d3.histogram().domain([0, domain]).thresholds(x.ticks(count));
-    var bins = histogram(data);
-    console.log('bins:', bins);
-    console.log("bin widths: " + bins.map(b => b.x1 - b.x0));
-
-  }
-
   public drawBarCodePlot(cell: CellProperties, name: string) {
     try {
       Excel.run((context) => {
@@ -133,7 +122,7 @@ export default class Spread {
         let startLineLeft = cell.left + 20;
         let endLineTop = cell.top + totalHeight;
 
-        let colors = ['#002534', '#002e41', '#4e7387', '#98b0c2', '#d8e1e7']; // dark to light
+        let colors = ['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534'] // light to dark
 
         var count = 5;
         let data = cell.samples;
@@ -147,46 +136,36 @@ export default class Spread {
 
         console.log('Bins for ' + cell.address);
 
-        bins.forEach((bin) => {
-          // console.log('Bin: ', bin);
-          console.log('x0: ', bin.x0);
-          console.log('width: ', bin.x1 - bin.x0);
-          console.log('freq: ', bin.length);
+        let sortedBins = bins.sort((n1, n2) => {
+          if (n1.length > n2.length) {
+            return 1;
+          }
 
+          if (n1.length < n2.length) {
+            return -1;
+          }
+          return 0;
+        })
+
+        let colorIndex = 0;
+
+        sortedBins.forEach((bin) => {
+
+          const bin_zero = bin[0];
+
+          if (bin_zero == undefined) {
+            return;
+          }
+
+          let line = sheet.shapes.addLine(startLineLeft + bin_zero, startLineTop, startLineLeft + bin_zero, endLineTop);
+          line.lineFormat.color = colors[colorIndex];
+          line.name = name;
+          line.lineFormat.weight = 3;
+          line.lineFormat.transparency = 0.5;
+          colorIndex++;
         })
 
         console.log('-------------------------------');
-
-        // let k = 0;
-
-        // cell.samples.forEach((sample: number) => {
-
-        //   let i = 0;
-
-        //   let valueToBeAdded: number = sample;
-
-        //   // if (sample.likelihood >= 0.8) {
-        //   //   i = 0;
-        //   // } else if (sample.likelihood >= 0.5) {
-        //   //   i = 1;
-        //   // } else if (sample.likelihood >= 0.3) {
-        //   //   i = 2;
-        //   // } else if (sample.likelihood >= 0.2) {
-        //   //   i = 3;
-        //   // } else {
-        //   //   i = 4;
-        //   // }
-
-        //   // if (sample.likelihood < 0.05) {
-        //   //   return;
-        //   // }
-
-        //   let line = sheet.shapes.addLine(startLineLeft + valueToBeAdded + 4 * k, startLineTop, startLineLeft + valueToBeAdded + 4 * k, endLineTop);
-        //   line.lineFormat.color = colors[i];
-        //   line.name = name;
-        //   line.lineFormat.weight = 3;
-        //   k++;
-        // })
 
         return context.sync().then(() => {
           console.log('Finished drawing the bar code plot')
@@ -245,6 +224,8 @@ export default class Spread {
       values.forEach((val: number) => {
         normalSamples.push(jStat.normal.inv(val, mean, variance));
       })
+
+      normalSamples = normalSamples.filter(outliers());
 
       const sampleLength = normalSamples.length;
       console.log('SampleLength: ' + sampleLength);
@@ -313,6 +294,10 @@ export default class Spread {
     try {
 
       sample1.samples.forEach((sampleCell1: number, index: number) => {
+
+        if (sample2.samples.length <= index) {
+          return;
+        }
 
         let value = sampleCell1 + sample2.samples[index];
 

@@ -216,110 +216,10 @@ async function spread() {
   }
 }
 
-// function showSpreadInTaskPane(cell: CellProperties) {
-
-//   try {
-//     d3.select("svg").remove();
-//     var element = document.getElementById('tooltip')
-//     if (element) {
-//       element.remove();
-//     }
-
-//     let data = cell.samples;
-//     data.forEach(function (d) {
-//       d.likelihood = +d.likelihood;
-//     });
-
-//     const margin = { top: 0, right: 0, bottom: 30, left: 0 };
-
-//     const width = 100 - margin.left - margin.right;
-//     const height = 125; // 125 - margin.top - margin.bottom;
-
-//     //Create the xScale
-//     const xScale = d3.scaleTime()
-//       .range([0, width]);
-
-//     //Create the yScale
-//     const yScale = d3.scaleLinear()
-//       .range([height, 0]);
-
-//     const svg = d3.select(".g-chart").append("svg")
-//       .attr("width", width + margin.left + margin.right)
-//       .attr("height", height)
-//       .append("g")
-//       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-//     const div = d3.select(".g-chart").append("div")
-//       .attr("class", "tooltip")
-//       .style("opacity", 0);
-
-//     //Organizes the data
-//     d3.max(data, function (d) { return d.value; });
-
-//     //Defines the xScale max
-//     xScale.domain(d3.extent(data, function (d) { return d.value; }));
-
-//     //Defines the yScale max
-//     yScale.domain([0, 100]);
-
-//     svg.append("g")
-//       .attr("class", "x axis")
-//       .attr("transform", "translate(0," + height + ")")
-
-//     svg.selectAll("line.percent")
-//       .data(data)
-//       .enter()
-//       .append("line")
-//       .attr("class", "percentline")
-//       .attr("x1", (d) => { return xScale(d.value); })
-//       .attr("x2", (d) => { return xScale(d.value); })
-//       .attr("y1", 50)
-//       .attr("y2", 100)
-//       .style("stroke", "#002499")
-//       .style("stroke-width", 3)
-//       .style("opacity", (d) => { return d.likelihood })
-//       .on("mouseover", (d) => {
-
-//         try {
-//           var right = true;
-//           d3.select(this)
-//             .transition().duration(100)
-//             .attr("y1", 0)
-//             .style("stroke-width", 3)
-//             .style("opacity", 1);
-
-//           div.transition()
-//             .style("opacity", 1)
-//           div.html("<span class='bolded'>" + (d.value).toFixed(2) + ": </span>" + (d.likelihood * 100).toFixed(2) + "%")
-
-//           let offset = right ? div.node().offsetWidth + 5 : -5;
-
-//           div
-//             .style("left", (d3.event.pageX - offset) + "px")
-//             .style("top", 425 + "px")
-//         } catch (error) {
-//           console.log(error);
-//         }
-
-//       })
-//       .on("mouseout", () => {
-//         d3.select(this)
-//           .transition().duration(100)
-//           .attr("y1", 50)
-//           .style("stroke-width", 2)
-//           .style("opacity", 0.4);
-
-//         div.transition()
-//           .style("opacity", 0)
-//       })
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
 function showSpreadInTaskPane(cell: CellProperties) {
 
   let data = cell.samples;
+  console.log(data);
 
   d3.select("svg").remove();
   var margin = { top: 10, right: 30, bottom: 30, left: 40 },
@@ -335,10 +235,13 @@ function showSpreadInTaskPane(cell: CellProperties) {
     .attr("transform",
       "translate(" + margin.left + "," + margin.top + ")");
 
-  let domain = d3.max(data, function (d) { return +d })
+  let maxDomain = d3.max(data)
+  console.log('Max Domain: ' + maxDomain);
+  let minDomain = d3.min(data)
+  console.log('Min Domain: ' + minDomain);
 
   var x = d3.scaleLinear()
-    .domain([0, domain]) // problem with you because of negative values??
+    .domain([minDomain, maxDomain]) // problem with you because of negative values??
     .range([0, width]);
 
   svg.append("g")
@@ -348,7 +251,7 @@ function showSpreadInTaskPane(cell: CellProperties) {
   // set the parameters for the histogram
   var histogram = d3.histogram()
     .value(function (d) { return d })
-    .domain([0, domain])
+    .domain([minDomain, maxDomain])
     .thresholds(x.ticks(100));
 
   // And apply this function to data to get the bins

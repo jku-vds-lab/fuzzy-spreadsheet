@@ -35,7 +35,8 @@
     "d3": "^5.15.0",
     "discrete-sampling": "^1.0.3",
     "jstat": "^1.9.2",
-    "mathjs": "^6.6.0"
+    "mathjs": "^6.6.0",
+    "outliers": "0.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",
