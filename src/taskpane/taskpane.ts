@@ -145,9 +145,6 @@ function third() {
   displayOptions();
 }
 
-
-
-
 function impact() {
   try {
     var element = <HTMLInputElement>document.getElementById("impact");
@@ -219,7 +216,6 @@ async function spread() {
 function showSpreadInTaskPane(cell: CellProperties) {
 
   let data = cell.samples;
-  console.log(data);
 
   d3.select("svg").remove();
   var margin = { top: 10, right: 30, bottom: 30, left: 40 },
@@ -236,9 +232,7 @@ function showSpreadInTaskPane(cell: CellProperties) {
       "translate(" + margin.left + "," + margin.top + ")");
 
   let maxDomain = d3.max(data)
-  console.log('Max Domain: ' + maxDomain);
   let minDomain = d3.min(data)
-  console.log('Min Domain: ' + minDomain);
 
   var x = d3.scaleLinear()
     .domain([minDomain, maxDomain]) // problem with you because of negative values??
@@ -275,7 +269,12 @@ function showSpreadInTaskPane(cell: CellProperties) {
     .append("rect")
     .attr("x", 1)
     .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-    .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+    .attr("width", function (d) {
+      if (x(d.x0) == x(d.x1)) {
+        return 1;
+      }
+      return x(d.x1) - x(d.x0) - 1;
+    })
     .attr("height", function (d) { return height - y(d.length); })
     .style("fill", "#69b3a2")
 }
@@ -309,7 +308,6 @@ async function startWhatIf() {
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
     performWhatIf();
-    await processWhatIf();
     document.getElementById('useNewValues').hidden = false;
     document.getElementById('dismissValues').hidden = false;
   } catch (error) {

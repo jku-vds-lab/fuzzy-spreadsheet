@@ -134,7 +134,6 @@ export default class Spread {
         var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
         var bins = histogram(data);
 
-        console.log('Bins for ' + cell.address);
 
         let sortedBins = bins.sort((n1, n2) => {
           if (n1.length > n2.length) {
@@ -148,6 +147,10 @@ export default class Spread {
         })
 
         let colorIndex = 0;
+
+        if (cell.samples.length == 1) {
+          colorIndex = 4;
+        }
 
         sortedBins.forEach((bin) => {
 
@@ -164,8 +167,6 @@ export default class Spread {
           line.lineFormat.transparency = 0.5;
           colorIndex++;
         })
-
-        console.log('-------------------------------');
 
         return context.sync().then(() => {
           console.log('Finished drawing the bar code plot')
