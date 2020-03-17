@@ -11,7 +11,7 @@ import * as jStat from 'jstat';
 import * as d3 from 'd3';
 
 
-// the original file should not contain the variance and likelihood inforamtion at all, so adapt accordingly
+// code cleaning required
 export default class Spread {
 
   private cells: CellProperties[];
