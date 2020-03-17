@@ -253,7 +253,7 @@ function performWhatIf() {
   Excel.run(function (context) {
     var worksheet = context.workbook.worksheets.getActiveWorksheet();
     console.log('Worksheet has changed');
-    worksheet.onCalculated.add(processWhatIf);
+    worksheet.onChanged.add(processWhatIf); // onCalculated
 
     return context.sync()
       .then(function () {

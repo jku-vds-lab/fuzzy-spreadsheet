@@ -165,6 +165,7 @@ export default class Spread {
 
         if (this.color == 'orange') {
           colors = orangeColors;
+          name += 'orange';
         }
 
         var count = 5;
@@ -230,8 +231,26 @@ export default class Spread {
 
       const mean = cell.value;
       const variance = cell.variance;
+      const likelihood = cell.likelihood;
 
-      if (variance == 0) {
+      if (variance == 0 && likelihood == 1) {
+
+        if (oldCell != null) {
+          console.log('Old cell is not null:', oldCell)
+          const oldMean = oldCell.value;
+          const oldVariance = oldCell.variance;
+          const oldLikelihood = oldCell.likelihood;
+
+          if (mean == oldMean) {
+            if (variance == oldVariance) {
+              if (likelihood == oldLikelihood) {
+                cell.samples = null;
+                return;
+              }
+            }
+          }
+        }
+
         cell.samples.push(mean);
       }
       else {
