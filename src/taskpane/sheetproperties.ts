@@ -15,6 +15,7 @@ export default class SheetProperties {
   static cellOp: CellOperations;
   static cellProp = new CellProperties();
   static cells: CellProperties[];
+  static newCells: CellProperties[] = null;
   static referenceCell: CellProperties = null;
   static isSheetParsed = false;
   static newValues: any[][];

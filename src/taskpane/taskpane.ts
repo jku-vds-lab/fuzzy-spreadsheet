@@ -213,72 +213,6 @@ async function spread() {
   }
 }
 
-function showSpreadInTaskPane(cell: CellProperties) {
-
-  let data = cell.samples;
-
-  d3.select("svg").remove();
-  var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-    width = 460 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom;
-
-  // append the svg object to the body of the page
-  var svg = d3.select(".g-chart")
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform",
-      "translate(" + margin.left + "," + margin.top + ")");
-
-  let maxDomain = d3.max(data)
-  let minDomain = d3.min(data)
-
-  var x = d3.scaleLinear()
-    .domain([minDomain, maxDomain])
-    .range([0, width]);
-
-  svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
-
-  // set the parameters for the histogram
-  var histogram = d3.histogram()
-    .value(function (d) { return d })
-    .domain([minDomain, maxDomain])
-    .thresholds(x.ticks(100));
-
-  // And apply this function to data to get the bins
-  var bins = histogram(data);
-
-  // Y axis: scale and draw:
-  var y = d3.scaleLinear()
-    .range([height, 0]);
-
-
-  // y.domain([0, 100]);
-  y.domain([0, d3.max(bins, function (d) { return d.length; })]);
-
-  svg.append("g")
-    .call(d3.axisLeft(y));
-
-  // append the bar rectangles to the svg element
-  svg.selectAll("rect")
-    .data(bins)
-    .enter()
-    .append("rect")
-    .attr("x", 1)
-    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-    .attr("width", function (d) {
-      if (x(d.x0) == x(d.x1)) {
-        return 1;
-      }
-      return x(d.x1) - x(d.x0) - 1;
-    })
-    .attr("height", function (d) { return height - y(d.length); })
-    .style("fill", "#69b3a2")
-}
-
 function relationshipIcons() {
 
   var element = <HTMLInputElement>document.getElementById("relationship");
@@ -331,8 +265,6 @@ function performWhatIf() {
 
 async function processWhatIf() {
 
-  console.log('------------------Processing what-if');
-
   if (SheetProperties.referenceCell == null) {
     console.log('Returning because reference cell is null');
     return;
@@ -347,12 +279,11 @@ async function processWhatIf() {
     SheetProperties.newFormulas = range.formulas;
   });
 
-  let newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
+  // eslint-disable-next-line require-atomic-updates
+  SheetProperties.newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
   const whatif = new WhatIf();
 
-  whatif.setNewCells(newCells, SheetProperties.cells, SheetProperties.referenceCell);
-
-  console.log('Calculating the change');
+  whatif.setNewCells(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
 
   whatif.calculateChange();
 
@@ -604,20 +535,101 @@ function handleSelectionChange(event) {
           console.log('Returning because cells is undefined');
           return;
         }
-        SheetProperties.cells.forEach((cell: CellProperties) => {
+        SheetProperties.cells.forEach((cell: CellProperties, index: number) => {
+
           if (cell.address.includes(event.address)) {
 
-            console.log('Found a matching cell');
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
-              // showSpreadAsColumnChartInTaskPane(cell);
+
+              if (SheetProperties.newCells == null) {
+                return;
+              }
+              if (cell.address == SheetProperties.newCells[index].address) {
+                showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
+              }
             }
           }
         })
-
-
       });
   }).catch((reason: any) => { console.log(reason) });
+}
+
+function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#69b3a2') {
+
+  try {
+
+    d3.select("#" + idToBeRemoved).select('svg').remove();
+
+    let data = cell.samples;
+
+    if (data == null) {
+      return;
+    }
+
+    var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+      width = 360 - margin.left - margin.right,
+      height = 200 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select(divClass)
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+
+    let maxDomain = d3.max(data)
+    let minDomain = d3.min(data)
+
+    var x = d3.scaleLinear()
+      .domain([minDomain, maxDomain])
+      .range([0, width]);
+
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // set the parameters for the histogram
+    var histogram = d3.histogram()
+      .value(function (d) { return d })
+      .domain([minDomain, maxDomain])
+      .thresholds(x.ticks(100));
+
+    // And apply this function to data to get the bins
+    var bins = histogram(data);
+
+    // Y axis: scale and draw:
+    var y = d3.scaleLinear()
+      .range([height, 0]);
+
+
+    // y.domain([0, 100]);
+    y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    // append the bar rectangles to the svg element
+    svg.selectAll("rect")
+      .data(bins)
+      .enter()
+      .append("rect")
+      .attr("x", 1)
+      .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+      .attr("width", function (d) {
+        if (x(d.x0) == x(d.x1)) {
+          return 1;
+        }
+        return x(d.x1) - x(d.x0) - 1;
+      })
+      .attr("height", function (d) { return height - y(d.length); })
+      .style("fill", color)
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function selectSomethingElse() {
@@ -628,7 +640,6 @@ function selectSomethingElse() {
     var range = sheet.getRange(SheetProperties.referenceCell.address);
 
     range.select();
-    console.log('Select something else');
 
     return context.sync();
   })

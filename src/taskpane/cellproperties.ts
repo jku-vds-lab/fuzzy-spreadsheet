@@ -142,6 +142,11 @@ export default class CellProperties {
 
         this[index].value = newValues[rowIndex][colIndex];
         this[index].formula = newFormulas[rowIndex][colIndex];
+        this[index].isInputRelationship = false;
+        this[index].isOutputRelationship = false;
+        this[index].isImpact = false;
+        this[index].isLikelihood = false;
+        this[index].isSpread = false;
         this[index].inputCells = new Array<CellProperties>();
         this[index].outputCells = new Array<CellProperties>();
         this[index].whatIf = new WhatIf();
@@ -151,9 +156,9 @@ export default class CellProperties {
         }
       }, this.newCells);
 
-      this.checkUncertainty(this.newCells);
-
       this.getRelationshipOfCells(this.newCells);
+
+      this.checkUncertainty(this.newCells);
 
     } catch (error) {
       console.log('Error: ' + error);
@@ -307,7 +312,6 @@ export default class CellProperties {
       }
     })
   }
-
 
   private checkAverageValues(cells: CellProperties[]) {
     let isUncertain = false;
