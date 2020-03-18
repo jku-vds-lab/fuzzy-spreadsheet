@@ -80,6 +80,7 @@ async function markAsReferenceCell() {
       SheetProperties.isReferenceCell = true;
       console.log('Done Marking a reference cell');
       showVisualizationOption();
+      displayOptions();
     });
 
   } catch (error) {
@@ -415,9 +416,11 @@ function removeOutputRelationFromOptions() {
   selectSomethingElse();
 }
 
-function hideOptions() {
+function hideOptions(isReferenceCellHidden: boolean = true) {
 
-  document.getElementById('referenceCell').hidden = true;
+  if (isReferenceCellHidden) {
+    document.getElementById('referenceCell').hidden = true;
+  }
   document.getElementById('relationshipDiv').hidden = true;
   document.getElementById('neighborhoodDiv').hidden = true;
   document.getElementById('impactDiv').hidden = true;
