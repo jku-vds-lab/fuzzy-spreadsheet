@@ -443,7 +443,7 @@ function showVisualizationOption() {
   document.getElementById('impactDiv').hidden = false;
   document.getElementById('likelihoodDiv').hidden = false;
   document.getElementById('spreadDiv').hidden = false;
-  document.getElementById('relationshipInfoDiv').hidden = true;
+  document.getElementById('relationshipInfoDiv').hidden = false;
   document.getElementById('startWhatIf').hidden = false;
   (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = true;
   (<HTMLInputElement>document.getElementById("impactDiv")).disabled = true;
