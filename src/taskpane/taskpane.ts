@@ -80,6 +80,7 @@ async function markAsReferenceCell() {
       SheetProperties.isReferenceCell = true;
       console.log('Done Marking a reference cell');
       showVisualizationOption();
+      displayOptions();
     });
 
   } catch (error) {
@@ -158,6 +159,7 @@ function impact() {
       if (SheetProperties.isOutputRelationship) {
         SheetProperties.cellOp.showOutputImpact(SheetProperties.degreeOfNeighbourhood);
       }
+      checkCellChanged();
     } else {
       SheetProperties.isImpact = false;
       SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -182,7 +184,7 @@ function likelihood() {
       if (SheetProperties.isOutputRelationship) {
         SheetProperties.cellOp.showOutputLikelihood(SheetProperties.degreeOfNeighbourhood);
       }
-
+      checkCellChanged();
     } else {
       SheetProperties.isLikelihood = false;
       SheetProperties.cellOp.removeInputLikelihood(SheetProperties.degreeOfNeighbourhood);
@@ -414,9 +416,11 @@ function removeOutputRelationFromOptions() {
   selectSomethingElse();
 }
 
-function hideOptions() {
+function hideOptions(isReferenceCellHidden: boolean = true) {
 
-  document.getElementById('referenceCell').hidden = true;
+  if (isReferenceCellHidden) {
+    document.getElementById('referenceCell').hidden = true;
+  }
   document.getElementById('relationshipDiv').hidden = true;
   document.getElementById('neighborhoodDiv').hidden = true;
   document.getElementById('impactDiv').hidden = true;
@@ -539,6 +543,14 @@ function handleSelectionChange(event) {
 
           if (cell.address.includes(event.address)) {
 
+            if (cell.isImpact) {
+              addImpactPercentage(cell);
+            }
+
+            if (cell.isLikelihood) {
+              addLikelihoodPercentage(cell);
+            }
+
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
 
@@ -645,11 +657,20 @@ function selectSomethingElse() {
   })
 }
 
-function moveDivElement() {
+function addImpactPercentage(cell: CellProperties) {
 
-  var div = document.getElementById('legend');
-  console.log(div.style);
-  div.style.position = 'relative';
-  div.style.left = 5 + 'px';
+  var impactText = document.getElementById('impactPercentage');
+  impactText.innerHTML = cell.impact + '%';
+  impactText.style.position = 'relative';
+  impactText.style.left = 5 + 'px';
+
+}
+
+function addLikelihoodPercentage(cell: CellProperties) {
+
+  var likelihoodText = document.getElementById('likelihoodPercentage');
+  likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
+  likelihoodText.style.position = 'relative';
+  likelihoodText.style.left = 5 + 'px';
 
 }
