@@ -250,12 +250,13 @@ async function startWhatIf() {
     console.log(error);
   }
 }
+var eventResult;
 
 function performWhatIf() {
   Excel.run(function (context) {
     var worksheet = context.workbook.worksheets.getActiveWorksheet();
     console.log('Worksheet has changed');
-    worksheet.onChanged.add(processWhatIf); // onCalculated
+    eventResult = worksheet.onChanged.add(processWhatIf); // onCalculated
 
     return context.sync()
       .then(function () {
@@ -283,9 +284,8 @@ async function processWhatIf() {
 
   // eslint-disable-next-line require-atomic-updates
   SheetProperties.newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
-  const whatif = new WhatIf();
 
-  whatif.setNewCells(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+  const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
 
   whatif.calculateChange();
 
@@ -305,28 +305,64 @@ async function useNewValues() {
 
 async function dismissValues() {
 
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    let cellRanges = new Array<Excel.Range>();
-    let cellValues = new Array<number>();
+  try {
 
-    SheetProperties.cells.forEach((cell: CellProperties) => {
+    console.log('Remove Event Handler');
 
-      let range = sheet.getRange(cell.address);
-      cellRanges.push(range.load('values'));
-      cellValues.push(cell.value);
-    })
+    remove();
 
-    await context.sync();
+    if (SheetProperties.isSpread) {
+      const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+      whatif.deleteNewSpread();
+    }
 
-    let i = 0;
+    SheetProperties.newCells = null;
 
-    cellRanges.forEach((cellRange: Excel.Range) => {
-      cellRange.values = [[cellValues[i]]];
-      i++;
-    })
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      let cellRanges = new Array<Excel.Range>();
+      let cellValues = new Array<number>();
+      let cellFormulas = new Array<any>();
 
-  });
+      SheetProperties.cells.forEach((cell: CellProperties) => {
+
+        let range = sheet.getRange(cell.address);
+        cellRanges.push(range.load(['values', 'formulas']));
+        cellValues.push(cell.value);
+
+        let formula = cell.formula;
+        if (formula == "") {
+          formula = cell.value.toString();
+        }
+        cellFormulas.push(formula);
+      })
+
+      await context.sync();
+
+      let i = 0;
+
+      cellRanges.forEach((cellRange: Excel.Range) => {
+        cellRange.values = [[cellValues[i]]];
+        cellRange.formulas = [[cellFormulas[i]]];
+        i++;
+      })
+    });
+
+  } catch (error) {
+    console.log('Error: ', error);
+  }
+}
+
+function remove() {
+  return Excel.run(eventResult.context, function (context) {
+    eventResult.remove();
+
+    return context.sync()
+      .then(function () {
+        eventResult = null;
+        console.log("Event handler successfully removed.");
+      });
+  }).catch((reason: any) => { console.log(reason) });
 }
 
 function displayOptions() {

@@ -14,7 +14,7 @@ export default class WhatIf {
   private referenceCell: CellProperties;
   private newReferenceCell: CellProperties;
 
-  setNewCells(newCells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
+  constructor(newCells: CellProperties[] = null, oldCells: CellProperties[] = null, referenceCell: CellProperties = null) {
     this.newCells = newCells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
@@ -67,6 +67,27 @@ export default class WhatIf {
 
       console.log('Computing new spread. Input: ' + isInput + ' Output: ' + isOutput);
       spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteNewSpread() {
+    try {
+
+      let spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell, 'orange');
+
+      let promises: Promise<void>[] = new Array<Promise<void>>();
+
+      // it will delete the new spread & the old spread as well
+      this.newCells.forEach((newCell: CellProperties) => {
+
+        promises.push(spread.asyncDeleteBarCodePlot(newCell.address));
+      })
+
+      // eslint-disable-next-line no-undef
+      Promise.all(promises).then(() => console.log('Resolved all promises')).catch((reason: any) => console.log(reason));
 
     } catch (error) {
       console.log(error);

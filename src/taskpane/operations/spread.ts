@@ -10,6 +10,7 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
+import { thresholdFreedmanDiaconis } from 'd3';
 
 
 // code cleaning required
@@ -155,7 +156,7 @@ export default class Spread {
         return;
       }
       // remove the original bar code plot
-      this.deleteBarCodePlot(oldCell.address);
+      this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
       this.drawBarCodePlot(oldCell, 'blue', name, true)
       // add new bar code plot with half the length
@@ -456,6 +457,10 @@ export default class Spread {
     this.deleteBarCodePlot('ReferenceChart');
   }
 
+  public removeSpreadCellWise(cell: CellProperties) {
+    this.deleteBarCodePlot(cell.address);
+  }
+
 
   deleteBarCodePlot(name: string) {
 
@@ -476,6 +481,28 @@ export default class Spread {
         }).catch((reason: any) => {
           console.log('Step 1:', reason, name)
         });
+      });
+    } catch (error) {
+      console.log('Step 2:', error);
+    }
+  }
+
+  async asyncDeleteBarCodePlot(name: string) {
+
+    try {
+
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        await context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes(name)) {
+              shape.delete();
+            }
+          });
+        })
       });
     } catch (error) {
       console.log('Step 2:', error);
