@@ -9,6 +9,7 @@ import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
+import CellOperations from '../celloperations';
 
 
 // code cleaning required
@@ -70,7 +71,7 @@ export default class Spread {
 
       this.referenceCell.isSpread = true;
       this.addSamplesToCell(this.referenceCell, this.oldReferenceCell);
-      this.drawBarCodePlot(this.referenceCell, 'ReferenceChart');
+      this.showBarCodePlot(this.referenceCell, this.oldReferenceCell, 'ReferenceChart');
 
     } catch (error) {
       console.log('Error in Show Reference Cell Spread', error);
@@ -96,7 +97,7 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
-        this.drawBarCodePlot(cell, 'InputChart');
+        this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
           return;
@@ -129,7 +130,7 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
-        this.drawBarCodePlot(cell, 'OutputChart');
+        this.showBarCodePlot(cell, oldCell, 'OutputChart');
 
         if (i == 1) {
           return;
@@ -142,12 +143,32 @@ export default class Spread {
     }
   }
 
-  public drawBarCodePlot(cell: CellProperties, name: string) {
+  public showBarCodePlot(cell: CellProperties, oldCell: CellProperties, name: string) {
     try {
 
       if (cell.samples == null) {
         return;
       }
+
+      if (oldCell == null) {
+        this.drawBarCodePlot(cell, 'blue', name);
+        return;
+      }
+      // remove the original bar code plot
+      this.deleteBarCodePlot(oldCell.address);
+      // add old bar code plot with half the length
+      this.drawBarCodePlot(oldCell, 'blue', name, true)
+      // add new bar code plot with half the length
+      this.drawBarCodePlot(cell, 'orange', name, false, true);
+
+    } catch (error) {
+      console.log('Could not draw the bar code plot because of the following error', error);
+    }
+
+  }
+
+  public drawBarCodePlot(cell: CellProperties, color: string, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
+    try {
 
       Excel.run((context) => {
 
@@ -158,18 +179,27 @@ export default class Spread {
         let startLineLeft = cell.left + 20;
         let endLineTop = cell.top + totalHeight;
 
+        if (isUpperHalf) {
+          endLineTop = cell.top + 0.5 * totalHeight;
+        }
+
+        if (isLowerHalf) {
+          startLineTop = cell.top + 0.5 * totalHeight;
+        }
+
         let blueColors = ['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534'] // light to dark
         let orangeColors = ['#ff8000', '#ff9933', '#ffb266', '#ffcc99', '#ffe5cc'];
 
         let colors = blueColors;
 
-        if (this.color == 'orange') {
+        if (color == 'orange') {
           colors = orangeColors;
-          name += 'orange';
         }
 
-        var count = 5;
+
         let data = cell.samples;
+
+        var count = 5;
 
         let domain = d3.max(data, function (d) { return +d })
 
@@ -206,7 +236,7 @@ export default class Spread {
 
           let line = sheet.shapes.addLine(startLineLeft + bin_zero, startLineTop, startLineLeft + bin_zero, endLineTop);
           line.lineFormat.color = colors[colorIndex];
-          line.name = name;
+          line.name = cell.address + name;
           line.lineFormat.weight = 3;
           line.lineFormat.transparency = 0.5;
           colorIndex++;
@@ -220,7 +250,6 @@ export default class Spread {
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }
-
   }
 
   public addSamplesToCell(cell: CellProperties, oldCell: CellProperties) {
@@ -233,55 +262,8 @@ export default class Spread {
       const variance = cell.variance;
       const likelihood = cell.likelihood;
 
-      if (variance == 0 && likelihood == 1) {
-
-        if (oldCell != null) {
-          console.log('Old cell is not null:', oldCell)
-          const oldMean = oldCell.value;
-          const oldVariance = oldCell.variance;
-          const oldLikelihood = oldCell.likelihood;
-
-          if (mean == oldMean) {
-            if (variance == oldVariance) {
-              if (likelihood == oldLikelihood) {
-                cell.samples = null;
-                return;
-              }
-            }
-          }
-        }
-
-        cell.samples.push(mean);
-      }
-      else {
-
-        if (cell.formula.includes('SUM')) {
-          cell.samples = this.addSamplesToSumCell(cell);
-          return;
-        }
-
-        if (cell.formula.includes('-')) {
-          cell.samples = this.addSamplesToSumCell(cell, true);
-          return;
-        }
-
-        cell.samples = this.addSamplesToAverageCell(cell, oldCell);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  public addSamplesToAverageCell(cell: CellProperties, oldCell: CellProperties) {
-
-    try {
-
-      const mean = cell.value;
-      const variance = cell.variance;
-      const likelihood = cell.likelihood;
-
-      if (oldCell != null) {
-        console.log('Old cell is not null:', oldCell)
+      // temporary check: to be removed after adding mean & variance value to the formula cells
+      if (oldCell != null && !cell.formula.includes('SUM') && !cell.formula.includes('-')) {
         const oldMean = oldCell.value;
         const oldVariance = oldCell.variance;
         const oldLikelihood = oldCell.likelihood;
@@ -296,6 +278,37 @@ export default class Spread {
         }
       }
 
+      if (variance == 0 && likelihood == 1) {
+        cell.samples.push(mean);
+      }
+      else {
+
+        if (cell.formula.includes('SUM')) {
+          console.log('Adding samples to sum cell: ' + cell.address);
+          cell.samples = this.addSamplesToSumCell(cell);
+          console.log('Added samples to sum cell: ' + cell.address, cell.samples);
+          return;
+        }
+
+        if (cell.formula.includes('-')) {
+          cell.samples = this.addSamplesToSumCell(cell, true);
+          return;
+        }
+
+        cell.samples = this.addSamplesToAverageCell(cell);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public addSamplesToAverageCell(cell: CellProperties) {
+
+    try {
+
+      const mean = cell.value;
+      const variance = cell.variance;
+      const likelihood = cell.likelihood;
 
       cell.samples = new Array<number>();
 
@@ -309,7 +322,6 @@ export default class Spread {
       normalSamples = normalSamples.filter(outliers());
 
       const sampleLength = normalSamples.length;
-      console.log('SampleLength: ' + sampleLength);
 
       const bern = Bernoulli(likelihood);
       bern.draw();
@@ -333,16 +345,15 @@ export default class Spread {
 
       cell.inputCells.forEach((inCell: CellProperties) => {
 
-        if (inCell.samples == null) {
+        let oldCell = null;
 
-          let oldCell = null;
-
-          if (this.oldCells != null) {
-            oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
-          }
-
-          this.addSamplesToCell(inCell, oldCell);
+        if (this.oldCells != null) {
+          oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
+
+        console.log('Adding samples to sum cell, with input cell: ' + inCell.address + ' old cell: ' + oldCell);
+
+        this.addSamplesToCell(inCell, oldCell);
       })
 
       let index = 0;
