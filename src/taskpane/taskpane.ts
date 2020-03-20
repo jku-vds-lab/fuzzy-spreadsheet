@@ -611,6 +611,10 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
 
     d3.select("#" + idToBeRemoved).select('svg').remove();
 
+    if (SheetProperties.newCells == null) {
+      d3.select('#whatIfChart').select('svg').remove();
+    }
+
     let data = cell.samples;
 
     if (data == null) {
