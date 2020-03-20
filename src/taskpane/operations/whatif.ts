@@ -73,24 +73,51 @@ export default class WhatIf {
     }
   }
 
-  async deleteNewSpread() {
+  deleteNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
     try {
 
-      let spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell, 'orange');
+      let namesToBeDeleted = new Array<string>();
 
-      let promises: Promise<void>[] = new Array<Promise<void>>();
-
-      // it will delete the new spread & the old spread as well
-      this.newCells.forEach((newCell: CellProperties) => {
-
-        promises.push(spread.asyncDeleteBarCodePlot(newCell.address));
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
+        if (newCell.isSpread) {
+          namesToBeDeleted.push(newCell.address);
+          newCell.samples = null;
+          console.log('Old Cell: ' + this.oldCells[index].address)
+          this.oldCells[index].isSpread = false;// Check this and then check if the spread is set to false, then call the showSpread method
+          // namesToBeDeleted.push(this.oldCells[index].address);
+        }
       })
 
-      // eslint-disable-next-line no-undef
-      Promise.all(promises).then(() => console.log('Resolved all promises')).catch((reason: any) => console.log(reason));
+      this.deleteSpreadNameWise(namesToBeDeleted);
+
+      const spread = new Spread(this.oldCells, null, this.referenceCell);
+      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  deleteSpreadNameWise(namesToBeDeleted: string[]) {
+
+    try {
+      Excel.run((context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(() => {
+          namesToBeDeleted.forEach((name: string) => {
+            shapes.items.forEach((shape) => {
+              if (shape.name.includes(name)) {
+                shape.delete();
+              }
+            })
+          })
+        }).catch((reason: any) => console.log(reason));
+      });
+    } catch (error) {
+      console.log('Async Delete Error:', error);
     }
   }
 

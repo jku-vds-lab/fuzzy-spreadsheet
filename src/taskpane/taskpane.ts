@@ -313,8 +313,10 @@ async function dismissValues() {
 
     if (SheetProperties.isSpread) {
       const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
-      whatif.deleteNewSpread();
+      whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
     }
+
+    SheetProperties.cellOp.deleteUpdateshapes();
 
     SheetProperties.newCells = null;
 

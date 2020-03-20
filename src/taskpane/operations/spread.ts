@@ -98,6 +98,12 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
+
+        if (cell.samples == null) {
+          cell.isSpread = false;
+          return;
+        }
+
         this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
@@ -131,6 +137,12 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
+
+        if (cell.samples == null) {
+          cell.isSpread = false;
+          return;
+        }
+
         this.showBarCodePlot(cell, oldCell, 'OutputChart');
 
         if (i == 1) {
@@ -160,6 +172,7 @@ export default class Spread {
       // add old bar code plot with half the length
       this.drawBarCodePlot(oldCell, 'blue', name, true)
       // add new bar code plot with half the length
+      name = 'Update' + name;
       this.drawBarCodePlot(cell, 'orange', name, false, true);
 
     } catch (error) {
@@ -285,9 +298,7 @@ export default class Spread {
       else {
 
         if (cell.formula.includes('SUM')) {
-          console.log('Adding samples to sum cell: ' + cell.address);
           cell.samples = this.addSamplesToSumCell(cell);
-          console.log('Added samples to sum cell: ' + cell.address, cell.samples);
           return;
         }
 
@@ -351,9 +362,6 @@ export default class Spread {
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
-
-        console.log('Adding samples to sum cell, with input cell: ' + inCell.address + ' old cell: ' + oldCell);
-
         this.addSamplesToCell(inCell, oldCell);
       })
 
@@ -477,7 +485,6 @@ export default class Spread {
               shape.delete();
             }
           });
-          return context.sync();
         }).catch((reason: any) => {
           console.log('Step 1:', reason, name)
         });
@@ -496,16 +503,18 @@ export default class Spread {
         var shapes = sheet.shapes;
         shapes.load("items/name");
 
-        await context.sync().then(function () {
-          shapes.items.forEach(function (shape) {
-            if (shape.name.includes(name)) {
-              shape.delete();
-            }
-          });
+        await context.sync();
+
+        shapes.items.forEach(function (shape) {
+          if (shape.name.includes(name)) {
+            shape.delete();
+          }
         })
+
+        await context.sync();
       });
     } catch (error) {
-      console.log('Step 2:', error);
+      console.log('Async Delete Error:', error);
     }
   }
 }
