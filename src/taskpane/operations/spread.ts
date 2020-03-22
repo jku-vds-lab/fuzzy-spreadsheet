@@ -10,6 +10,7 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
+import { thresholdFreedmanDiaconis } from 'd3';
 
 
 // code cleaning required
@@ -97,6 +98,12 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
+
+        if (cell.samples == null) {
+          cell.isSpread = false;
+          return;
+        }
+
         this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
@@ -130,6 +137,12 @@ export default class Spread {
         }
 
         this.addSamplesToCell(cell, oldCell);
+
+        if (cell.samples == null) {
+          cell.isSpread = false;
+          return;
+        }
+
         this.showBarCodePlot(cell, oldCell, 'OutputChart');
 
         if (i == 1) {
@@ -155,10 +168,11 @@ export default class Spread {
         return;
       }
       // remove the original bar code plot
-      this.deleteBarCodePlot(oldCell.address);
+      this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
       this.drawBarCodePlot(oldCell, 'blue', name, true)
       // add new bar code plot with half the length
+      name = 'Update' + name;
       this.drawBarCodePlot(cell, 'orange', name, false, true);
 
     } catch (error) {
@@ -242,10 +256,7 @@ export default class Spread {
           colorIndex++;
         })
 
-        return context.sync().then(() => {
-          console.log('Finished drawing the bar code plot')
-        }).
-          catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
+        return context.sync();
       });
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
@@ -284,9 +295,7 @@ export default class Spread {
       else {
 
         if (cell.formula.includes('SUM')) {
-          console.log('Adding samples to sum cell: ' + cell.address);
           cell.samples = this.addSamplesToSumCell(cell);
-          console.log('Added samples to sum cell: ' + cell.address, cell.samples);
           return;
         }
 
@@ -350,9 +359,6 @@ export default class Spread {
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
-
-        console.log('Adding samples to sum cell, with input cell: ' + inCell.address + ' old cell: ' + oldCell);
-
         this.addSamplesToCell(inCell, oldCell);
       })
 
@@ -456,6 +462,10 @@ export default class Spread {
     this.deleteBarCodePlot('ReferenceChart');
   }
 
+  public removeSpreadCellWise(cell: CellProperties) {
+    this.deleteBarCodePlot(cell.address);
+  }
+
 
   deleteBarCodePlot(name: string) {
 
@@ -472,13 +482,36 @@ export default class Spread {
               shape.delete();
             }
           });
-          return context.sync();
         }).catch((reason: any) => {
           console.log('Step 1:', reason, name)
         });
       });
     } catch (error) {
       console.log('Step 2:', error);
+    }
+  }
+
+  async asyncDeleteBarCodePlot(name: string) {
+
+    try {
+
+      await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        await context.sync();
+
+        shapes.items.forEach(function (shape) {
+          if (shape.name.includes(name)) {
+            shape.delete();
+          }
+        })
+
+        await context.sync();
+      });
+    } catch (error) {
+      console.log('Async Delete Error:', error);
     }
   }
 }

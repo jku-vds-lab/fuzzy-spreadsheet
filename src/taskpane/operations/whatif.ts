@@ -14,7 +14,7 @@ export default class WhatIf {
   private referenceCell: CellProperties;
   private newReferenceCell: CellProperties;
 
-  setNewCells(newCells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
+  constructor(newCells: CellProperties[] = null, oldCells: CellProperties[] = null, referenceCell: CellProperties = null) {
     this.newCells = newCells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
@@ -70,6 +70,75 @@ export default class WhatIf {
 
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  deleteNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
+    try {
+
+      let namesToBeDeleted = new Array<string>();
+
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
+        if (newCell.isSpread) {
+          namesToBeDeleted.push(newCell.address);
+          newCell.samples = null;
+          this.oldCells[index].isSpread = false;
+
+        }
+      })
+
+      this.deleteSpreadNameWise(namesToBeDeleted);
+
+      const spread = new Spread(this.oldCells, null, this.referenceCell);
+      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  keepNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
+    try {
+
+      let namesToBeDeleted = new Array<string>();
+
+      this.newCells.forEach((newCell: CellProperties) => {
+        if (newCell.isSpread) {
+          namesToBeDeleted.push(newCell.address);
+          newCell.isSpread = false;
+        }
+      })
+
+      this.deleteSpreadNameWise(namesToBeDeleted);
+
+      const spread = new Spread(this.newCells, null, this.newReferenceCell);
+      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  deleteSpreadNameWise(namesToBeDeleted: string[]) {
+
+    try {
+      Excel.run((context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(() => {
+          namesToBeDeleted.forEach((name: string) => {
+            shapes.items.forEach((shape) => {
+              if (shape.name.includes(name)) {
+                shape.delete();
+              }
+            })
+          })
+        }).catch((reason: any) => console.log(reason));
+      });
+    } catch (error) {
+      console.log('Async Delete Error:', error);
     }
   }
 

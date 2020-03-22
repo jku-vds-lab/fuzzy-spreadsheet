@@ -181,7 +181,7 @@ export default class Likelihood {
 
   }
 
-  private addLikelihoodInfo() {
+  addLikelihoodInfo() {
 
     try {
       for (let i = 0; i < this.cells.length; i++) {

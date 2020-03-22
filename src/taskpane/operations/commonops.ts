@@ -7,42 +7,48 @@ export default class CommonOperations {
 
   drawRectangle(cell: CellProperties, type: string) {
 
-    Excel.run((context) => {
+    try {
 
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      let i = 0;
-      let MARGIN = 10;
-      let height = 5;
-      let width = 5;
 
-      cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-      cell.rect.name = "Shape" + type;
-      cell.rect.left = cell.left + MARGIN;
-      cell.rect.top = cell.top + cell.height / 4;
+      Excel.run((context) => {
 
-      if (SheetProperties.isLikelihood) {
-        height = cell.likelihood * 10;
-        width = cell.likelihood * 10;
-      }
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let i = 0;
+        let MARGIN = 10;
+        let height = 5;
+        let width = 5;
 
-      cell.rect.height = height;
-      cell.rect.width = width;
+        cell.rect = sheet.shapes.addGeometricShape("Rectangle");
+        cell.rect.name = "Shape" + type;
+        cell.rect.left = cell.left + MARGIN;
+        cell.rect.top = cell.top + cell.height / 4;
 
-      cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
-      cell.rect.fill.setSolidColor(cell.rectColor);
-      cell.rect.fill.transparency = cell.rectTransparency;
-      cell.rect.lineFormat.weight = 0;
-      cell.rect.lineFormat.color = cell.rectColor;
-      i++;
-      return context.sync();
-    });
+        if (SheetProperties.isLikelihood) {
+          height = cell.likelihood * 10;
+          width = cell.likelihood * 10;
+        }
+
+        cell.rect.height = height;
+        cell.rect.width = width;
+
+        cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
+        cell.rect.fill.setSolidColor(cell.rectColor);
+        cell.rect.fill.transparency = cell.rectTransparency;
+        cell.rect.lineFormat.weight = 0;
+        cell.rect.lineFormat.color = cell.rectColor;
+        i++;
+        return context.sync();
+      });
+    } catch (error) {
+      console.log('---' + type + ' : ', error);
+    }
   }
 
   deleteRectangles(cells: CellProperties[], type: string) {
 
     try {
 
-      Excel.run(async (context) => {
+      Excel.run((context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         var shapes = sheet.shapes;
         shapes.load("items/name");
@@ -54,7 +60,6 @@ export default class CommonOperations {
               shape.delete();
             }
           });
-          return context.sync();
         }).catch((reason: any) => {
           console.log('Step 1:', reason, type)
         });

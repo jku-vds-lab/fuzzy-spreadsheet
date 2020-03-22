@@ -7,6 +7,7 @@ import * as jStat from 'jstat';
 import { max, histogram } from 'd3';
 import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
+import Likelihood from './operations/likelihood';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -81,6 +82,7 @@ async function markAsReferenceCell() {
       console.log('Done Marking a reference cell');
       showVisualizationOption();
       displayOptions();
+      selectSomethingElse();
     });
 
   } catch (error) {
@@ -246,16 +248,18 @@ async function startWhatIf() {
     performWhatIf();
     document.getElementById('useNewValues').hidden = false;
     document.getElementById('dismissValues').hidden = false;
+    (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
   } catch (error) {
     console.log(error);
   }
 }
+var eventResult;
 
 function performWhatIf() {
   Excel.run(function (context) {
     var worksheet = context.workbook.worksheets.getActiveWorksheet();
     console.log('Worksheet has changed');
-    worksheet.onChanged.add(processWhatIf); // onCalculated
+    eventResult = worksheet.onChanged.add(processWhatIf); // onCalculated
 
     return context.sync()
       .then(function () {
@@ -283,9 +287,8 @@ async function processWhatIf() {
 
   // eslint-disable-next-line require-atomic-updates
   SheetProperties.newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);
-  const whatif = new WhatIf();
 
-  whatif.setNewCells(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+  const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
 
   whatif.calculateChange();
 
@@ -294,75 +297,168 @@ async function processWhatIf() {
   whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
 
   if (SheetProperties.isSpread) {
-    console.log('Computing new spread');
     whatif.showNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 }
 
 async function useNewValues() {
+
+  console.log('Remove Event Handler');
+
+  remove();
+  SheetProperties.cellOp.deleteUpdateshapes();
+  if (SheetProperties.isSpread) {
+    const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+    whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+
   await parseSheet();
+
 }
 
 async function dismissValues() {
 
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-    let cellRanges = new Array<Excel.Range>();
-    let cellValues = new Array<number>();
+  try {
 
-    SheetProperties.cells.forEach((cell: CellProperties) => {
+    console.log('Remove Event Handler');
 
-      let range = sheet.getRange(cell.address);
-      cellRanges.push(range.load('values'));
-      cellValues.push(cell.value);
-    })
+    remove();
 
-    await context.sync();
+    if (SheetProperties.isSpread) {
+      const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+      whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+    }
 
-    let i = 0;
+    SheetProperties.cellOp.deleteUpdateshapes();
 
-    cellRanges.forEach((cellRange: Excel.Range) => {
-      cellRange.values = [[cellValues[i]]];
-      i++;
-    })
+    SheetProperties.newCells = null;
 
-  });
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      let cellRanges = new Array<Excel.Range>();
+      let cellValues = new Array<number>();
+      let cellFormulas = new Array<any>();
+
+      SheetProperties.cells.forEach((cell: CellProperties) => {
+
+        let range = sheet.getRange(cell.address);
+        cellRanges.push(range.load(['values', 'formulas']));
+        cellValues.push(cell.value);
+
+        let formula = cell.formula;
+        if (formula == "") {
+          formula = cell.value.toString();
+        }
+        cellFormulas.push(formula);
+      })
+
+      await context.sync();
+
+      let i = 0;
+
+      cellRanges.forEach((cellRange: Excel.Range) => {
+        cellRange.values = [[cellValues[i]]];
+        cellRange.formulas = [[cellFormulas[i]]];
+        i++;
+      })
+    });
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+  } catch (error) {
+    console.log('Error: ', error);
+  }
+}
+
+function remove() {
+  return Excel.run(eventResult.context, function (context) {
+    eventResult.remove();
+
+    return context.sync()
+      .then(function () {
+        eventResult = null;
+        console.log("Event handler successfully removed.");
+      });
+  }).catch((reason: any) => { console.log(reason) });
 }
 
 function displayOptions() {
-  if (SheetProperties.isImpact) {
-    // SheetProperties.cellOp.removeAllImpacts();
+
+  let timeout = 0;
+
+
+  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+    timeout = 1500;
+    SheetProperties.cellOp.addLikelihoodInfo();
     impact();
-  }
-  if (SheetProperties.isLikelihood) {
-    // SheetProperties.cellOp.removeAllLikelihoods();
+  } else if (SheetProperties.isImpact) {
+    timeout = 1500;
+    impact();
+  } else if (SheetProperties.isLikelihood) {
+    timeout = 1500;
     likelihood();
   }
-  if (SheetProperties.isSpread) {
-    spread();
-  }
+
   if (SheetProperties.isRelationship) {
-    relationshipIcons();
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      relationshipIcons();
+    }, timeout);
+
+    if (timeout == 0) {
+      timeout = 1500;
+    } else {
+      timeout = 2 * timeout;
+    }
   }
+
+  if (SheetProperties.isSpread) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      spread();
+    }, timeout);
+  }
+
   selectSomethingElse();
 }
 
 function showInputRelationForOptions() {
 
-  if (SheetProperties.isImpact) {
+
+  let timeout = 0;
+
+  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+    timeout = 1000;
+    SheetProperties.cellOp.addLikelihoodInfo();
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
-  }
-  if (SheetProperties.isLikelihood) {
+  } else if (SheetProperties.isImpact) {
+    timeout = 1000;
+    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+  } else if (SheetProperties.isLikelihood) {
+    timeout = 1000;
     SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
-  if (SheetProperties.isSpread) {
-    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-  }
-  if (SheetProperties.isRelationship) {
-    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-  }
-  selectSomethingElse();
 
+  if (SheetProperties.isRelationship) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }, timeout);
+
+    if (timeout == 0) {
+      timeout = 1000;
+    } else {
+      timeout = 2 * timeout;
+    }
+  }
+
+  if (SheetProperties.isSpread) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+    }, timeout);
+  }
+
+  selectSomethingElse();
 }
 
 function showOutputRelationForOptions() {
@@ -572,6 +668,10 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
   try {
 
     d3.select("#" + idToBeRemoved).select('svg').remove();
+
+    if (SheetProperties.newCells == null) {
+      d3.select('#whatIfChart').select('svg').remove();
+    }
 
     let data = cell.samples;
 
