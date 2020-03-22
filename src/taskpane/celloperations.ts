@@ -56,6 +56,10 @@ export default class CellOperations {
     this.impact.removeAllImpacts();
   }
 
+  addLikelihoodInfo() {
+    this.likelihood.addLikelihoodInfo();
+  }
+
   showInputLikelihood(n: number) {
     this.likelihood.showInputLikelihood(n);
   }

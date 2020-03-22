@@ -1,4 +1,5 @@
 import CellProperties from "../cellproperties";
+import { timeTuesday } from "d3";
 
 /* global console, Excel */
 export default class Relationship {
@@ -6,10 +7,12 @@ export default class Relationship {
   private referenceCell: CellProperties;
   private cells: CellProperties[];
   private degreeOfNeighbourhood: number;
+  private diamonds: Promise<void>[];
 
   constructor(cells: CellProperties[], referenceCell: CellProperties) {
     this.cells = cells;
     this.referenceCell = referenceCell;
+    this.diamonds = new Array<Promise<void>>();
   }
 
   showInputRelationship(n: number) {
@@ -34,6 +37,7 @@ export default class Relationship {
 
     try {
 
+      console.log('Delete type: ' + type);
       this.cells.forEach((cell: CellProperties) => {
         if (type == 'Input') {
           cell.isInputRelationship = false;
@@ -63,25 +67,29 @@ export default class Relationship {
   }
 
   private drawInputRelation(cell: CellProperties, color: string) {
+    try {
 
-    Excel.run(function (context) {
+      Excel.run(function (context) {
 
-      let type: Excel.GeometricShapeType;
-      var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
+        let type: Excel.GeometricShapeType;
+        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.diamond;
-      let diamond = shapes.addGeometricShape(type);
-      diamond.name = "RelationshipOutput"
-      diamond.left = cell.left;
-      diamond.top = cell.top + cell.height / 4;
-      diamond.height = 6;
-      diamond.width = 6;
-      diamond.lineFormat.weight = 0;
-      diamond.lineFormat.color = color;
-      diamond.fill.setSolidColor(color);
+        type = Excel.GeometricShapeType.diamond;
+        let diamond = shapes.addGeometricShape(type);
+        diamond.name = "RelationshipInput"
+        diamond.left = cell.left;
+        diamond.top = cell.top + cell.height / 4;
+        diamond.height = 6;
+        diamond.width = 6;
+        diamond.lineFormat.weight = 0;
+        diamond.lineFormat.color = color;
+        diamond.fill.setSolidColor(color);
 
-      return context.sync().then(() => { console.log('Success in drawing relationship') }).catch((reason: any) => console.log('Could not draw relationship: ' + reason));
-    })
+        return context.sync(); //.then(() => { console.log('Success in drawing relationship') }).catch((reason: any) => console.log('Could not draw relationship: ' + reason));
+      })
+    } catch (error) {
+      console.log('Input Relationship Error: ', error);
+    }
   }
 
   private addInputRelation(cell: CellProperties, n: number, colorIndex: number, colors: string[]) {
@@ -93,6 +101,7 @@ export default class Relationship {
       }
 
       inCell.isInputRelationship = true;
+      // this.diamonds.push(this.drawInputRelation(inCell, colors[colorIndex]));
       this.drawInputRelation(inCell, colors[colorIndex]);
 
       if (n == 1) {
@@ -128,21 +137,26 @@ export default class Relationship {
 
   private drawOutputRelation(cell: CellProperties, color: string) {
 
-    Excel.run(async (context) => {
-      let type: Excel.GeometricShapeType;
-      var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
+    try {
+      Excel.run(async (context) => {
+        let type: Excel.GeometricShapeType;
+        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-      type = Excel.GeometricShapeType.ellipse;
-      let circle = shapes.addGeometricShape(type);
-      circle.name = "RelationshipOutput"
-      circle.left = cell.left;
-      circle.top = cell.top + cell.height / 4;
-      circle.height = 6;
-      circle.width = 6;
-      circle.lineFormat.weight = 0;
-      circle.lineFormat.color = color;
-      circle.fill.setSolidColor(color);
-      await context.sync();
-    })
+        type = Excel.GeometricShapeType.ellipse;
+        let circle = shapes.addGeometricShape(type);
+        circle.name = "RelationshipOutput"
+        circle.left = cell.left;
+        circle.top = cell.top + cell.height / 4;
+        circle.height = 6;
+        circle.width = 6;
+        circle.lineFormat.weight = 0;
+        circle.lineFormat.color = color;
+        circle.fill.setSolidColor(color);
+        await context.sync();
+      })
+
+    } catch (error) {
+      console.log('Output relationship error: ', error);
+    }
   }
 }

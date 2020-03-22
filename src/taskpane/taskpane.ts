@@ -7,6 +7,7 @@ import * as jStat from 'jstat';
 import { max, histogram } from 'd3';
 import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
+import Likelihood from './operations/likelihood';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -81,6 +82,7 @@ async function markAsReferenceCell() {
       console.log('Done Marking a reference cell');
       showVisualizationOption();
       displayOptions();
+      selectSomethingElse();
     });
 
   } catch (error) {
@@ -381,39 +383,83 @@ function remove() {
 }
 
 function displayOptions() {
-  if (SheetProperties.isImpact) {
-    // SheetProperties.cellOp.removeAllImpacts();
+
+  let timeout = 0;
+
+
+  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+    timeout = 1500;
+    SheetProperties.cellOp.addLikelihoodInfo();
     impact();
-  }
-  if (SheetProperties.isLikelihood) {
-    // SheetProperties.cellOp.removeAllLikelihoods();
+  } else if (SheetProperties.isImpact) {
+    timeout = 1500;
+    impact();
+  } else if (SheetProperties.isLikelihood) {
+    timeout = 1500;
     likelihood();
   }
-  if (SheetProperties.isSpread) {
-    spread();
-  }
+
   if (SheetProperties.isRelationship) {
-    relationshipIcons();
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      relationshipIcons();
+    }, timeout);
+
+    if (timeout == 0) {
+      timeout = 1500;
+    } else {
+      timeout = 2 * timeout;
+    }
   }
+
+  if (SheetProperties.isSpread) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      spread();
+    }, timeout);
+  }
+
   selectSomethingElse();
 }
 
 function showInputRelationForOptions() {
 
-  if (SheetProperties.isImpact) {
+
+  let timeout = 0;
+
+  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+    timeout = 1000;
+    SheetProperties.cellOp.addLikelihoodInfo();
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
-  }
-  if (SheetProperties.isLikelihood) {
+  } else if (SheetProperties.isImpact) {
+    timeout = 1000;
+    SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
+  } else if (SheetProperties.isLikelihood) {
+    timeout = 1000;
     SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
-  if (SheetProperties.isSpread) {
-    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-  }
-  if (SheetProperties.isRelationship) {
-    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-  }
-  selectSomethingElse();
 
+  if (SheetProperties.isRelationship) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
+    }, timeout);
+
+    if (timeout == 0) {
+      timeout = 1000;
+    } else {
+      timeout = 2 * timeout;
+    }
+  }
+
+  if (SheetProperties.isSpread) {
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+    }, timeout);
+  }
+
+  selectSomethingElse();
 }
 
 function showOutputRelationForOptions() {

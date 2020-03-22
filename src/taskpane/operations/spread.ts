@@ -256,10 +256,7 @@ export default class Spread {
           colorIndex++;
         })
 
-        return context.sync().then(() => {
-          console.log('Finished drawing the bar code plot')
-        }).
-          catch((reason: any) => console.log('Failed to draw the bar code plot: ' + reason));
+        return context.sync();
       });
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
