@@ -349,7 +349,8 @@ async function dismissValues() {
         i++;
       })
     });
-
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
   } catch (error) {
     console.log('Error: ', error);
   }

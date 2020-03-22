@@ -83,8 +83,8 @@ export default class WhatIf {
           namesToBeDeleted.push(newCell.address);
           newCell.samples = null;
           console.log('Old Cell: ' + this.oldCells[index].address)
-          this.oldCells[index].isSpread = false;// Check this and then check if the spread is set to false, then call the showSpread method
-          // namesToBeDeleted.push(this.oldCells[index].address);
+          this.oldCells[index].isSpread = false;
+
         }
       })
 
