@@ -82,7 +82,6 @@ export default class WhatIf {
         if (newCell.isSpread) {
           namesToBeDeleted.push(newCell.address);
           newCell.samples = null;
-          console.log('Old Cell: ' + this.oldCells[index].address)
           this.oldCells[index].isSpread = false;
 
         }
@@ -91,6 +90,28 @@ export default class WhatIf {
       this.deleteSpreadNameWise(namesToBeDeleted);
 
       const spread = new Spread(this.oldCells, null, this.referenceCell);
+      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  keepNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
+    try {
+
+      let namesToBeDeleted = new Array<string>();
+
+      this.newCells.forEach((newCell: CellProperties) => {
+        if (newCell.isSpread) {
+          namesToBeDeleted.push(newCell.address);
+          newCell.isSpread = false;
+        }
+      })
+
+      this.deleteSpreadNameWise(namesToBeDeleted);
+
+      const spread = new Spread(this.newCells, null, this.newReferenceCell);
       spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {

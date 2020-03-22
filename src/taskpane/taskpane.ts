@@ -246,6 +246,7 @@ async function startWhatIf() {
     performWhatIf();
     document.getElementById('useNewValues').hidden = false;
     document.getElementById('dismissValues').hidden = false;
+    (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
   } catch (error) {
     console.log(error);
   }
@@ -300,7 +301,18 @@ async function processWhatIf() {
 }
 
 async function useNewValues() {
+
+  console.log('Remove Event Handler');
+
+  remove();
+
+  if (SheetProperties.isSpread) {
+    const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
+    whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  }
+
   await parseSheet();
+
 }
 
 async function dismissValues() {
