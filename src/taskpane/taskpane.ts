@@ -297,7 +297,6 @@ async function processWhatIf() {
   whatif.showUpdateTextInCells(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
 
   if (SheetProperties.isSpread) {
-    console.log('Computing new spread');
     whatif.showNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 }
