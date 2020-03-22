@@ -305,7 +305,7 @@ async function useNewValues() {
   console.log('Remove Event Handler');
 
   remove();
-
+  SheetProperties.cellOp.deleteUpdateshapes();
   if (SheetProperties.isSpread) {
     const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
     whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
