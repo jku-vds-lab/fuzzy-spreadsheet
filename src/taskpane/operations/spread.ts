@@ -202,66 +202,80 @@ export default class Spread {
           startLineTop = cell.top + 0.5 * totalHeight;
         }
 
-        let blueColors = ['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534'] // light to dark
-        let orangeColors = ['#ff8000', '#ff9933', '#ffb266', '#ffcc99', '#ffe5cc'];
+        let sortedLinesWithColors = this.computeColorsAndBins(cell, color);
 
-        let colors = blueColors;
+        sortedLinesWithColors.forEach((el) => {
 
-        if (color == 'orange') {
-          colors = orangeColors;
-        }
-
-
-        let data = cell.samples;
-
-        var count = 5;
-
-        let domain = d3.max(data, function (d) { return +d })
-
-        var x = d3.scaleLinear().domain([0, domain]).nice(count);
-
-        var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
-        var bins = histogram(data);
-
-
-        let sortedBins = bins.sort((n1, n2) => {
-          if (n1.length > n2.length) {
-            return 1;
-          }
-
-          if (n1.length < n2.length) {
-            return -1;
-          }
-          return 0;
-        })
-
-        let colorIndex = 0;
-
-        if (cell.samples.length == 1) {
-          colorIndex = 4;
-        }
-
-        sortedBins.forEach((bin) => {
-
-          const bin_zero = bin[0];
-
-          if (bin_zero == undefined) {
-            return;
-          }
-
-          let line = sheet.shapes.addLine(startLineLeft + bin_zero, startLineTop, startLineLeft + bin_zero, endLineTop);
-          line.lineFormat.color = colors[colorIndex];
+          let line = sheet.shapes.addLine(startLineLeft + el.value, startLineTop, startLineLeft + el.value, endLineTop);
+          line.lineFormat.color = el.color;
           line.name = cell.address + name;
-          line.lineFormat.weight = 3;
-          line.lineFormat.transparency = 0.5;
-          colorIndex++;
-        })
+          line.lineFormat.weight = 2;
 
+        })
         return context.sync();
       });
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }
+  }
+
+  private computeColorsAndBins(cell: CellProperties, color: string) {
+
+    let sortedLinesWithColors = new Array<{ value: number, color: string }>();
+
+    try {
+
+      let blueColors = ['#DDE1E4', '#D5DADD', '#CAD1D5', '#BDC6CA', '#ACB8BD', '#97A6AC', '#7D9097', '#5C747D', '#33515D', '#002534']; //['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534', '#001e2a', '#001822'] // light to dark
+      let orangeColors = ['#ffe5cc', '#ffcc99', '#ffb266', '#ff9933', '#ff8000', '#cc6600', '#a35200'];
+
+      let colors = blueColors;
+
+      if (color == 'orange') {
+        colors = orangeColors;
+      }
+
+      let data = cell.samples;
+
+      if (cell.samples.length == 1) {
+        const element = { value: cell.samples[0], color: colors[4] }
+        sortedLinesWithColors.push(element);
+        return sortedLinesWithColors;
+      }
+
+      var count = 5;
+
+      let domain = d3.max(data, function (d) { return +d })
+
+      var x = d3.scaleLinear().domain([0, domain]).nice(count);
+
+      var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
+      var bins = histogram(data);
+
+      let sortBinByValues = Object.assign([], bins);
+      let sortBinByFreq = Object.assign([], bins);
+
+      sortBinByValues.sort((n1, n2) => { return n1.x0 - n2.x0 });
+      sortBinByFreq.sort((n1, n2) => { return n1.length - n2.length });
+
+      sortBinByValues.forEach((valueBin) => {
+        let binColor = '';
+        let binValue = valueBin.x0;
+
+        sortBinByFreq.forEach((freqBin, index: number) => {
+          if (binValue == freqBin.x0) {
+            binColor = colors[index];
+            return;
+          }
+        })
+        const element = { value: binValue, color: binColor };
+        console.log('Value: ' + element.value + ' color: ' + element.color);
+        sortedLinesWithColors.push(element);
+      })
+      console.log('-----------------------------------------');
+    } catch (error) {
+      console.log(error);
+    }
+    return sortedLinesWithColors;
   }
 
   public addSamplesToCell(cell: CellProperties, oldCell: CellProperties) {
