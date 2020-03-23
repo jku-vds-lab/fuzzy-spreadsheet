@@ -36,7 +36,9 @@
     "discrete-sampling": "^1.0.3",
     "jstat": "^1.9.2",
     "mathjs": "^6.6.0",
-    "outliers": "0.0.3"
+    "outliers": "0.0.3",
+    "vega": "^5.10.0",
+    "vega-typings": "^0.14.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",

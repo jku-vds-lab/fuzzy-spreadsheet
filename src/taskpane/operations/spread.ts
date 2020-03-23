@@ -10,7 +10,6 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
-import { thresholdFreedmanDiaconis } from 'd3';
 
 
 // code cleaning required
@@ -179,7 +178,20 @@ export default class Spread {
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }
+  }
 
+
+  generateColor() {
+    let i = 0;
+    let darkColors = [];
+
+    while (i < 16) {
+
+      darkColors.push(d3.rgb(0, 88, 89).darker(i).hex());
+      i++;
+    }
+    console.log('Dark Colors', darkColors);
+    return darkColors;
   }
 
   public drawBarCodePlot(cell: CellProperties, color: string, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
@@ -205,12 +217,14 @@ export default class Spread {
         let sortedLinesWithColors = this.computeColorsAndBins(cell, color);
 
         sortedLinesWithColors.forEach((el) => {
-
-          let line = sheet.shapes.addLine(startLineLeft + el.value, startLineTop, startLineLeft + el.value, endLineTop);
-          line.lineFormat.color = el.color;
-          line.name = cell.address + name;
-          line.lineFormat.weight = 2;
-
+          let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
+          rect.name = cell.address + name;
+          rect.top = startLineTop;
+          rect.left = startLineLeft + el.value;
+          rect.width = 2;
+          rect.height = totalHeight;
+          rect.fill.setSolidColor(el.color);
+          rect.lineFormat.transparency = 1;
         })
         return context.sync();
       });
@@ -228,7 +242,9 @@ export default class Spread {
       let blueColors = ['#DDE1E4', '#D5DADD', '#CAD1D5', '#BDC6CA', '#ACB8BD', '#97A6AC', '#7D9097', '#5C747D', '#33515D', '#002534']; //['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534', '#001e2a', '#001822'] // light to dark
       let orangeColors = ['#ffe5cc', '#ffcc99', '#ffb266', '#ff9933', '#ff8000', '#cc6600', '#a35200'];
 
-      let colors = blueColors;
+      // let colors = blueColors;
+
+      let colors = this.generateColor();
 
       if (color == 'orange') {
         colors = orangeColors;
@@ -242,9 +258,11 @@ export default class Spread {
         return sortedLinesWithColors;
       }
 
-      var count = 5;
+      var count = 10;
 
       let domain = d3.max(data, function (d) { return +d })
+
+      domain = 30;
 
       var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
@@ -262,16 +280,23 @@ export default class Spread {
         let binValue = valueBin.x0;
 
         sortBinByFreq.forEach((freqBin, index: number) => {
+
           if (binValue == freqBin.x0) {
-            binColor = colors[index];
+
+            if (freqBin.length == 0) {
+              binColor = colors[0];
+            } else {
+              binColor = colors[index];
+            }
             return;
           }
         })
+
         const element = { value: binValue, color: binColor };
-        console.log('Value: ' + element.value + ' color: ' + element.color);
         sortedLinesWithColors.push(element);
       })
-      console.log('-----------------------------------------');
+
+
     } catch (error) {
       console.log(error);
     }
