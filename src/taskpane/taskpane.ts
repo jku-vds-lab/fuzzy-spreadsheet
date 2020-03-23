@@ -9,6 +9,8 @@ import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import Likelihood from './operations/likelihood';
 
+// show cell info in the taskpane
+
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -16,6 +18,7 @@ import Likelihood from './operations/likelihood';
 /* global console, document, Excel, Office */
 // discrete samples and continuous samples
 Office.initialize = () => {
+
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
   document.getElementById("parseSheet").onclick = parseSheet;
