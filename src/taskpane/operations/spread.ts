@@ -14,6 +14,7 @@ import { thresholdFreedmanDiaconis } from 'd3';
 
 
 // code cleaning required
+// change to heatmap encoding
 export default class Spread {
 
   private cells: CellProperties[];
