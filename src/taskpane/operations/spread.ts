@@ -264,11 +264,11 @@ export default class Spread {
         return sortedLinesWithColors;
       }
 
-      var count = 10;
+      var count = 13;
 
       let domain = d3.max(data, function (d) { return +d })
 
-      domain = 35;
+      domain = 36;
 
       var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
