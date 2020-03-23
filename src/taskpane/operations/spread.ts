@@ -184,10 +184,16 @@ export default class Spread {
   generateColor() {
     let i = 0;
     let darkColors = [];
+    let r = 235;
+    let g = 255;
+    let b = 255;
 
-    while (i < 16) {
+    while (i < 20) {
 
-      darkColors.push(d3.rgb(0, 88, 89).darker(i).hex());
+      darkColors.push(d3.rgb(r, g, b).hex());
+      r = 0;
+      g = 255 - i * 10;
+      b = 255 - i * 10;
       i++;
     }
     console.log('Dark Colors', darkColors);
@@ -221,10 +227,10 @@ export default class Spread {
           rect.name = cell.address + name;
           rect.top = startLineTop;
           rect.left = startLineLeft + el.value;
-          rect.width = 2;
+          rect.width = 3;
           rect.height = totalHeight;
           rect.fill.setSolidColor(el.color);
-          rect.lineFormat.transparency = 1;
+          rect.lineFormat.color = el.color;
         })
         return context.sync();
       });
@@ -262,7 +268,7 @@ export default class Spread {
 
       let domain = d3.max(data, function (d) { return +d })
 
-      domain = 30;
+      domain = 35;
 
       var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
