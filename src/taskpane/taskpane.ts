@@ -616,7 +616,7 @@ async function clearPreviousReferenceCell() {
 function checkCellChanged() {
   Excel.run(function (context) {
     var worksheet = context.workbook.worksheets.getActiveWorksheet();
-    var eventResult = worksheet.onSelectionChanged.add(handleSelectionChange);
+    worksheet.onSelectionChanged.add(handleSelectionChange);
 
     return context.sync()
       .then(function () {
