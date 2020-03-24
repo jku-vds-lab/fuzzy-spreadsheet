@@ -249,7 +249,8 @@ export default class Spread {
         let sortedLinesWithColors = this.computeColorsAndBins(cell);
 
         if (isDrawLine) {
-          let line = sheet.shapes.addLine(left, top, left + cell.width, top);
+          let line = sheet.shapes.addLine(left, top, left + cell.width - 20, top);
+          line.name = cell.address + name;
           line.lineFormat.color = 'white';
           line.lineFormat.weight = 2;
         }

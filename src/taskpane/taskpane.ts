@@ -653,6 +653,11 @@ function handleSelectionChange(event) {
                 return;
               }
               if (cell.address == SheetProperties.newCells[index].address) {
+                if (cell.samples == SheetProperties.newCells[index].samples) {
+                  d3.select("#whatIfChart").select('svg').remove();
+
+                  return;
+                }
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
               }
             }
