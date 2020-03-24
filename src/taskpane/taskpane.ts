@@ -61,6 +61,7 @@ async function markAsReferenceCell() {
 
     if (SheetProperties.isReferenceCell) {
       removeShapesFromReferenceCell();
+      changeFontColorsToOriginal();
     }
 
     clearPreviousReferenceCell();
@@ -567,7 +568,17 @@ function showAllOptions() {
   (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
 }
 
+function changeFontColorsToOriginal() {
+  Excel.run((context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
 
+    SheetProperties.cells.forEach((cell: CellProperties) => {
+      let range = sheet.getRange(cell.address);
+      range.format.font.color = cell.fontColor;
+    });
+    return context.sync()
+  })
+}
 
 async function removeShapesFromReferenceCell() {
 
