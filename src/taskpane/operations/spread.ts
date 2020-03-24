@@ -161,16 +161,17 @@ export default class Spread {
 
         if (cell.isSpread) {
           console.log(cell.address + ' already has a spread');
-          return;
+
+        } else {
+
+          cell.isSpread = true;
+
+          if (cell.samples == null) {
+            this.addSamplesToCell(cell, oldCell);
+          }
+
+          this.showBarCodePlot(cell, oldCell, 'InputChart');
         }
-
-        cell.isSpread = true;
-
-        if (cell.samples == null) {
-          this.addSamplesToCell(cell, oldCell);
-        }
-
-        this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
           return;
@@ -189,23 +190,25 @@ export default class Spread {
 
       cells.forEach((cell: CellProperties) => {
 
-        if (cell.isSpread) {
-          console.log(cell.address + ' already has a spread');
-          return;
-        }
-
-        cell.isSpread = true;
         let oldCell = null;
 
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        if (cell.samples == null) {
-          this.addSamplesToCell(cell, oldCell);
-        }
+        if (cell.isSpread) {
+          console.log(cell.address + ' already has a spread');
 
-        this.showBarCodePlot(cell, oldCell, 'OutputChart');
+        } else {
+
+          cell.isSpread = true;
+
+          if (cell.samples == null) {
+            this.addSamplesToCell(cell, oldCell);
+          }
+
+          this.showBarCodePlot(cell, oldCell, 'OutputChart');
+        }
 
         if (i == 1) {
           return;

@@ -131,21 +131,21 @@ function outputRelationship() {
 function first() {
 
   SheetProperties.degreeOfNeighbourhood = 1;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
 
 function second() {
   SheetProperties.degreeOfNeighbourhood = 2;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
 
 function third() {
   SheetProperties.degreeOfNeighbourhood = 3;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
