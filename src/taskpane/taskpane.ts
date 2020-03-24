@@ -648,11 +648,14 @@ function handleSelectionChange(event) {
 
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
+              document.getElementById("mean").innerHTML = cell.computedMean.toFixed(2);
+              document.getElementById("stdDev").innerHTML = cell.computedStdDev.toFixed(2);
 
               if (SheetProperties.newCells == null) {
                 return;
               }
               if (cell.address == SheetProperties.newCells[index].address) {
+
                 if (cell.samples == SheetProperties.newCells[index].samples) {
                   document.getElementById("newDistribution").hidden = true;
                   d3.select("#whatIfChart").select('svg').remove();
@@ -660,6 +663,8 @@ function handleSelectionChange(event) {
                 }
 
                 document.getElementById("newDistribution").hidden = false;
+                document.getElementById("newMean").innerHTML = SheetProperties.newCells[index].computedMean.toFixed(2);
+                document.getElementById("newStdDev").innerHTML = SheetProperties.newCells[index].computedStdDev.toFixed(2);
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
               }
             }

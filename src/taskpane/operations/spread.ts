@@ -336,17 +336,17 @@ export default class Spread {
       cell.samples = new Array<number>();
 
       const mean = cell.value;
-      const variance = cell.variance;
+      const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
       // temporary check: to be removed after adding mean & variance value to the formula cells
       if (oldCell != null && !cell.formula.includes('SUM') && !cell.formula.includes('-')) {
         const oldMean = oldCell.value;
-        const oldVariance = oldCell.variance;
+        const oldStdev = oldCell.stdev;
         const oldLikelihood = oldCell.likelihood;
 
         if (mean == oldMean) {
-          if (variance == oldVariance) {
+          if (stdev == oldStdev) {
             if (likelihood == oldLikelihood) {
               cell.samples = oldCell.samples;
               return;
@@ -355,22 +355,28 @@ export default class Spread {
         }
       }
 
-      if (variance == 0 && likelihood == 1) {
+      if (stdev == 0 && likelihood == 1) {
         cell.samples.push(mean);
       }
       else {
 
         if (cell.formula.includes('SUM')) {
           cell.samples = this.addSamplesToSumCell(cell);
+          cell.computedMean = jStat.mean(cell.samples);
+          cell.computedStdDev = jStat.stdev(cell.samples);
           return;
         }
 
         if (cell.formula.includes('-')) {
           cell.samples = this.addSamplesToSumCell(cell, true);
+          cell.computedMean = jStat.mean(cell.samples);
+          cell.computedStdDev = jStat.stdev(cell.samples);
           return;
         }
 
         cell.samples = this.addSamplesToAverageCell(cell);
+        cell.computedMean = jStat.mean(cell.samples);
+        cell.computedStdDev = jStat.stdev(cell.samples);
       }
     } catch (error) {
       console.log(error);
@@ -382,7 +388,7 @@ export default class Spread {
     try {
 
       const mean = cell.value;
-      const variance = cell.variance;
+      const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
       cell.samples = new Array<number>();
@@ -391,7 +397,7 @@ export default class Spread {
       const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
 
       values.forEach((val: number) => {
-        normalSamples.push(jStat.normal.inv(val, mean, variance));
+        normalSamples.push(jStat.normal.inv(val, mean, stdev));
       })
 
       normalSamples = normalSamples.filter(outliers());
@@ -504,11 +510,11 @@ export default class Spread {
 
     try {
       for (let i = 0; i < this.cells.length; i++) {
-        this.cells[i].variance = 0;
+        this.cells[i].stdev = 0;
 
         if (this.cells[i].isUncertain) {
 
-          this.cells[i].variance = this.cells[i + 1].value;
+          this.cells[i].stdev = this.cells[i + 1].value;
           this.cells[i].likelihood = this.cells[i + 2].value;
         }
       }

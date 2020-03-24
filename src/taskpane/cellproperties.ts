@@ -23,7 +23,9 @@ export default class CellProperties {
   public impact: number = 0;
   public likelihood: number = 1;
   public spreadRange: string;
-  public variance: number = 0;
+  public stdev: number = 0;
+  public computedMean: number = 0;
+  public computedStdDev: number = 0;
   public samples: number[] = new Array<number>();
   public samplesLikelihood: number[];
   public isLineChart: boolean = false;
