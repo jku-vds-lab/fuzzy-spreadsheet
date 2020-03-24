@@ -10,6 +10,7 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
+import { lineRadial } from 'd3';
 
 
 // code cleaning required
@@ -20,13 +21,24 @@ export default class Spread {
   private oldCells: CellProperties[];
   private referenceCell: CellProperties;
   private oldReferenceCell: CellProperties;
-  private color: string = null;
+  private colors: string[];
+  private blueColors: string[];
+  private orangeColors: string[];
+  private nrOfColors: number;
 
-  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties, color: string = null) {
+  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties, isBlueColor: boolean = true) {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
-    this.color = color;
+    this.nrOfColors = 16;
+    this.blueColors = this.generateBlueColors(this.nrOfColors);
+    this.orangeColors = this.generateOrangeColors(this.nrOfColors);
+
+    if (isBlueColor) {
+      this.colors = this.blueColors;
+    } else {
+      this.colors = this.orangeColors;
+    }
 
     if (this.oldCells == null) {
       return;
@@ -90,18 +102,13 @@ export default class Spread {
         }
 
         cell.isSpread = true;
-
         let oldCell = null;
-
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        this.addSamplesToCell(cell, oldCell);
-
         if (cell.samples == null) {
-          cell.isSpread = false;
-          return;
+          this.addSamplesToCell(cell, oldCell);
         }
 
         this.showBarCodePlot(cell, oldCell, 'InputChart');
@@ -129,18 +136,14 @@ export default class Spread {
         }
 
         cell.isSpread = true;
-
         let oldCell = null;
 
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        this.addSamplesToCell(cell, oldCell);
-
         if (cell.samples == null) {
-          cell.isSpread = false;
-          return;
+          this.addSamplesToCell(cell, oldCell);
         }
 
         this.showBarCodePlot(cell, oldCell, 'OutputChart');
@@ -159,76 +162,107 @@ export default class Spread {
   public showBarCodePlot(cell: CellProperties, oldCell: CellProperties, name: string) {
     try {
 
-      if (cell.samples == null) {
+      if (oldCell == null) {
+        this.drawBarCodePlot(cell, name);
         return;
       }
 
-      if (oldCell == null) {
-        this.drawBarCodePlot(cell, 'blue', name);
+      if (cell.samples == oldCell.samples) {
         return;
       }
+
       // remove the original bar code plot
       this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
-      this.drawBarCodePlot(oldCell, 'blue', name, true)
+      this.drawBarCodePlot(oldCell, name, true)
       // add new bar code plot with half the length
       name = 'Update' + name;
-      this.drawBarCodePlot(cell, 'orange', name, false, true);
-
+      this.drawBarCodePlot(cell, name, false, true);
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }
   }
 
 
-  generateColor() {
+  generateBlueColors(n: number) {
+
     let i = 0;
-    let darkColors = [];
-    let r = 235;
+    let blueColors = [];
+    let r = 216;
     let g = 255;
     let b = 255;
+    let factor = 255 / n;
 
-    while (i < 20) {
+    while (i < n) {
 
-      darkColors.push(d3.rgb(r, g, b).hex());
+      blueColors.push(d3.rgb(r, g, b).hex());
       r = 0;
-      g = 255 - i * 10;
-      b = 255 - i * 10;
+      g = 255 - i * factor;
+      b = 255 - i * factor;
       i++;
     }
-    console.log('Dark Colors', darkColors);
-    return darkColors;
+    return blueColors;
   }
 
-  public drawBarCodePlot(cell: CellProperties, color: string, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
+  generateOrangeColors(n: number) {
+
+    let i = 0;
+    let orangeColors = [];
+    let r = 255;
+    let g = 248;
+    let b = 235;
+    let greenFactor = 165 / n;
+    let redFactor = 235 / n;
+
+    while (i < n) {
+
+      orangeColors.push(d3.rgb(r, g, b).hex());
+      r = 235 - i * redFactor;
+      g = 165 - i * greenFactor;
+      b = 0;
+      i++;
+    }
+    return orangeColors;
+  }
+
+  public drawBarCodePlot(cell: CellProperties, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
     try {
+
+      let isDrawLine = false;
 
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let totalHeight = cell.height;
+        let height = cell.height;
 
-        let startLineTop = cell.top;
-        let startLineLeft = cell.left + 20;
-        let endLineTop = cell.top + totalHeight;
-
-        if (isUpperHalf) {
-          endLineTop = cell.top + 0.5 * totalHeight;
+        if (isUpperHalf || isLowerHalf) {
+          height = height / 2;
         }
+
+        let top = cell.top;
+        let left = cell.left + 20;
 
         if (isLowerHalf) {
-          startLineTop = cell.top + 0.5 * totalHeight;
+          top = cell.top + height;
+          this.colors = this.orangeColors; // always use orange colors in the bottom half
+          isDrawLine = true;
         }
 
-        let sortedLinesWithColors = this.computeColorsAndBins(cell, color);
+        let sortedLinesWithColors = this.computeColorsAndBins(cell);
+
+        if (isDrawLine) {
+          let line = sheet.shapes.addLine(left, top, left + cell.width, top);
+          line.lineFormat.color = 'white';
+          line.lineFormat.weight = 2;
+        }
 
         sortedLinesWithColors.forEach((el) => {
           let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
           rect.name = cell.address + name;
-          rect.top = startLineTop;
-          rect.left = startLineLeft + el.value;
+          rect.top = top;
+          rect.left = left + el.value;
           rect.width = 3;
-          rect.height = totalHeight;
+          rect.height = height;
           rect.fill.setSolidColor(el.color);
           rect.lineFormat.color = el.color;
         })
@@ -239,36 +273,23 @@ export default class Spread {
     }
   }
 
-  private computeColorsAndBins(cell: CellProperties, color: string) {
+  private computeColorsAndBins(cell: CellProperties) {
 
     let sortedLinesWithColors = new Array<{ value: number, color: string }>();
 
     try {
 
-      let blueColors = ['#DDE1E4', '#D5DADD', '#CAD1D5', '#BDC6CA', '#ACB8BD', '#97A6AC', '#7D9097', '#5C747D', '#33515D', '#002534']; //['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534', '#001e2a', '#001822'] // light to dark
-      let orangeColors = ['#ffe5cc', '#ffcc99', '#ffb266', '#ff9933', '#ff8000', '#cc6600', '#a35200'];
-
-      // let colors = blueColors;
-
-      let colors = this.generateColor();
-
-      if (color == 'orange') {
-        colors = orangeColors;
-      }
-
       let data = cell.samples;
 
       if (cell.samples.length == 1) {
-        const element = { value: cell.samples[0], color: colors[4] }
+        const element = { value: cell.samples[0], color: this.colors[this.nrOfColors - 1] }
         sortedLinesWithColors.push(element);
         return sortedLinesWithColors;
       }
 
-      var count = 13;
+      var count = 10;
 
-      let domain = d3.max(data, function (d) { return +d })
-
-      domain = 36;
+      let domain = 36;
 
       var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
@@ -290,9 +311,9 @@ export default class Spread {
           if (binValue == freqBin.x0) {
 
             if (freqBin.length == 0) {
-              binColor = colors[0];
+              binColor = this.colors[0];
             } else {
-              binColor = colors[index];
+              binColor = this.colors[index];
             }
             return;
           }
@@ -328,7 +349,7 @@ export default class Spread {
         if (mean == oldMean) {
           if (variance == oldVariance) {
             if (likelihood == oldLikelihood) {
-              cell.samples = null;
+              cell.samples = oldCell.samples;
               return;
             }
           }
@@ -397,29 +418,60 @@ export default class Spread {
     try {
 
       let inputCells = cell.inputCells;
+      let oldCell = null;
+      let count = 0;
+      if (this.oldCells != null) {
+        oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
+      }
+
+      console.log('Step 1--> Adding samples for ' + cell.address);
 
       cell.inputCells.forEach((inCell: CellProperties) => {
 
-        let oldCell = null;
+        let oldInCell = null;
 
         if (this.oldCells != null) {
-          oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
+          oldInCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == inCell.id)
         }
-        this.addSamplesToCell(inCell, oldCell);
+
+        this.addSamplesToCell(inCell, oldInCell);
+
+        if (this.oldCells != null) {
+          if (inCell.samples == oldInCell.samples) {
+            count++;
+          }
+        }
       })
 
+
+      console.log('Step 2--> Added samples to incell ' + cell.address);
+
+      if (oldCell != null) {
+
+        if (count == cell.inputCells.length) {
+          cell.samples = oldCell.samples;
+
+          console.log('Step 3--> Assigned samples to the cell because it is the same as old cell ' + cell.address);
+          return;
+        }
+      }
+
+      console.log('Step 4--> Assigning samples to the cell  ' + cell.address);
       let index = 0;
 
       let resultantSample = new CellProperties();
       resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
+        console.log('Step 5--> Checking the samples  for first sample' + inputCells[index].address);
+        console.log('Step 6--> Checking the samples  for second sample' + inputCells[index + 1].address);
         resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
         index = index + 2;
       }
 
       while (index < inputCells.length) {
-
+        console.log('Step 7--> Checking the samples  for resultant sample');
+        console.log('Step 8--> Checking the samples  for third sample' + inputCells[index].address);
         resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
         index = index + 1;
       }
@@ -427,6 +479,8 @@ export default class Spread {
       resultantSample.samples.forEach((sample: number) => {
         cell.samples.push(sample);
       })
+
+      console.log('Step 9--> Finally added all the samples to ' + cell.address);
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
     }
@@ -439,7 +493,6 @@ export default class Spread {
     resultantSample.samples = new Array<number>();
 
     try {
-
       sample1.samples.forEach((sampleCell1: number, index: number) => {
 
         if (sample2.samples.length <= index) {
