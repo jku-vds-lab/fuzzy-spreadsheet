@@ -168,6 +168,7 @@ export default class Spread {
       }
 
       if (cell.samples == oldCell.samples) {
+        console.log('Returning because samples are the same for :' + cell.address);
         return;
       }
 
@@ -451,8 +452,8 @@ export default class Spread {
         if (count == cell.inputCells.length) {
           cell.samples = oldCell.samples;
 
-          console.log('Step 3--> Assigned samples to the cell because it is the same as old cell ' + cell.address);
-          return;
+          console.log('Step 3--> Assigned samples to the cell because it is the same as old cell ' + cell.address, cell.samples);
+          return cell.samples;
         }
       }
 
@@ -463,15 +464,15 @@ export default class Spread {
       resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
-        console.log('Step 5--> Checking the samples  for first sample' + inputCells[index].address);
-        console.log('Step 6--> Checking the samples  for second sample' + inputCells[index + 1].address);
+        console.log('Step 5--> Checking the samples for first sample ' + inputCells[index].address, inputCells[index]);
+        console.log('Step 6--> Checking the samples for second sample ' + inputCells[index + 1].address, inputCells[index + 1].samples);
         resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
         index = index + 2;
       }
 
       while (index < inputCells.length) {
         console.log('Step 7--> Checking the samples  for resultant sample');
-        console.log('Step 8--> Checking the samples  for third sample' + inputCells[index].address);
+        console.log('Step 8--> Checking the samples  for third sample ' + inputCells[index].address);
         resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
         index = index + 1;
       }

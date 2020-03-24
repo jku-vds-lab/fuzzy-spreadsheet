@@ -34,24 +34,6 @@ Office.initialize = () => {
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
-function generateColor() {
-  let i = 0;
-  let darkColors = [];
-  let r = 235;
-  let g = 255;
-  let b = 255;
-
-  while (i < 20) {
-
-    darkColors.push(d3.rgb(r, g, b));
-    r = 0;
-    g = g - 10;
-    b = b - 10;
-    i++;
-  }
-  console.log('Dark Colors', darkColors);
-}
-
 async function parseSheet() {
 
   SheetProperties.isSheetParsed = true;
@@ -647,7 +629,6 @@ function handleSelectionChange(event) {
   return Excel.run(function (context) {
     return context.sync()
       .then(function () {
-        console.log("Address of current selection: " + event.address);
 
         if (SheetProperties.cells == null) {
           console.log('Returning because cells is undefined');

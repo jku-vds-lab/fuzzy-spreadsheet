@@ -63,7 +63,7 @@ export default class WhatIf {
   showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
 
     try {
-      const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell, false);
+      const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
       spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
