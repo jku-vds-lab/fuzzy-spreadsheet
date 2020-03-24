@@ -26,19 +26,14 @@ export default class Spread {
   private orangeColors: string[];
   private nrOfColors: number;
 
-  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties, isBlueColor: boolean = true) {
+  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
     this.nrOfColors = 16;
     this.blueColors = this.generateBlueColors(this.nrOfColors);
     this.orangeColors = this.generateOrangeColors(this.nrOfColors);
-
-    if (isBlueColor) {
-      this.colors = this.blueColors;
-    } else {
-      this.colors = this.orangeColors;
-    }
+    this.colors = this.blueColors;
 
     if (this.oldCells == null) {
       return;
@@ -175,7 +170,7 @@ export default class Spread {
       // remove the original bar code plot
       this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
-      this.drawBarCodePlot(oldCell, name, true)
+      this.drawBarCodePlot(oldCell, name, true);
       // add new bar code plot with half the length
       name = 'Update' + name;
       this.drawBarCodePlot(cell, name, false, true);
@@ -242,6 +237,8 @@ export default class Spread {
 
         let top = cell.top;
         let left = cell.left + 20;
+
+        this.colors = this.blueColors;
 
         if (isLowerHalf) {
           top = cell.top + height;
@@ -425,8 +422,6 @@ export default class Spread {
         oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
       }
 
-      console.log('Step 1--> Adding samples for ' + cell.address);
-
       cell.inputCells.forEach((inCell: CellProperties) => {
 
         let oldInCell = null;
@@ -444,35 +439,25 @@ export default class Spread {
         }
       })
 
-
-      console.log('Step 2--> Added samples to incell ' + cell.address);
-
       if (oldCell != null) {
 
         if (count == cell.inputCells.length) {
           cell.samples = oldCell.samples;
-
-          console.log('Step 3--> Assigned samples to the cell because it is the same as old cell ' + cell.address, cell.samples);
           return cell.samples;
         }
       }
 
-      console.log('Step 4--> Assigning samples to the cell  ' + cell.address);
       let index = 0;
 
       let resultantSample = new CellProperties();
       resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
-        console.log('Step 5--> Checking the samples for first sample ' + inputCells[index].address, inputCells[index]);
-        console.log('Step 6--> Checking the samples for second sample ' + inputCells[index + 1].address, inputCells[index + 1].samples);
         resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
         index = index + 2;
       }
 
       while (index < inputCells.length) {
-        console.log('Step 7--> Checking the samples  for resultant sample');
-        console.log('Step 8--> Checking the samples  for third sample ' + inputCells[index].address);
         resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
         index = index + 1;
       }
@@ -480,8 +465,6 @@ export default class Spread {
       resultantSample.samples.forEach((sample: number) => {
         cell.samples.push(sample);
       })
-
-      console.log('Step 9--> Finally added all the samples to ' + cell.address);
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
     }
