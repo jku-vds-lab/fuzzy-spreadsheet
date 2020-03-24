@@ -61,7 +61,6 @@ export default class WhatIf {
   }
 
   showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-
     try {
       const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
       spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
@@ -116,6 +115,8 @@ export default class WhatIf {
       console.log(error);
     }
   }
+
+
 
   deleteSpreadNameWise(namesToBeDeleted: string[]) {
 

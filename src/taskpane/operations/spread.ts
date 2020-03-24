@@ -49,7 +49,7 @@ export default class Spread {
   public showSpread(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
-
+      this.makeFontColorWhite(n, isInput, isOutput);
       this.addVarianceInfo();
 
       this.showReferenceCellSpread();
@@ -64,6 +64,68 @@ export default class Spread {
 
     } catch (error) {
       console.log('Error in Show spread', error);
+    }
+  }
+
+
+  makeFontColorWhite(n: number, isInput: boolean, isOutput: boolean) {
+
+    this.changeFontToWhite(this.referenceCell.address);
+
+    if (isInput) {
+      this.makeInputFontWhite(this.referenceCell.inputCells, n);
+    }
+
+    if (isOutput) {
+      this.makeOutputFontWhite(this.referenceCell.outputCells, n);
+    }
+  }
+
+  makeInputFontWhite(cells: CellProperties[], n: number) {
+
+    try {
+      cells.forEach((cell: CellProperties) => {
+
+        this.changeFontToWhite(cell.address);
+        if (n == 1) {
+          return;
+        }
+        this.makeInputFontWhite(cell.inputCells, n - 1);
+      })
+
+    } catch (error) {
+      console.log('Error', error);
+    }
+  }
+
+  makeOutputFontWhite(cells: CellProperties[], n: number) {
+    try {
+      cells.forEach((cell: CellProperties) => {
+
+        this.changeFontToWhite(cell.address);
+        if (n == 1) {
+          return;
+        }
+        this.makeOutputFontWhite(cell.outputCells, n - 1);
+      })
+
+    } catch (error) {
+      console.log('Error', error);
+    }
+  }
+
+  changeFontToWhite(address: string) {
+
+    try {
+      Excel.run(function (context) {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let range = sheet.getRange(address);
+        range.format.font.color = 'white';
+        return context.sync();
+      });
+
+    } catch (error) {
+      console.log(error);
     }
   }
 
