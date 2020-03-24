@@ -384,18 +384,15 @@ function remove() {
 
 function displayOptions() {
 
-  let timeout = 0;
+  let timeout = 1500;
 
 
   if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    timeout = 1500;
     SheetProperties.cellOp.addLikelihoodInfo();
     impact();
   } else if (SheetProperties.isImpact) {
-    timeout = 1500;
     impact();
   } else if (SheetProperties.isLikelihood) {
-    timeout = 1500;
     likelihood();
   }
 
@@ -404,15 +401,10 @@ function displayOptions() {
     setTimeout(() => {
       relationshipIcons();
     }, timeout);
-
-    if (timeout == 0) {
-      timeout = 1500;
-    } else {
-      timeout = 2 * timeout;
-    }
   }
 
   if (SheetProperties.isSpread) {
+    timeout = 3000;
     // eslint-disable-next-line no-undef
     setTimeout(() => {
       spread();

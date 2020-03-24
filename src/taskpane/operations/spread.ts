@@ -153,16 +153,18 @@ export default class Spread {
     try {
       cells.forEach((cell: CellProperties) => {
 
+        let oldCell = null;
+
+        if (this.oldCells != null) {
+          oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
+        }
+
         if (cell.isSpread) {
           console.log(cell.address + ' already has a spread');
           return;
         }
 
         cell.isSpread = true;
-        let oldCell = null;
-        if (this.oldCells != null) {
-          oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
-        }
 
         if (cell.samples == null) {
           this.addSamplesToCell(cell, oldCell);
@@ -401,8 +403,39 @@ export default class Spread {
       const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
-      // temporary check: to be removed after adding mean & variance value to the formula cells
-      if (oldCell != null && !cell.formula.includes('SUM') && !cell.formula.includes('-')) {
+      let isCellUnary = false;
+
+
+      if (cell.formula.includes('SUM')) {
+        cell.samples = this.addSamplesToSumCell(cell);
+      }
+
+      if (cell.formula.includes('-')) {
+        cell.samples = this.addSamplesToSumCell(cell, true);
+      }
+
+      if (cell.formula.includes('AVERAGE')) {
+        cell.samples = this.addSamplesToAverageCell(cell);
+        isCellUnary = true;
+      }
+
+      // fix values for certain cells
+      if (cell.formula == "") {
+        if (stdev == 0 && likelihood == 1) {
+          cell.samples.push(mean);
+        }
+        isCellUnary = true;
+      }
+
+      cell.computedMean = jStat.mean(cell.samples);
+      cell.computedStdDev = jStat.stdev(cell.samples);
+
+      if (oldCell == null) {
+        return;
+      }
+
+      if (isCellUnary) {
+
         const oldMean = oldCell.value;
         const oldStdev = oldCell.stdev;
         const oldLikelihood = oldCell.likelihood;
@@ -411,34 +444,9 @@ export default class Spread {
           if (stdev == oldStdev) {
             if (likelihood == oldLikelihood) {
               cell.samples = oldCell.samples;
-              return;
             }
           }
         }
-      }
-
-      if (stdev == 0 && likelihood == 1) {
-        cell.samples.push(mean);
-      }
-      else {
-
-        if (cell.formula.includes('SUM')) {
-          cell.samples = this.addSamplesToSumCell(cell);
-          cell.computedMean = jStat.mean(cell.samples);
-          cell.computedStdDev = jStat.stdev(cell.samples);
-          return;
-        }
-
-        if (cell.formula.includes('-')) {
-          cell.samples = this.addSamplesToSumCell(cell, true);
-          cell.computedMean = jStat.mean(cell.samples);
-          cell.computedStdDev = jStat.stdev(cell.samples);
-          return;
-        }
-
-        cell.samples = this.addSamplesToAverageCell(cell);
-        cell.computedMean = jStat.mean(cell.samples);
-        cell.computedStdDev = jStat.stdev(cell.samples);
       }
     } catch (error) {
       console.log(error);

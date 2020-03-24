@@ -27,7 +27,7 @@ export default class CellProperties {
   public stdev: number = 0;
   public computedMean: number = 0;
   public computedStdDev: number = 0;
-  public samples: number[] = new Array<number>();
+  public samples: number[] = null;
   public samplesLikelihood: number[];
   public isLineChart: boolean = false;
   // for impact and likelihood
