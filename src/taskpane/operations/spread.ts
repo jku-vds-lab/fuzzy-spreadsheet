@@ -30,7 +30,7 @@ export default class Spread {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
-    this.nrOfColors = 16;
+    this.nrOfColors = 9;
     this.blueColors = this.generateBlueColors(this.nrOfColors);
     this.orangeColors = this.generateOrangeColors(this.nrOfColors);
     this.colors = this.blueColors;
@@ -341,14 +341,14 @@ export default class Spread {
 
   private computeColorsAndBins(cell: CellProperties) {
 
-    let sortedLinesWithColors = new Array<{ value: number, color: string }>();
+    let sortedLinesWithColors = new Array<{ value: number, color: string, freq: number }>();
 
     try {
 
       let data = cell.samples;
 
-      if (cell.samples.length == 1) {
-        const element = { value: cell.samples[0], color: this.colors[this.nrOfColors - 1] }
+      if (data.length == 1) {
+        const element = { value: data[0], color: this.colors[this.nrOfColors - 1], freq: 1 }
         sortedLinesWithColors.push(element);
         return sortedLinesWithColors;
       }
@@ -362,34 +362,21 @@ export default class Spread {
       var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
       var bins = histogram(data);
 
-      let sortBinByValues = Object.assign([], bins);
-      let sortBinByFreq = Object.assign([], bins);
 
+      let sortBinByValues = Object.assign([], bins);
       sortBinByValues.sort((n1, n2) => { return n1.x0 - n2.x0 });
-      sortBinByFreq.sort((n1, n2) => { return n1.length - n2.length });
+
 
       sortBinByValues.forEach((valueBin) => {
-        let binColor = '';
         let binValue = valueBin.x0;
+        let binFreq = valueBin.length;
+        let binColorIndex = Math.ceil((binFreq / data.length) * sortBinByValues.length);
+        let binColor = this.colors[binColorIndex];
 
-        sortBinByFreq.forEach((freqBin, index: number) => {
-
-          if (binValue == freqBin.x0) {
-
-            if (freqBin.length == 0) {
-              binColor = this.colors[0];
-            } else {
-              binColor = this.colors[index];
-            }
-            return;
-          }
-        })
-
-        const element = { value: binValue, color: binColor };
+        const element = { value: binValue, color: binColor, freq: binFreq };
+        console.log('For cell: ' + cell.address + ' Bin Value: ' + binValue + ' Freq: ' + binFreq + ' bin Index: ' + binColorIndex);
         sortedLinesWithColors.push(element);
       })
-
-
     } catch (error) {
       console.log(error);
     }
