@@ -654,10 +654,12 @@ function handleSelectionChange(event) {
               }
               if (cell.address == SheetProperties.newCells[index].address) {
                 if (cell.samples == SheetProperties.newCells[index].samples) {
+                  document.getElementById("newDistribution").hidden = true;
                   d3.select("#whatIfChart").select('svg').remove();
-
                   return;
                 }
+
+                document.getElementById("newDistribution").hidden = false;
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
               }
             }
