@@ -1,4 +1,4 @@
-import { max } from "d3";
+import { hsl } from "d3";
 /* global console */
 
 export default class Bins {
@@ -19,6 +19,7 @@ export default class Bins {
   createBins(data: number[]) {
 
     let i = 0;
+    this.bins = new Array<Bin>();
 
     while (i < this.nrOfBins) {
 
@@ -28,7 +29,6 @@ export default class Bins {
       bin.x1 = bin.x0 + this.width;
       bin.length = 0;
       bin.samples = new Array<number>();
-
       this.bins.push(bin);
       i++;
     }
@@ -48,12 +48,38 @@ export default class Bins {
     let ticks = new Array<number>();
     let i = this.minDomain;
 
-    while (i < this.maxDomain) {
+    while (i <= this.maxDomain) {
       ticks.push(i);
       i = i + 3;
     }
 
     return ticks;
+  }
+
+  generateBlueColors() {
+
+    let blueColors = [];
+    let i = 0;
+    while (i <= this.nrOfBins) {
+      let color = hsl(198, 1, 0.97 * (1 - i / 15));
+      blueColors.push(color.hex());
+      i++;
+    }
+
+    return blueColors;
+  }
+
+  generateOrangeColors() {
+
+    let orangeColors = [];
+    let i = 0;
+    while (i <= this.nrOfBins) {
+      let color = hsl(34, 1, 0.97 * (1 - i / 15));
+      orangeColors.push(color.hex());
+      i++;
+    }
+
+    return orangeColors;
   }
 }
 

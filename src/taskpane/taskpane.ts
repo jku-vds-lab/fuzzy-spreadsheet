@@ -35,62 +35,6 @@ Office.initialize = () => {
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
-function generateBlueColors() {
-
-  let n = 9;
-  let i = 0;
-  let blueColors = [];
-  let r = 216;
-  let g = 255;
-  let b = 255;
-  let factor = 255 / n;
-
-  while (i < n) {
-
-    blueColors.push(d3.rgb(r, g, b).hex());
-    r = 0;
-    g = 255 - i * factor;
-    b = 255 - i * factor;
-    console.log(r, g, b);
-    i++;
-  }
-
-  return blueColors;
-}
-
-function drawSquares() {
-
-  var blueColors = generateBlueColors();
-  // create svg element:
-  var Svg = d3.select("#lines")
-
-  // create a list of keys
-  var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-
-  // Add one dot in the legend for each name.
-  Svg.selectAll("mydots")
-    .data(keys)
-    .enter()
-    .append("rect")
-    .attr("x", 100)
-    .attr("y", function (d, i) { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("width", 20)
-    .attr("height", 20)
-    .style("fill", (d) => { console.log('d ' + d, blueColors[d]); return blueColors[d] });
-
-  // Add one dot in the legend for each name.
-  Svg.selectAll("mylabels")
-    .data(keys)
-    .enter()
-    .append("text")
-    .attr("x", 120)
-    .attr("y", function (d, i) { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
-    // .style("fill", (d) => blueColors[d])
-    .text(function (d) { return d })
-    .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle")
-}
-
 async function parseSheet() {
 
   SheetProperties.isSheetParsed = true;
@@ -739,6 +683,8 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
   try {
 
     d3.select("#" + idToBeRemoved).select('svg').remove();
+    d3.select("#" + 'lines').select('svg').remove();
+    d3.select("#" + 'spreadLegend').select('svg').remove();
 
     if (SheetProperties.newCells == null) {
       d3.select('#whatIfChart').select('svg').remove();
@@ -750,7 +696,7 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
       return;
     }
 
-    var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    var margin = { top: 10, right: 30, bottom: 20, left: 40 },
       width = 360 - margin.left - margin.right,
       height = 200 - margin.top - margin.bottom;
 
@@ -797,10 +743,75 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
         return x(d.x1) - x(d.x0) - 1;
       })
       .attr("height", function (d) { return height - y(d.length); })
-      .style("fill", color)
+      .style("fill", color);
+
+
+    var legendSvg = d3.select('#lines')
+      .append("svg")
+      .attr("width", 360)
+      .attr("height", 30);
+
+
+    var blueColors = cell.binColors;
+
+    // create a list of keys
+    var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+    // Add one dot in the legend for each name.
+    legendSvg.selectAll("mydots")
+      .data(keys)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return (i + 1) * 24 })
+      .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("width", 20)
+      .attr("height", 20)
+      .style("fill", (d) => { return blueColors[d] });
+
+    drawLegend();
+
   } catch (error) {
     console.log(error);
   }
+}
+
+function drawLegend() {
+
+  const minDomain = -5;
+  const maxDomain = 40;
+  const binWidth = 3;
+
+  let binsObj = new Bins(minDomain, maxDomain, binWidth);
+  var blueColors = binsObj.generateBlueColors();
+  // create svg element:
+  var Svg = d3.select("#spreadLegend").append("svg")
+    .attr("width", 360)
+    .attr("height", 30);
+
+  // create a list of keys
+  var keys = [0, 3, 6, 9, 12, 14];
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i + 1) * 24 })
+    .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("width", 20)
+    .attr("height", 20)
+    .style("fill", (d) => { console.log('d ' + d, blueColors[d]); return blueColors[d] });
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mylabels")
+    .data([0, 100])
+    .enter()
+    .append("text")
+    .attr("x", function (d, i) { return i * 165 })
+    .attr("y", 30)
+    .text(function (d) { return d + '%' })
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle");
 }
 
 function selectSomethingElse() {

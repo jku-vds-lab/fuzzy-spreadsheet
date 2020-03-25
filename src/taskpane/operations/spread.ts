@@ -25,15 +25,19 @@ export default class Spread {
   private colors: string[];
   private blueColors: string[];
   private orangeColors: string[];
-  private nrOfColors: number;
+  private minDomain = -5;
+  private maxDomain = 40;
+  private binWidth = 3;
+  private binsObj: Bins;
+
 
   constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
-    this.nrOfColors = 15;
-    this.blueColors = this.generateBlueColors(this.nrOfColors);
-    this.orangeColors = this.generateOrangeColors(this.nrOfColors);
+    this.binsObj = new Bins(this.minDomain, this.maxDomain, this.binWidth);
+    this.blueColors = this.binsObj.generateBlueColors();
+    this.orangeColors = this.binsObj.generateOrangeColors();
     this.colors = this.blueColors;
 
     if (this.oldCells == null) {
@@ -247,33 +251,6 @@ export default class Spread {
     }
   }
 
-
-  generateBlueColors(n: number) {
-
-    let blueColors = [];
-    let i = 0;
-    while (i <= n) {
-      let color = hsl(198, 1, 0.97 * (1 - i / 15));
-      blueColors.push(color.hex());
-      i++;
-    }
-
-    return blueColors;
-  }
-
-  generateOrangeColors(n: number) {
-
-    let orangeColors = [];
-    let i = 0;
-    while (i <= n) {
-      let color = hsl(34, 1, 0.97 * (1 - i / 15));
-      orangeColors.push(color.hex());
-      i++;
-    }
-
-    return orangeColors;
-  }
-
   public drawBarCodePlot(cell: CellProperties, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
     try {
 
@@ -308,7 +285,10 @@ export default class Spread {
           line.lineFormat.weight = 2;
         }
 
+        cell.binColors = new Array<string>();
+
         sortedLinesWithColors.forEach((el) => {
+          cell.binColors.push(el.color);
           let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
           rect.name = cell.address + name;
           rect.top = top;
@@ -332,18 +312,13 @@ export default class Spread {
     try {
 
       let data = cell.samples;
-      const minDomain = -5;
-      const maxDomain = 40;
-      const binWidth = 3;
 
-      let binsObj = new Bins(minDomain, maxDomain, binWidth);
-      let bins = binsObj.createBins(data);
+      let bins = this.binsObj.createBins(data);
 
-      bins.forEach((valueBin) => {
-        let binValue = valueBin.x0;
-        let binFreq = valueBin.length;
+      bins.forEach((bin) => {
+        let binValue = bin.x0;
+        let binFreq = bin.length;
         let binColorIndex = Math.ceil((binFreq / data.length) * bins.length);
-        console.log('binColorIndex: ' + binColorIndex);
         let binColor = this.colors[binColorIndex];
 
         const element = { value: binValue, color: binColor, freq: binFreq };
