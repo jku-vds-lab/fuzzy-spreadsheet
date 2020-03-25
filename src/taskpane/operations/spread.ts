@@ -10,7 +10,8 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
-import { lineRadial } from 'd3';
+import { lineRadial, hsl } from 'd3';
+import Bins from './bins';
 
 
 // code cleaning required
@@ -30,7 +31,7 @@ export default class Spread {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
-    this.nrOfColors = 9;
+    this.nrOfColors = 15;
     this.blueColors = this.generateBlueColors(this.nrOfColors);
     this.orangeColors = this.generateOrangeColors(this.nrOfColors);
     this.colors = this.blueColors;
@@ -249,34 +250,26 @@ export default class Spread {
 
   generateBlueColors(n: number) {
 
-
-    let blueColors = [
-      '#fff7fb',
-      '#ece7f2',
-      '#d0d1e6',
-      '#a6bddb',
-      '#74a9cf',
-      '#3690c0',
-      '#0570b0',
-      '#045a8d',
-      '#023858'];
+    let blueColors = [];
+    let i = 0;
+    while (i <= n) {
+      let color = hsl(198, 1, 0.97 * (1 - i / 15));
+      blueColors.push(color.hex());
+      i++;
+    }
 
     return blueColors;
   }
 
   generateOrangeColors(n: number) {
 
-
-    let orangeColors = [
-      '#ffffe5',
-      '#fff7bc',
-      '#fee391',
-      '#fec44f',
-      '#fe9929',
-      '#ec7014',
-      '#cc4c02',
-      '#993404',
-      '#662506'];
+    let orangeColors = [];
+    let i = 0;
+    while (i <= n) {
+      let color = hsl(34, 1, 0.97 * (1 - i / 15));
+      orangeColors.push(color.hex());
+      i++;
+    }
 
     return orangeColors;
   }
@@ -289,13 +282,13 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let height = cell.height;
+        let height = cell.height - 1;
 
         if (isUpperHalf || isLowerHalf) {
           height = height / 2;
         }
 
-        let top = cell.top;
+        let top = cell.top + 1;
         let left = cell.left + 20;
 
         this.colors = this.blueColors;
@@ -320,7 +313,7 @@ export default class Spread {
           rect.name = cell.address + name;
           rect.top = top;
           rect.left = left + el.value;
-          rect.width = 3;
+          rect.width = 1;
           rect.height = height;
           rect.fill.setSolidColor(el.color);
           rect.lineFormat.color = el.color;
@@ -346,24 +339,18 @@ export default class Spread {
         return sortedLinesWithColors;
       }
 
-      var count = 10;
+      const minDomain = -5;
+      const maxDomain = 40;
+      const binWidth = 3;
 
-      let domain = 36;
+      let binsObj = new Bins(minDomain, maxDomain, binWidth);
+      let bins = binsObj.createBins(data);
 
-      var x = d3.scaleLinear().domain([0, domain]).nice(count);
-
-      var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(10));
-      var bins = histogram(data);
-
-
-      let sortBinByValues = Object.assign([], bins);
-      sortBinByValues.sort((n1, n2) => { return n1.x0 - n2.x0 });
-
-
-      sortBinByValues.forEach((valueBin) => {
+      bins.forEach((valueBin) => {
         let binValue = valueBin.x0;
         let binFreq = valueBin.length;
-        let binColorIndex = Math.ceil((binFreq / data.length) * sortBinByValues.length);
+        let binColorIndex = Math.ceil((binFreq / data.length) * bins.length);
+        console.log('binColorIndex: ' + binColorIndex);
         let binColor = this.colors[binColorIndex];
 
         const element = { value: binValue, color: binColor, freq: binFreq };
