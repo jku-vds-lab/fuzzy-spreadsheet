@@ -4,10 +4,11 @@ import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
 import * as d3 from 'd3';
 import * as jStat from 'jstat';
-import { max, histogram } from 'd3';
+import { max, histogram, min } from 'd3';
 import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import Likelihood from './operations/likelihood';
+import Bins from './operations/bins';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -32,6 +33,62 @@ Office.initialize = () => {
   document.getElementById("startWhatIf").onclick = startWhatIf;
   document.getElementById("useNewValues").onclick = useNewValues;
   document.getElementById("dismissValues").onclick = dismissValues;
+}
+
+function generateBlueColors() {
+
+  let n = 9;
+  let i = 0;
+  let blueColors = [];
+  let r = 216;
+  let g = 255;
+  let b = 255;
+  let factor = 255 / n;
+
+  while (i < n) {
+
+    blueColors.push(d3.rgb(r, g, b).hex());
+    r = 0;
+    g = 255 - i * factor;
+    b = 255 - i * factor;
+    console.log(r, g, b);
+    i++;
+  }
+
+  return blueColors;
+}
+
+function drawSquares() {
+
+  var blueColors = generateBlueColors();
+  // create svg element:
+  var Svg = d3.select("#lines")
+
+  // create a list of keys
+  var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", 100)
+    .attr("y", function (d, i) { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("width", 20)
+    .attr("height", 20)
+    .style("fill", (d) => { console.log('d ' + d, blueColors[d]); return blueColors[d] });
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mylabels")
+    .data(keys)
+    .enter()
+    .append("text")
+    .attr("x", 120)
+    .attr("y", function (d, i) { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+    // .style("fill", (d) => blueColors[d])
+    .text(function (d) { return d })
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
 }
 
 async function parseSheet() {
@@ -707,43 +764,31 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
         "translate(" + margin.left + "," + margin.top + ")");
 
 
-    let maxDomain = d3.max(data)
-    let minDomain = d3.min(data)
+    const minDomain = -5;
+    const maxDomain = 40;
+    const binWidth = 3;
 
-    var x = d3.scaleLinear()
-      .domain([minDomain, maxDomain])
-      .range([0, width]);
+    let binsObj = new Bins(minDomain, maxDomain, binWidth);
+    let bins = binsObj.createBins(data);
+    let ticks = binsObj.getTickValues();
+
+    var x = d3.scaleLinear().domain([minDomain, maxDomain]).range([0, width]);
 
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickValues(ticks));
 
-    // set the parameters for the histogram
-    var histogram = d3.histogram()
-      .value(function (d) { return d })
-      .domain([minDomain, maxDomain])
-      .thresholds(x.ticks(100));
-
-    // And apply this function to data to get the bins
-    var bins = histogram(data);
-
-    // Y axis: scale and draw:
     var y = d3.scaleLinear()
-      .range([height, 0]);
-
-
-    // y.domain([0, 100]);
-    y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+      .range([height, 0])
+      .domain([0, 100]);
 
     svg.append("g")
       .call(d3.axisLeft(y));
 
-    // append the bar rectangles to the svg element
     svg.selectAll("rect")
       .data(bins)
       .enter()
       .append("rect")
-      .attr("x", 1)
       .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
       .attr("width", function (d) {
         if (x(d.x0) == x(d.x1)) {

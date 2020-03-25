@@ -249,42 +249,35 @@ export default class Spread {
 
   generateBlueColors(n: number) {
 
-    let i = 0;
-    let blueColors = [];
-    let r = 216;
-    let g = 255;
-    let b = 255;
-    let factor = 255 / n;
 
-    while (i < n) {
+    let blueColors = [
+      '#fff7fb',
+      '#ece7f2',
+      '#d0d1e6',
+      '#a6bddb',
+      '#74a9cf',
+      '#3690c0',
+      '#0570b0',
+      '#045a8d',
+      '#023858'];
 
-      blueColors.push(d3.rgb(r, g, b).hex());
-      r = 0;
-      g = 255 - i * factor;
-      b = 255 - i * factor;
-      i++;
-    }
     return blueColors;
   }
 
   generateOrangeColors(n: number) {
 
-    let i = 0;
-    let orangeColors = [];
-    let r = 255;
-    let g = 248;
-    let b = 235;
-    let greenFactor = 165 / n;
-    let redFactor = 235 / n;
 
-    while (i < n) {
+    let orangeColors = [
+      '#ffffe5',
+      '#fff7bc',
+      '#fee391',
+      '#fec44f',
+      '#fe9929',
+      '#ec7014',
+      '#cc4c02',
+      '#993404',
+      '#662506'];
 
-      orangeColors.push(d3.rgb(r, g, b).hex());
-      r = 235 - i * redFactor;
-      g = 165 - i * greenFactor;
-      b = 0;
-      i++;
-    }
     return orangeColors;
   }
 
@@ -359,7 +352,7 @@ export default class Spread {
 
       var x = d3.scaleLinear().domain([0, domain]).nice(count);
 
-      var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
+      var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(10));
       var bins = histogram(data);
 
 
@@ -374,7 +367,6 @@ export default class Spread {
         let binColor = this.colors[binColorIndex];
 
         const element = { value: binValue, color: binColor, freq: binFreq };
-        console.log('For cell: ' + cell.address + ' Bin Value: ' + binValue + ' Freq: ' + binFreq + ' bin Index: ' + binColorIndex);
         sortedLinesWithColors.push(element);
       })
     } catch (error) {
