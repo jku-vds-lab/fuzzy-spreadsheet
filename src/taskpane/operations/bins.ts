@@ -35,7 +35,7 @@ export default class Bins {
 
     data.forEach((element: number) => {
       this.bins.forEach((bin: Bin) => {
-        if (element >= bin.x0 && element <= bin.x1) {
+        if (element >= bin.x0 && element < bin.x1) {
           bin.samples.push(element);
           bin.length++;
         }

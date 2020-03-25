@@ -282,7 +282,7 @@ export default class Spread {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let height = cell.height - 1;
+        let height = cell.height - 2;
 
         if (isUpperHalf || isLowerHalf) {
           height = height / 2;
@@ -294,7 +294,7 @@ export default class Spread {
         this.colors = this.blueColors;
 
         if (isLowerHalf) {
-          top = cell.top + height;
+          top = top + height;
           this.colors = this.orangeColors; // always use orange colors in the bottom half
           isDrawLine = true;
         }
@@ -302,7 +302,7 @@ export default class Spread {
         let sortedLinesWithColors = this.computeColorsAndBins(cell);
 
         if (isDrawLine) {
-          let line = sheet.shapes.addLine(left, top, left + cell.width - 20, top);
+          let line = sheet.shapes.addLine(cell.left + 15, top, cell.left + cell.width - 15, top);
           line.name = cell.address + name;
           line.lineFormat.color = 'white';
           line.lineFormat.weight = 2;
@@ -332,13 +332,6 @@ export default class Spread {
     try {
 
       let data = cell.samples;
-
-      if (data.length == 1) {
-        const element = { value: data[0], color: this.colors[this.nrOfColors - 1], freq: 1 }
-        sortedLinesWithColors.push(element);
-        return sortedLinesWithColors;
-      }
-
       const minDomain = -5;
       const maxDomain = 40;
       const binWidth = 3;
@@ -391,7 +384,11 @@ export default class Spread {
       // fix values for certain cells
       if (cell.formula == "") {
         if (stdev == 0 && likelihood == 1) {
-          cell.samples.push(mean);
+          let i = 0;
+          while (i < 95) {
+            cell.samples.push(mean);
+            i++;
+          }
         }
         isCellUnary = true;
       }
