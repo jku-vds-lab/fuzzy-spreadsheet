@@ -119,7 +119,6 @@ export default class CellOperations {
         oldTextbox.items.forEach(function (c) {
           if (c.name.includes('Update'))
             c.delete();
-          console.log('Deleted shape: ' + c.name);
         });
       });
 

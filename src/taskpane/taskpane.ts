@@ -4,10 +4,11 @@ import SheetProperties from './sheetproperties';
 import WhatIf from './operations/whatif';
 import * as d3 from 'd3';
 import * as jStat from 'jstat';
-import { max, histogram } from 'd3';
+import { max, histogram, min } from 'd3';
 import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import Likelihood from './operations/likelihood';
+import Bins from './operations/bins';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -61,6 +62,7 @@ async function markAsReferenceCell() {
 
     if (SheetProperties.isReferenceCell) {
       removeShapesFromReferenceCell();
+      changeFontColorsToOriginal();
     }
 
     clearPreviousReferenceCell();
@@ -130,21 +132,21 @@ function outputRelationship() {
 function first() {
 
   SheetProperties.degreeOfNeighbourhood = 1;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
 
 function second() {
   SheetProperties.degreeOfNeighbourhood = 2;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
 
 function third() {
   SheetProperties.degreeOfNeighbourhood = 3;
-  removeShapesFromReferenceCell();
+  // removeShapesFromReferenceCell();
   displayOptions();
 }
 
@@ -383,18 +385,15 @@ function remove() {
 
 function displayOptions() {
 
-  let timeout = 0;
+  let timeout = 1500;
 
 
   if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    timeout = 1500;
     SheetProperties.cellOp.addLikelihoodInfo();
     impact();
   } else if (SheetProperties.isImpact) {
-    timeout = 1500;
     impact();
   } else if (SheetProperties.isLikelihood) {
-    timeout = 1500;
     likelihood();
   }
 
@@ -403,15 +402,10 @@ function displayOptions() {
     setTimeout(() => {
       relationshipIcons();
     }, timeout);
-
-    if (timeout == 0) {
-      timeout = 1500;
-    } else {
-      timeout = 2 * timeout;
-    }
   }
 
   if (SheetProperties.isSpread) {
+    timeout = 3000;
     // eslint-disable-next-line no-undef
     setTimeout(() => {
       spread();
@@ -567,7 +561,17 @@ function showAllOptions() {
   (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
 }
 
+function changeFontColorsToOriginal() {
+  Excel.run((context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
 
+    SheetProperties.cells.forEach((cell: CellProperties) => {
+      let range = sheet.getRange(cell.address);
+      range.format.font.color = cell.fontColor;
+    });
+    return context.sync()
+  })
+}
 
 async function removeShapesFromReferenceCell() {
 
@@ -629,7 +633,6 @@ function handleSelectionChange(event) {
   return Excel.run(function (context) {
     return context.sync()
       .then(function () {
-        console.log("Address of current selection: " + event.address);
 
         if (SheetProperties.cells == null) {
           console.log('Returning because cells is undefined');
@@ -649,12 +652,24 @@ function handleSelectionChange(event) {
 
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
+              document.getElementById("mean").innerHTML = cell.computedMean.toFixed(2);
+              document.getElementById("stdDev").innerHTML = cell.computedStdDev.toFixed(2);
 
               if (SheetProperties.newCells == null) {
                 return;
               }
               if (cell.address == SheetProperties.newCells[index].address) {
-                showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
+
+                if (cell.samples == SheetProperties.newCells[index].samples) {
+                  document.getElementById("newDistribution").hidden = true;
+                  d3.select("#whatIfChart").select('svg').remove();
+                  return;
+                }
+
+                document.getElementById("newDistribution").hidden = false;
+                document.getElementById("newMean").innerHTML = SheetProperties.newCells[index].computedMean.toFixed(2);
+                document.getElementById("newStdDev").innerHTML = SheetProperties.newCells[index].computedStdDev.toFixed(2);
+                showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
             }
           }
@@ -663,11 +678,15 @@ function handleSelectionChange(event) {
   }).catch((reason: any) => { console.log(reason) });
 }
 
-function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#69b3a2') {
+function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#399bfc', isLegendOrange: boolean = false) {
 
   try {
 
     d3.select("#" + idToBeRemoved).select('svg').remove();
+    d3.select("#" + 'lines').select('svg').remove();
+    d3.select("#" + 'spreadLegend').select('svg').remove();
+    d3.select("#" + 'newLines').select('svg').remove();
+    d3.select("#" + 'newSpreadLegend').select('svg').remove();
 
     if (SheetProperties.newCells == null) {
       d3.select('#whatIfChart').select('svg').remove();
@@ -679,7 +698,7 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
       return;
     }
 
-    var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    var margin = { top: 10, right: 30, bottom: 20, left: 40 },
       width = 360 - margin.left - margin.right,
       height = 200 - margin.top - margin.bottom;
 
@@ -693,43 +712,31 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
         "translate(" + margin.left + "," + margin.top + ")");
 
 
-    let maxDomain = d3.max(data)
-    let minDomain = d3.min(data)
+    const minDomain = -5;
+    const maxDomain = 40;
+    const binWidth = 3;
 
-    var x = d3.scaleLinear()
-      .domain([minDomain, maxDomain])
-      .range([0, width]);
+    let binsObj = new Bins(minDomain, maxDomain, binWidth);
+    let bins = binsObj.createBins(data);
+    let ticks = binsObj.getTickValues();
+
+    var x = d3.scaleLinear().domain([minDomain, maxDomain]).range([0, width]);
 
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickValues(ticks));
 
-    // set the parameters for the histogram
-    var histogram = d3.histogram()
-      .value(function (d) { return d })
-      .domain([minDomain, maxDomain])
-      .thresholds(x.ticks(100));
-
-    // And apply this function to data to get the bins
-    var bins = histogram(data);
-
-    // Y axis: scale and draw:
     var y = d3.scaleLinear()
-      .range([height, 0]);
-
-
-    // y.domain([0, 100]);
-    y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+      .range([height, 0])
+      .domain([0, 100]);
 
     svg.append("g")
       .call(d3.axisLeft(y));
 
-    // append the bar rectangles to the svg element
     svg.selectAll("rect")
       .data(bins)
       .enter()
       .append("rect")
-      .attr("x", 1)
       .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
       .attr("width", function (d) {
         if (x(d.x0) == x(d.x1)) {
@@ -738,10 +745,93 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
         return x(d.x1) - x(d.x0) - 1;
       })
       .attr("height", function (d) { return height - y(d.length); })
-      .style("fill", color)
+      .style("fill", color);
+
+    drawLinesBeneathChart(cell);
+    drawLegend();
+
+    if (isLegendOrange) {
+      drawLinesBeneathChart(cell, isLegendOrange);
+      drawLegend(isLegendOrange);
+    }
+
   } catch (error) {
     console.log(error);
   }
+}
+
+function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = false) {
+
+  var colors = cell.binBlueColors;
+  let div = '#lines';
+
+  if (isLegendOrange) {
+    div = '#newLines';
+    colors = cell.binOrangeColors;
+  }
+
+  var legendSvg = d3.select(div)
+    .append("svg")
+    .attr("width", 360)
+    .attr("height", 30);
+
+  // create a list of keys
+  var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+  // Add one dot in the legend for each name.
+  legendSvg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i + 1) * 24 })
+    .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("width", 20)
+    .attr("height", 20)
+    .style("fill", (d) => { return colors[d] });
+
+}
+
+function drawLegend(isLegendOrange: boolean = false) {
+
+  const minDomain = -5;
+  const maxDomain = 40;
+  const binWidth = 3;
+
+  let binsObj = new Bins(minDomain, maxDomain, binWidth);
+  var colors = binsObj.generateBlueColors();
+
+  let div = '#spreadLegend';
+
+  if (isLegendOrange) {
+    div = '#newSpreadLegend';
+    colors = binsObj.generateOrangeColors();
+  }
+
+  var Svg = d3.select(div).append("svg")
+    .attr("width", 360)
+    .attr("height", 30);
+
+  var keys = [0, 3, 6, 9, 12, 14];
+
+  Svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i + 1) * 24 })
+    .attr("y", 20)
+    .attr("width", 20)
+    .attr("height", 20)
+    .style("fill", (d) => { console.log('d ' + d, colors[d]); return colors[d] });
+
+  Svg.selectAll("mylabels")
+    .data([0, 100])
+    .enter()
+    .append("text")
+    .attr("x", function (d, i) { return i * 165 })
+    .attr("y", 30)
+    .text(function (d) { return d + '%' })
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle");
 }
 
 function selectSomethingElse() {

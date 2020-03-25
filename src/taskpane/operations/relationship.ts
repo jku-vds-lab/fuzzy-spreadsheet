@@ -101,7 +101,7 @@ export default class Relationship {
       }
 
       inCell.isInputRelationship = true;
-      // this.diamonds.push(this.drawInputRelation(inCell, colors[colorIndex]));
+
       this.drawInputRelation(inCell, colors[colorIndex]);
 
       if (n == 1) {

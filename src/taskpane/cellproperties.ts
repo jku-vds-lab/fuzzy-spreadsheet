@@ -15,6 +15,7 @@ export default class CellProperties {
   public height: number;
   public width: number;
   public formula: string;
+  public fontColor: string;
   public isFocus: boolean;
   public isUncertain: boolean = false;
   public degreeToFocus: number;
@@ -23,7 +24,9 @@ export default class CellProperties {
   public impact: number = 0;
   public likelihood: number = 1;
   public spreadRange: string;
-  public variance: number = 0;
+  public stdev: number = 0;
+  public computedMean: number = 0;
+  public computedStdDev: number = 0;
   public samples: number[] = null;
   public samplesLikelihood: number[];
   public isLineChart: boolean = false;
@@ -38,6 +41,8 @@ export default class CellProperties {
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
   public whatIf: WhatIf;
+  public binBlueColors: string[];
+  public binOrangeColors: string[];
 
   private cells: CellProperties[];
   private newCells: CellProperties[];
@@ -63,6 +68,7 @@ export default class CellProperties {
 
     this.cells = new Array<CellProperties>();
     let cellRanges = new Array<Excel.Range>();
+    let fontColors = new Array<Excel.RangeFont>();
 
     await Excel.run(async (context) => {
 
@@ -73,17 +79,18 @@ export default class CellProperties {
 
           let cell = sheet.getCell(i, j);
           cellRanges.push(cell.load(["top", "left", "address", 'formulas', 'values']));
+          fontColors.push(cell.format.font.load('color'));
         }
       }
       await context.sync();
 
-      this.updateCellsValues(cellRanges);
+      this.updateCellsValues(cellRanges, fontColors);
 
     });
     return this.cells;
   }
 
-  updateCellsValues(cellRanges: Excel.Range[]) {
+  updateCellsValues(cellRanges: Excel.Range[], fontColors: Excel.RangeFont[]) {
 
     let index = 0;
     for (let i = 0; i < 20; i++) {
@@ -104,6 +111,7 @@ export default class CellProperties {
         cellProperties.width = 75.5;
         cellProperties.formula = cellRanges[index].formulas[0][0];
         cellProperties.degreeToFocus = -1;
+        cellProperties.fontColor = fontColors[index].color;
 
         if (cellProperties.formula == cellProperties.value.toString()) {
           cellProperties.formula = "";
