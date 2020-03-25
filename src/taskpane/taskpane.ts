@@ -669,7 +669,7 @@ function handleSelectionChange(event) {
                 document.getElementById("newDistribution").hidden = false;
                 document.getElementById("newMean").innerHTML = SheetProperties.newCells[index].computedMean.toFixed(2);
                 document.getElementById("newStdDev").innerHTML = SheetProperties.newCells[index].computedStdDev.toFixed(2);
-                showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933');
+                showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
             }
           }
@@ -678,13 +678,15 @@ function handleSelectionChange(event) {
   }).catch((reason: any) => { console.log(reason) });
 }
 
-function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#69b3a2') {
+function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#69b3a2', isLegendOrange: boolean = false) {
 
   try {
 
     d3.select("#" + idToBeRemoved).select('svg').remove();
     d3.select("#" + 'lines').select('svg').remove();
     d3.select("#" + 'spreadLegend').select('svg').remove();
+    d3.select("#" + 'newLines').select('svg').remove();
+    d3.select("#" + 'newSpreadLegend').select('svg').remove();
 
     if (SheetProperties.newCells == null) {
       d3.select('#whatIfChart').select('svg').remove();
@@ -745,54 +747,39 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
       .attr("height", function (d) { return height - y(d.length); })
       .style("fill", color);
 
-
-    var legendSvg = d3.select('#lines')
-      .append("svg")
-      .attr("width", 360)
-      .attr("height", 30);
-
-
-    var blueColors = cell.binColors;
-
-    // create a list of keys
-    var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-
-    // Add one dot in the legend for each name.
-    legendSvg.selectAll("mydots")
-      .data(keys)
-      .enter()
-      .append("rect")
-      .attr("x", function (d, i) { return (i + 1) * 24 })
-      .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
-      .attr("width", 20)
-      .attr("height", 20)
-      .style("fill", (d) => { return blueColors[d] });
-
+    drawLinesBeneathChart(cell);
     drawLegend();
+
+    if (isLegendOrange) {
+      drawLinesBeneathChart(cell, isLegendOrange);
+      drawLegend(isLegendOrange);
+    }
 
   } catch (error) {
     console.log(error);
   }
 }
 
-function drawLegend() {
+function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = false) {
 
-  const minDomain = -5;
-  const maxDomain = 40;
-  const binWidth = 3;
+  var colors = cell.binBlueColors;
+  let div = '#lines';
 
-  let binsObj = new Bins(minDomain, maxDomain, binWidth);
-  var blueColors = binsObj.generateBlueColors();
-  // create svg element:
-  var Svg = d3.select("#spreadLegend").append("svg")
+  if (isLegendOrange) {
+    div = '#newLines';
+    colors = cell.binOrangeColors;
+  }
+
+  var legendSvg = d3.select(div)
+    .append("svg")
     .attr("width", 360)
     .attr("height", 30);
 
   // create a list of keys
-  var keys = [0, 3, 6, 9, 12, 14];
+  var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
   // Add one dot in the legend for each name.
-  Svg.selectAll("mydots")
+  legendSvg.selectAll("mydots")
     .data(keys)
     .enter()
     .append("rect")
@@ -800,9 +787,42 @@ function drawLegend() {
     .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
     .attr("width", 20)
     .attr("height", 20)
-    .style("fill", (d) => { console.log('d ' + d, blueColors[d]); return blueColors[d] });
+    .style("fill", (d) => { return colors[d] });
 
-  // Add one dot in the legend for each name.
+}
+
+function drawLegend(isLegendOrange: boolean = false) {
+
+  const minDomain = -5;
+  const maxDomain = 40;
+  const binWidth = 3;
+
+  let binsObj = new Bins(minDomain, maxDomain, binWidth);
+  var colors = binsObj.generateBlueColors();
+
+  let div = '#spreadLegend';
+
+  if (isLegendOrange) {
+    div = '#newSpreadLegend';
+    colors = binsObj.generateOrangeColors();
+  }
+
+  var Svg = d3.select(div).append("svg")
+    .attr("width", 360)
+    .attr("height", 30);
+
+  var keys = [0, 3, 6, 9, 12, 14];
+
+  Svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i + 1) * 24 })
+    .attr("y", 20)
+    .attr("width", 20)
+    .attr("height", 20)
+    .style("fill", (d) => { console.log('d ' + d, colors[d]); return colors[d] });
+
   Svg.selectAll("mylabels")
     .data([0, 100])
     .enter()

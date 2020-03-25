@@ -285,10 +285,21 @@ export default class Spread {
           line.lineFormat.weight = 2;
         }
 
-        cell.binColors = new Array<string>();
+
+        if (isLowerHalf) {
+          cell.binOrangeColors = new Array<string>();
+        } else {
+          cell.binBlueColors = new Array<string>();
+        }
 
         sortedLinesWithColors.forEach((el) => {
-          cell.binColors.push(el.color);
+
+          if (isLowerHalf) {
+            cell.binOrangeColors.push(el.color);
+          } else {
+            cell.binBlueColors.push(el.color);
+          }
+
           let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
           rect.name = cell.address + name;
           rect.top = top;

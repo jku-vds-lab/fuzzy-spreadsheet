@@ -41,7 +41,8 @@ export default class CellProperties {
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
   public whatIf: WhatIf;
-  public binColors: string[];
+  public binBlueColors: string[];
+  public binOrangeColors: string[];
 
   private cells: CellProperties[];
   private newCells: CellProperties[];
