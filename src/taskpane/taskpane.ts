@@ -678,7 +678,7 @@ function handleSelectionChange(event) {
   }).catch((reason: any) => { console.log(reason) });
 }
 
-function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#69b3a2', isLegendOrange: boolean = false) {
+function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#399bfc', isLegendOrange: boolean = false) {
 
   try {
 
