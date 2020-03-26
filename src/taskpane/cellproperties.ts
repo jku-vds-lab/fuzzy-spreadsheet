@@ -75,7 +75,7 @@ export default class CellProperties {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
       for (let i = 0; i < 20; i++) {
-        for (let j = 0; j < 18; j++) {
+        for (let j = 0; j < 20; j++) {
 
           let cell = sheet.getCell(i, j);
           cellRanges.push(cell.load(["top", "left", "address", 'formulas', 'values']));
@@ -94,7 +94,7 @@ export default class CellProperties {
 
     let index = 0;
     for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 18; j++) {
+      for (let j = 0; j < 20; j++) {
 
         if (cellRanges[index].values[0][0] == "") {
           index++;

@@ -207,6 +207,7 @@ async function spread() {
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      selectSomethingElse();
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
@@ -838,14 +839,23 @@ function selectSomethingElse() {
   Excel.run(function (context) {
 
     var sheet = context.workbook.worksheets.getActiveWorksheet();
+    sheet.onActivated.add(activeSheet);
 
-    var range = sheet.getRange(SheetProperties.referenceCell.address);
 
-    range.select();
+
+    // var range = sheet.getRange(SheetProperties.referenceCell.address);
+
+
+    // range.select();
 
     return context.sync();
   })
 }
+
+async function activeSheet() {
+  console.log('Sheet is active');
+}
+
 
 function addImpactPercentage(cell: CellProperties) {
 
