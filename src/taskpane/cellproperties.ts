@@ -46,6 +46,12 @@ export default class CellProperties {
 
   private cells: CellProperties[];
   private newCells: CellProperties[];
+  private rowStart: number = 9;
+  private rowEnd: number = 23;
+
+  private colStart: number = 1;
+  private colEnd: number = 20;
+
 
   CellProperties() {
     this.id = "";
@@ -74,8 +80,8 @@ export default class CellProperties {
 
       const sheet = context.workbook.worksheets.getActiveWorksheet();
 
-      for (let i = 0; i < 20; i++) {
-        for (let j = 0; j < 20; j++) {
+      for (let i = this.rowStart; i < this.rowEnd; i++) {
+        for (let j = this.colStart; j < this.colEnd; j++) {
 
           let cell = sheet.getCell(i, j);
           cellRanges.push(cell.load(["top", "left", "address", 'formulas', 'values']));
@@ -93,8 +99,8 @@ export default class CellProperties {
   updateCellsValues(cellRanges: Excel.Range[], fontColors: Excel.RangeFont[]) {
 
     let index = 0;
-    for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 20; j++) {
+    for (let i = this.rowStart; i < this.rowEnd; i++) {
+      for (let j = this.colStart; j < this.colEnd; j++) {
 
         if (cellRanges[index].values[0][0] == "") {
           index++;

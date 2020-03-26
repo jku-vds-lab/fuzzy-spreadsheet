@@ -839,7 +839,7 @@ function drawLegend(isLegendOrange: boolean = false) {
     .attr("y", 20)
     .attr("width", 20)
     .attr("height", 20)
-    .style("fill", (d) => { console.log('d ' + d, colors[d]); return colors[d] });
+    .style("fill", (d) => { return colors[d] });
 
   Svg.selectAll("mylabels")
     .data([0, 100])
