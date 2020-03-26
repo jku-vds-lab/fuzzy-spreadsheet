@@ -41,16 +41,6 @@ async function parseSheet() {
 
   try {
 
-    Excel.run(function (context) {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      var activationResult = sheet.shapes.getItemAt(0).onActivated.add(sheetActivated);
-      return context.sync()
-        .then(function () {
-          console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
-        });
-    })
-
-
     hideOptions();
     console.log("Start parsing the sheet");
 
@@ -67,9 +57,32 @@ async function parseSheet() {
   }
 }
 
+function shapeActivated() {
+  try {
+    Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      sheet.shapes.load('items/length');
+
+      await context.sync();
+      const length = sheet.shapes.items.length;
+      console.log('Length of shapes: ', length);
+      var activationResult = sheet.shapes.getItemAt(0).onActivated.add(sheetActivated);
+      return context.sync()
+        .then(function () {
+          console.log("Activation Handler registered");
+        });
+    })
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function sheetActivated() {
   await Excel.run(async (context) => {
-    console.log('Sheet is active');
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    const length = sheet.shapes.items.length;
+    console.log('Length of shapes: ' + length);
+    console.log('Shape is active');
     await context.sync();
   })
 }
@@ -123,9 +136,11 @@ function inputRelationship() {
       SheetProperties.isInputRelationship = false;
       removeInputRelationFromOptions();
     }
+
   } catch (error) {
     console.error(error);
   }
+  selectSomethingElse();
 }
 
 function outputRelationship() {
@@ -144,6 +159,7 @@ function outputRelationship() {
   } catch (error) {
     console.error(error);
   }
+  selectSomethingElse();
 }
 
 function first() {
@@ -151,6 +167,7 @@ function first() {
   SheetProperties.degreeOfNeighbourhood = 1;
   // removeShapesFromReferenceCell();
   displayOptions();
+  selectSomethingElse();
 }
 
 
@@ -158,6 +175,7 @@ function second() {
   SheetProperties.degreeOfNeighbourhood = 2;
   // removeShapesFromReferenceCell();
   displayOptions();
+  selectSomethingElse();
 }
 
 
@@ -165,6 +183,7 @@ function third() {
   SheetProperties.degreeOfNeighbourhood = 3;
   // removeShapesFromReferenceCell();
   displayOptions();
+  selectSomethingElse();
 }
 
 function impact() {
@@ -224,7 +243,6 @@ async function spread() {
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-      selectSomethingElse();
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
@@ -304,6 +322,15 @@ async function processWhatIf() {
     SheetProperties.newValues = range.values;
     SheetProperties.newFormulas = range.formulas;
   });
+
+
+  // let x = await SheetProperties.cellProp.getCellsFormulasValues();
+  // // eslint-disable-next-line require-atomic-updates
+  // SheetProperties.newValues = x.values;
+  // // eslint-disable-next-line require-atomic-updates
+  // SheetProperties.newFormulas = x.formulas;
+  // console.log('Original' + SheetProperties.cells[0].value);
+  // console.log('New' + SheetProperties.newValues[0]);
 
   // eslint-disable-next-line require-atomic-updates
   SheetProperties.newCells = SheetProperties.cellProp.updateNewValues(SheetProperties.newValues, SheetProperties.newFormulas);

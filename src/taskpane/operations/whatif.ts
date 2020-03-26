@@ -1,6 +1,7 @@
 import CellProperties from "../cellproperties";
 import Spread from "./spread";
 import { increment } from "src/functions/functions";
+import { image } from "d3";
 
 // only new cells contain what if values
 /* global console, Excel */
@@ -28,10 +29,13 @@ export default class WhatIf {
       this.newCells.forEach((newCell: CellProperties, index: number) => {
 
         newCell.whatIf.value = newCell.value - this.oldCells[index].value;
-        // newCell.whatIf.variance = this.newCells[index + 1].value - newCell.variance;
+        if (newCell.whatIf.value > 0) {
+          console.log('For cell: ' + newCell.address + ' changed Value: ' + newCell.whatIf.value);
+        }
 
         if (this.referenceCell.id == newCell.id) {
           this.newReferenceCell = newCell;
+          console.log('Reference Cell Formula', this.newReferenceCell.formula);
         }
         i++;
       })

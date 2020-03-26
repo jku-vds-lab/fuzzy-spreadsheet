@@ -67,7 +67,11 @@ export default class Spread {
         this.showOutputSpread(this.referenceCell.outputCells, n);
       }
 
+
+      this.selectSomethingElse();
+
     } catch (error) {
+      this.selectSomethingElse();
       console.log('Error in Show spread', error);
     }
   }

@@ -1,6 +1,7 @@
 import SheetProperties from "./sheetproperties";
 import WhatIf from "./operations/whatif";
 import Spread from "./operations/spread";
+import { values } from "d3";
 
 /* global console, Excel */
 
@@ -46,11 +47,11 @@ export default class CellProperties {
 
   private cells: CellProperties[];
   private newCells: CellProperties[];
-  private rowStart: number = 9;
-  private rowEnd: number = 23;
+  private rowStart: number = 0;
+  private rowEnd: number = 20;
 
-  private colStart: number = 1;
-  private colEnd: number = 20;
+  private colStart: number = 0;
+  private colEnd: number = 18;
 
 
   CellProperties() {
@@ -95,6 +96,37 @@ export default class CellProperties {
     });
     return this.cells;
   }
+
+
+  async getCellsFormulasValues() {
+
+    let cellRanges = new Array<Excel.Range>();
+    let newValues = new Array<Array<any>>();
+    let newFormulas = new Array<Array<any>>();
+    try {
+      await Excel.run(async (context) => {
+
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+
+        for (let i = this.rowStart; i < this.rowEnd; i++) {
+          for (let j = this.colStart; j < this.colEnd; j++) {
+
+            let cell = sheet.getCell(i, j);
+            cellRanges.push(cell.load(['formulas', 'values']));
+          }
+        }
+        await context.sync().then;
+      });
+      cellRanges.forEach((cellRange: Excel.Range) => {
+        newValues.push(cellRange.values);
+        newFormulas.push(cellRange.formulas);
+      })
+    } catch (error) {
+      console.log(error);
+    }
+    return { values: newValues, formulas: newFormulas };
+  }
+
 
   updateCellsValues(cellRanges: Excel.Range[], fontColors: Excel.RangeFont[]) {
 
