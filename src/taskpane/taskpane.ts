@@ -40,6 +40,17 @@ async function parseSheet() {
   SheetProperties.isSheetParsed = true;
 
   try {
+
+    Excel.run(function (context) {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      var activationResult = sheet.shapes.getItemAt(0).onActivated.add(sheetActivated);
+      return context.sync()
+        .then(function () {
+          console.log("Event handler successfully registered for onSelectionChanged event in the worksheet.");
+        });
+    })
+
+
     hideOptions();
     console.log("Start parsing the sheet");
 
@@ -56,6 +67,12 @@ async function parseSheet() {
   }
 }
 
+async function sheetActivated() {
+  await Excel.run(async (context) => {
+    console.log('Sheet is active');
+    await context.sync();
+  })
+}
 
 async function markAsReferenceCell() {
   try {
@@ -207,6 +224,7 @@ async function spread() {
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      selectSomethingElse();
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
@@ -838,9 +856,7 @@ function selectSomethingElse() {
   Excel.run(function (context) {
 
     var sheet = context.workbook.worksheets.getActiveWorksheet();
-
     var range = sheet.getRange(SheetProperties.referenceCell.address);
-
     range.select();
 
     return context.sync();

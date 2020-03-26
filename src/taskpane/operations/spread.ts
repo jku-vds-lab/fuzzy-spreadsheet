@@ -309,11 +309,27 @@ export default class Spread {
           rect.fill.setSolidColor(el.color);
           rect.lineFormat.color = el.color;
         })
+
         return context.sync();
       });
     } catch (error) {
+      this.selectSomethingElse();
       console.log('Could not draw the bar code plot because of the following error', error);
     }
+  }
+
+
+  selectSomethingElse() {
+    Excel.run(function (context) {
+
+      var sheet = context.workbook.worksheets.getActiveWorksheet();
+
+      var range = sheet.getRange(SheetProperties.referenceCell.address);
+
+      range.select();
+
+      return context.sync();
+    })
   }
 
   private computeColorsAndBins(cell: CellProperties) {
