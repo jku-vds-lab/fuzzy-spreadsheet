@@ -714,9 +714,10 @@ function handleSelectionChange(event) {
                 if (cell.samples == SheetProperties.newCells[index].samples) {
                   document.getElementById("newDistribution").hidden = true;
                   d3.select("#whatIfChart").select('svg').remove();
+                  document.getElementById("spaceHack").hidden = true;
                   return;
                 }
-
+                document.getElementById("spaceHack").hidden = false;
                 document.getElementById("newDistribution").hidden = false;
                 document.getElementById("newMean").innerHTML = "New Mean: " + SheetProperties.newCells[index].computedMean.toFixed(2) + " & Std Dev: " + SheetProperties.newCells[index].computedStdDev.toFixed(2);
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
@@ -738,7 +739,6 @@ function removeHtmlSpreadInfoForOriginalChart() {
     d3.select("#" + 'lines').select('svg').remove();
     d3.select("#" + 'spreadLegend').select('svg').remove();
     document.getElementById("mean").innerHTML = "";
-    document.getElementById("stdDev").innerHTML = "";
   } catch (error) {
     console.log(error);
   }
@@ -750,8 +750,8 @@ function removeHtmlSpreadInfoForNewChart() {
     d3.select("#" + 'newLines').select('svg').remove();
     d3.select("#" + 'newSpreadLegend').select('svg').remove();
     document.getElementById("newMean").innerHTML = "";
-    document.getElementById("newStdDev").innerHTML = "";
     document.getElementById("newDistribution").hidden = true;
+    document.getElementById("spaceHack").hidden = true;
   } catch (error) {
     console.log(error);
   }
@@ -852,7 +852,7 @@ function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = f
   var legendSvg = d3.select(div)
     .append("svg")
     .attr("width", 260)
-    .attr("height", 30);
+    .attr("height", 10);
 
   // create a list of keys
   var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -862,12 +862,12 @@ function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = f
     .data(keys)
     .enter()
     .append("rect")
-    .attr("x", function (d, i) { return (i + 1) * 24 })
-    .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("width", 20)
-    .attr("height", 20)
+    .attr("width", 3)
+    .attr("x", function (d, i) { return 40 + i * 13 })
+    .attr("y", 0)
+    .attr("width", 12)
+    .attr("height", 10)
     .style("fill", (d) => { return colors[d] });
-
 }
 
 function drawLegend(isLegendOrange: boolean = false) {
@@ -879,6 +879,7 @@ function drawLegend(isLegendOrange: boolean = false) {
   let binsObj = new Bins(minDomain, maxDomain, binWidth);
   var colors = binsObj.generateBlueColors();
 
+
   let div = '#spreadLegend';
 
   if (isLegendOrange) {
@@ -887,8 +888,8 @@ function drawLegend(isLegendOrange: boolean = false) {
   }
 
   var Svg = d3.select(div).append("svg")
-    .attr("width", 360)
-    .attr("height", 30);
+    .attr("width", 125)
+    .attr("height", 10);
 
   var keys = [0, 3, 6, 9, 12, 14];
 
@@ -896,21 +897,22 @@ function drawLegend(isLegendOrange: boolean = false) {
     .data(keys)
     .enter()
     .append("rect")
-    .attr("x", function (d, i) { return (i + 1) * 24 })
-    .attr("y", 20)
-    .attr("width", 20)
-    .attr("height", 20)
+    .attr("x", function (d, i) { return (i + 2) * 11 })
+    .attr("y", 0)
+    .attr("width", 10)
+    .attr("height", 5)
     .style("fill", (d) => { return colors[d] });
 
   Svg.selectAll("mylabels")
     .data([0, 100])
     .enter()
     .append("text")
-    .attr("x", function (d, i) { return i * 165 })
-    .attr("y", 30)
+    .attr("x", function (d, i) { return i * 90 })
+    .attr("y", 10)
     .text(function (d) { return d + '%' })
     .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle");
+    .style("alignment-baseline", "middle")
+    .style("font-size", "12px");
 }
 
 function selectSomethingElse() {
