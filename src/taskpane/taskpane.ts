@@ -92,7 +92,7 @@ async function markAsReferenceCell() {
 
     if (SheetProperties.isReferenceCell) {
       removeShapesFromReferenceCell();
-      changeFontColorsToOriginal();
+      // changeFontColorsToOriginal();
     }
 
     clearPreviousReferenceCell();

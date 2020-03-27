@@ -54,7 +54,7 @@ export default class Spread {
   public showSpread(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
-      this.makeFontColorWhite(n, isInput, isOutput);
+      // this.makeFontColorWhite(n, isInput, isOutput);
       this.addVarianceInfo();
 
       this.showReferenceCellSpread();
@@ -308,10 +308,12 @@ export default class Spread {
           rect.name = cell.address + name;
           rect.top = top;
           rect.left = left + el.value;
-          rect.width = 1;
+          rect.width = 1.2;
           rect.height = height;
           rect.fill.setSolidColor(el.color);
+          rect.fill.transparency = 0.3;
           rect.lineFormat.color = el.color;
+          rect.lineFormat.transparency = 0.3;
         })
 
         return context.sync();
