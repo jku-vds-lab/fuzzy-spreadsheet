@@ -287,6 +287,7 @@ export default class Spread {
           line.name = cell.address + name;
           line.lineFormat.color = 'white';
           line.lineFormat.weight = 2;
+          line.lineFormat.transparency = 0.5;
         }
 
 
@@ -311,9 +312,9 @@ export default class Spread {
           rect.width = 1.2;
           rect.height = height;
           rect.fill.setSolidColor(el.color);
-          rect.fill.transparency = 0.3;
+          rect.fill.transparency = 0.5;
           rect.lineFormat.color = el.color;
-          rect.lineFormat.transparency = 0.3;
+          rect.lineFormat.transparency = 0.5;
         })
 
         return context.sync();
