@@ -704,8 +704,7 @@ function handleSelectionChange(event) {
 
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
-              document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2);
-              document.getElementById("stdDev").innerHTML = "Std Dev: " + cell.computedStdDev.toFixed(2);
+              document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
 
               if (SheetProperties.newCells == null) {
                 return;
@@ -719,8 +718,7 @@ function handleSelectionChange(event) {
                 }
 
                 document.getElementById("newDistribution").hidden = false;
-                document.getElementById("newMean").innerHTML = "New Mean: " + SheetProperties.newCells[index].computedMean.toFixed(2);
-                document.getElementById("newStdDev").innerHTML = "New Std Dev: " + SheetProperties.newCells[index].computedStdDev.toFixed(2);
+                document.getElementById("newMean").innerHTML = "New Mean: " + SheetProperties.newCells[index].computedMean.toFixed(2) + " & Std Dev: " + SheetProperties.newCells[index].computedStdDev.toFixed(2);
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
             }
@@ -780,8 +778,8 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
     }
 
     var margin = { top: 10, right: 30, bottom: 20, left: 40 },
-      width = 360 - margin.left - margin.right,
-      height = 200 - margin.top - margin.bottom;
+      width = 260 - margin.left - margin.right,
+      height = 150 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     var svg = d3.select(divClass)
@@ -812,7 +810,7 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
       .domain([0, 100]);
 
     svg.append("g")
-      .call(d3.axisLeft(y));
+      .call(d3.axisLeft(y).ticks(5));
 
     svg.selectAll("rect")
       .data(bins)
@@ -853,7 +851,7 @@ function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = f
 
   var legendSvg = d3.select(div)
     .append("svg")
-    .attr("width", 360)
+    .attr("width", 260)
     .attr("height", 30);
 
   // create a list of keys
