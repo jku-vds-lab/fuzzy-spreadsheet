@@ -246,6 +246,7 @@ async function spread() {
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
+      removeHtmlInfoForSpread();
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
@@ -697,8 +698,8 @@ function handleSelectionChange(event) {
 
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
-              document.getElementById("mean").innerHTML = cell.computedMean.toFixed(2);
-              document.getElementById("stdDev").innerHTML = cell.computedStdDev.toFixed(2);
+              document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2);
+              document.getElementById("stdDev").innerHTML = "Std Dev: " + cell.computedStdDev.toFixed(2);
 
               if (SheetProperties.newCells == null) {
                 return;
@@ -712,8 +713,8 @@ function handleSelectionChange(event) {
                 }
 
                 document.getElementById("newDistribution").hidden = false;
-                document.getElementById("newMean").innerHTML = SheetProperties.newCells[index].computedMean.toFixed(2);
-                document.getElementById("newStdDev").innerHTML = SheetProperties.newCells[index].computedStdDev.toFixed(2);
+                document.getElementById("newMean").innerHTML = "New Mean: " + SheetProperties.newCells[index].computedMean.toFixed(2);
+                document.getElementById("newStdDev").innerHTML = "New Std Dev: " + SheetProperties.newCells[index].computedStdDev.toFixed(2);
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
             }
@@ -721,6 +722,24 @@ function handleSelectionChange(event) {
         })
       });
   }).catch((reason: any) => { console.log(reason) });
+}
+
+function removeHtmlInfoForSpread() {
+  try {
+    d3.select("#" + 'originalChart').select('svg').remove();
+    d3.select("#" + 'whatIfChart').select('svg').remove();
+    d3.select("#" + 'lines').select('svg').remove();
+    d3.select("#" + 'spreadLegend').select('svg').remove();
+    d3.select("#" + 'newLines').select('svg').remove();
+    d3.select("#" + 'newSpreadLegend').select('svg').remove();
+    document.getElementById("newMean").innerHTML = "";
+    document.getElementById("newStdDev").innerHTML = "";
+    document.getElementById("newDistribution").hidden = true;
+    document.getElementById("mean").innerHTML = "";
+    document.getElementById("stdDev").innerHTML = "";
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#399bfc', isLegendOrange: boolean = false) {
