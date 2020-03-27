@@ -246,7 +246,8 @@ async function spread() {
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
-      removeHtmlInfoForSpread();
+      removeHtmlSpreadInfoForOriginalChart();
+      removeHtmlSpreadInfoForNewChart();
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
@@ -349,6 +350,8 @@ async function processWhatIf() {
   }
 }
 
+
+// To be fixed!!
 async function useNewValues() {
 
   console.log('Remove Event Handler');
@@ -358,6 +361,8 @@ async function useNewValues() {
   if (SheetProperties.isSpread) {
     const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
     whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+    removeHtmlSpreadInfoForOriginalChart();
+    removeHtmlSpreadInfoForNewChart();
   }
 
   await parseSheet();
@@ -375,6 +380,7 @@ async function dismissValues() {
     if (SheetProperties.isSpread) {
       const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
       whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      removeHtmlSpreadInfoForNewChart();
     }
 
     SheetProperties.cellOp.deleteUpdateshapes();
@@ -718,25 +724,36 @@ function handleSelectionChange(event) {
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
             }
+            else {
+              removeHtmlSpreadInfoForOriginalChart();
+              removeHtmlSpreadInfoForNewChart();
+            }
           }
         })
       });
   }).catch((reason: any) => { console.log(reason) });
 }
 
-function removeHtmlInfoForSpread() {
+function removeHtmlSpreadInfoForOriginalChart() {
   try {
     d3.select("#" + 'originalChart').select('svg').remove();
-    d3.select("#" + 'whatIfChart').select('svg').remove();
     d3.select("#" + 'lines').select('svg').remove();
     d3.select("#" + 'spreadLegend').select('svg').remove();
+    document.getElementById("mean").innerHTML = "";
+    document.getElementById("stdDev").innerHTML = "";
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function removeHtmlSpreadInfoForNewChart() {
+  try {
+    d3.select("#" + 'whatIfChart').select('svg').remove();
     d3.select("#" + 'newLines').select('svg').remove();
     d3.select("#" + 'newSpreadLegend').select('svg').remove();
     document.getElementById("newMean").innerHTML = "";
     document.getElementById("newStdDev").innerHTML = "";
     document.getElementById("newDistribution").hidden = true;
-    document.getElementById("mean").innerHTML = "";
-    document.getElementById("stdDev").innerHTML = "";
   } catch (error) {
     console.log(error);
   }
