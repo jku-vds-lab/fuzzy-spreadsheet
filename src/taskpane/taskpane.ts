@@ -92,7 +92,7 @@ async function markAsReferenceCell() {
 
     if (SheetProperties.isReferenceCell) {
       removeShapesFromReferenceCell();
-      changeFontColorsToOriginal();
+      // changeFontColorsToOriginal();
     }
 
     clearPreviousReferenceCell();
@@ -112,6 +112,7 @@ async function markAsReferenceCell() {
       SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
       SheetProperties.isReferenceCell = true;
       console.log('Done Marking a reference cell');
+
       showVisualizationOption();
       displayOptions();
       selectSomethingElse();
@@ -246,6 +247,8 @@ async function spread() {
       checkCellChanged();
     } else {
       SheetProperties.isSpread = false;
+      removeHtmlSpreadInfoForOriginalChart();
+      removeHtmlSpreadInfoForNewChart();
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
@@ -348,32 +351,66 @@ async function processWhatIf() {
   }
 }
 
+
+// To be fixed!!
 async function useNewValues() {
-
-  console.log('Remove Event Handler');
-
-  remove();
-  SheetProperties.cellOp.deleteUpdateshapes();
-  if (SheetProperties.isSpread) {
-    const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
-    whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  try {
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    removeHandler();
+    removeHtmlSpreadInfoForOriginalChart();
+    removeHtmlSpreadInfoForNewChart();
+    removeAllShapes();
+    SheetProperties.newCells = null;
+    SheetProperties.cellProp = new CellProperties();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cells = await SheetProperties.cellProp.getCells();
+    SheetProperties.cellProp.getRelationshipOfCells();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(SheetProperties.referenceCell.address);
+    SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.isReferenceCell = true;
+    displayOptions();
+  } catch (error) {
+    console.log(error);
   }
+}
 
-  await parseSheet();
+function removeAllShapes() {
 
+  Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    var shapes = sheet.shapes;
+    shapes.load("items/$none");
+    return context.sync().then(function () {
+      shapes.items.forEach(function (shape) {
+        shape.delete();
+      });
+      return context.sync();
+    });
+  });
+
+  // function setCellPropsToFalse() {
+
+  // }
 }
 
 async function dismissValues() {
 
   try {
-
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
     console.log('Remove Event Handler');
 
-    remove();
+    removeHandler();
 
     if (SheetProperties.isSpread) {
       const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
       whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+      removeHtmlSpreadInfoForNewChart();
     }
 
     SheetProperties.cellOp.deleteUpdateshapes();
@@ -409,14 +446,13 @@ async function dismissValues() {
         i++;
       })
     });
-    document.getElementById('useNewValues').hidden = true;
-    document.getElementById('dismissValues').hidden = true;
+
   } catch (error) {
     console.log('Error: ', error);
   }
 }
 
-function remove() {
+function removeHandler() {
   return Excel.run(eventResult.context, function (context) {
     eventResult.remove();
 
@@ -697,8 +733,7 @@ function handleSelectionChange(event) {
 
             if (cell.isSpread) {
               showSpreadInTaskPane(cell);
-              document.getElementById("mean").innerHTML = cell.computedMean.toFixed(2);
-              document.getElementById("stdDev").innerHTML = cell.computedStdDev.toFixed(2);
+              document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
 
               if (SheetProperties.newCells == null) {
                 return;
@@ -708,19 +743,47 @@ function handleSelectionChange(event) {
                 if (cell.samples == SheetProperties.newCells[index].samples) {
                   document.getElementById("newDistribution").hidden = true;
                   d3.select("#whatIfChart").select('svg').remove();
+                  document.getElementById("spaceHack").hidden = true;
                   return;
                 }
-
+                document.getElementById("spaceHack").hidden = false;
                 document.getElementById("newDistribution").hidden = false;
-                document.getElementById("newMean").innerHTML = SheetProperties.newCells[index].computedMean.toFixed(2);
-                document.getElementById("newStdDev").innerHTML = SheetProperties.newCells[index].computedStdDev.toFixed(2);
+                document.getElementById("newMean").innerHTML = "New Mean: " + SheetProperties.newCells[index].computedMean.toFixed(2) + " & Std Dev: " + SheetProperties.newCells[index].computedStdDev.toFixed(2);
                 showSpreadInTaskPane(SheetProperties.newCells[index], '.what-if-chart', 'whatIfChart', '#ff9933', true);
               }
+            }
+            else {
+              removeHtmlSpreadInfoForOriginalChart();
+              removeHtmlSpreadInfoForNewChart();
             }
           }
         })
       });
   }).catch((reason: any) => { console.log(reason) });
+}
+
+function removeHtmlSpreadInfoForOriginalChart() {
+  try {
+    d3.select("#" + 'originalChart').select('svg').remove();
+    d3.select("#" + 'lines').select('svg').remove();
+    d3.select("#" + 'spreadLegend').select('svg').remove();
+    document.getElementById("mean").innerHTML = "";
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function removeHtmlSpreadInfoForNewChart() {
+  try {
+    d3.select("#" + 'whatIfChart').select('svg').remove();
+    d3.select("#" + 'newLines').select('svg').remove();
+    d3.select("#" + 'newSpreadLegend').select('svg').remove();
+    document.getElementById("newMean").innerHTML = "";
+    document.getElementById("newDistribution").hidden = true;
+    document.getElementById("spaceHack").hidden = true;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#399bfc', isLegendOrange: boolean = false) {
@@ -744,8 +807,8 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
     }
 
     var margin = { top: 10, right: 30, bottom: 20, left: 40 },
-      width = 360 - margin.left - margin.right,
-      height = 200 - margin.top - margin.bottom;
+      width = 260 - margin.left - margin.right,
+      height = 150 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     var svg = d3.select(divClass)
@@ -776,7 +839,7 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
       .domain([0, 100]);
 
     svg.append("g")
-      .call(d3.axisLeft(y));
+      .call(d3.axisLeft(y).ticks(5));
 
     svg.selectAll("rect")
       .data(bins)
@@ -817,8 +880,8 @@ function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = f
 
   var legendSvg = d3.select(div)
     .append("svg")
-    .attr("width", 360)
-    .attr("height", 30);
+    .attr("width", 260)
+    .attr("height", 10);
 
   // create a list of keys
   var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -828,12 +891,12 @@ function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = f
     .data(keys)
     .enter()
     .append("rect")
-    .attr("x", function (d, i) { return (i + 1) * 24 })
-    .attr("y", 20) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("width", 20)
-    .attr("height", 20)
+    .attr("width", 3)
+    .attr("x", function (d, i) { return 40 + i * 13 })
+    .attr("y", 0)
+    .attr("width", 12)
+    .attr("height", 10)
     .style("fill", (d) => { return colors[d] });
-
 }
 
 function drawLegend(isLegendOrange: boolean = false) {
@@ -845,6 +908,7 @@ function drawLegend(isLegendOrange: boolean = false) {
   let binsObj = new Bins(minDomain, maxDomain, binWidth);
   var colors = binsObj.generateBlueColors();
 
+
   let div = '#spreadLegend';
 
   if (isLegendOrange) {
@@ -853,8 +917,8 @@ function drawLegend(isLegendOrange: boolean = false) {
   }
 
   var Svg = d3.select(div).append("svg")
-    .attr("width", 360)
-    .attr("height", 30);
+    .attr("width", 125)
+    .attr("height", 10);
 
   var keys = [0, 3, 6, 9, 12, 14];
 
@@ -862,21 +926,22 @@ function drawLegend(isLegendOrange: boolean = false) {
     .data(keys)
     .enter()
     .append("rect")
-    .attr("x", function (d, i) { return (i + 1) * 24 })
-    .attr("y", 20)
-    .attr("width", 20)
-    .attr("height", 20)
+    .attr("x", function (d, i) { return (i + 2) * 11 })
+    .attr("y", 0)
+    .attr("width", 10)
+    .attr("height", 5)
     .style("fill", (d) => { return colors[d] });
 
   Svg.selectAll("mylabels")
     .data([0, 100])
     .enter()
     .append("text")
-    .attr("x", function (d, i) { return i * 165 })
-    .attr("y", 30)
+    .attr("x", function (d, i) { return i * 90 })
+    .attr("y", 10)
     .text(function (d) { return d + '%' })
     .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle");
+    .style("alignment-baseline", "middle")
+    .style("font-size", "12px");
 }
 
 function selectSomethingElse() {

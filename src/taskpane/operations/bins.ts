@@ -50,7 +50,7 @@ export default class Bins {
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 3;
+      i = i + 6;
     }
 
     return ticks;
@@ -60,8 +60,10 @@ export default class Bins {
 
     let blueColors = [];
     let i = 0;
-    while (i <= this.nrOfBins) {
-      let color = hsl(198, 1, 0.97 * (1 - i / 15));
+    let color = hsl(200, 0, 0.85);
+    blueColors.push(color.hex());
+    while (i < this.nrOfBins) {
+      let color = hsl(210, 1, 0.9 * (1 - i / 15));
       blueColors.push(color.hex());
       i++;
     }
@@ -73,8 +75,10 @@ export default class Bins {
 
     let orangeColors = [];
     let i = 0;
-    while (i <= this.nrOfBins) {
-      let color = hsl(34, 1, 0.97 * (1 - i / 15));
+    let color = hsl(30, 0, 0.85);
+    orangeColors.push(color.hex());
+    while (i < this.nrOfBins) {
+      let color = hsl(30, 1, 0.9 * (1 - i / 15));
       orangeColors.push(color.hex());
       i++;
     }

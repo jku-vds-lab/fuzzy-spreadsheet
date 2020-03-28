@@ -226,66 +226,65 @@
         <div class="distribution" id="spreadDiv" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
-                <col width="150">
-                <col width="auto">
+                <col width="150" style="text-align: center;">
+                <col width="200" style="text-align: left;">
                 <tr>
                     <td><input type="checkbox" id="spread"></td>
-                    <td>Distribution
-                        <br><small>Mean: <p id="mean"></p>
-                            <br>Std. Dev: <p id="stdDev"></p></small>
+                    <td>Distribution</td>
+                    <td>
+                        <small><b>
+                                <div id="mean" style="text-align: center;"></div>
+                            </b>
+
+                        </small>
                     </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
                     <td>
                         <div class="g-chart" id="originalChart"></div>
                     </td>
                 </tr>
                 <tr>
+                    <td></td>
                     <td>
-                    </td>
-                    <td>
+                        <div id="spreadLegend"></div>
                     </td>
                     <td>
                         <div id="lines"></div>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                    </td>
-                    <td>
-                    </td>
-                    <td>
-                        <div id="spreadLegend"></div>
-                    </td>
 
-                </tr>
+                <tr id="spaceHack" style="height: 50px;" hidden="true"></tr>
+
                 <tr id="newDistribution" hidden="true">
                     <td>
                     </td>
                     <td>New Distribution
-                        <br><small>New Mean:<p id="newMean"></p>
-                            <br>New Std. Dev: <p id="newStdDev"></p></small>
                     </td>
+                    <td>
+                        <small><b>
+                                <div id="newMean" style="text-align: center;"></div>
+                            </b>
+                        </small>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
                     <td>
                         <div class="what-if-chart" id="whatIfChart"></div>
                     </td>
                 </tr>
                 <tr>
+                    <td></td>
                     <td>
-                    </td>
-                    <td>
+                        <div id="newSpreadLegend"></div>
                     </td>
                     <td>
                         <div id="newLines"></div>
                     </td>
-                </tr>
-                <tr>
-                    <td>
-                    </td>
-                    <td>
-                    </td>
-                    <td>
-                        <div id="newSpreadLegend"></div>
-                    </td>
-
                 </tr>
             </table>
         </div>
