@@ -125,31 +125,35 @@ async function markAsReferenceCell() {
   }
 }
 
-async function drawBorder(address: string = null, color: string = 'orange', isSetWeight: boolean = true) {
+function drawBorder(address: string = null, color: string = 'orange', isSetWeight: boolean = true) {
 
-  Excel.run(async context => {
-    let range: Excel.Range;
+  try {
+    Excel.run(async context => {
+      let range: Excel.Range;
 
-    if (address == null) {
-      range = context.workbook.getSelectedRange();
-    } else {
-      range = context.workbook.worksheets.getActiveWorksheet().getRange(address);
-    }
+      if (address == null) {
+        range = context.workbook.getSelectedRange();
+      } else {
+        range = context.workbook.worksheets.getActiveWorksheet().getRange(address);
+      }
 
-    range.format.borders.getItem('EdgeTop').color = color;
-    range.format.borders.getItem('EdgeBottom').color = color;
-    range.format.borders.getItem("EdgeLeft").color = color;
-    range.format.borders.getItem('EdgeRight').color = color;
+      range.format.borders.getItem('EdgeTop').color = color;
+      range.format.borders.getItem('EdgeBottom').color = color;
+      range.format.borders.getItem("EdgeLeft").color = color;
+      range.format.borders.getItem('EdgeRight').color = color;
 
-    // else --> make the border transparent
-    if (isSetWeight) {
-      range.format.borders.getItem('EdgeTop').weight = "Thick";
-      range.format.borders.getItem('EdgeBottom').weight = "Thick";
-      range.format.borders.getItem('EdgeLeft').weight = "Thick";
-      range.format.borders.getItem('EdgeRight').weight = "Thick";
-    }
-    await context.sync();
-  })
+      // else --> make the border transparent
+      if (isSetWeight) {
+        range.format.borders.getItem('EdgeTop').weight = "Thick";
+        range.format.borders.getItem('EdgeBottom').weight = "Thick";
+        range.format.borders.getItem('EdgeLeft').weight = "Thick";
+        range.format.borders.getItem('EdgeRight').weight = "Thick";
+      }
+      return context.sync().then(() => { }).catch((reason: any) => console.log(reason));
+    })
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 
@@ -716,7 +720,7 @@ function clearPreviousReferenceCell() {
 
   if (SheetProperties.referenceCell != null) {
     if (SheetProperties.referenceCell.address != null) {
-      drawBorder(SheetProperties.referenceCell.address, 'red');
+      drawBorder(SheetProperties.referenceCell.address, 'white');
     }
   }
 }
