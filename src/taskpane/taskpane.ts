@@ -9,6 +9,7 @@ import { range, dotMultiply, Matrix } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import Likelihood from './operations/likelihood';
 import Bins from './operations/bins';
+import { add } from 'src/functions/functions';
 
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
@@ -102,7 +103,7 @@ async function markAsReferenceCell() {
 
       range = context.workbook.getSelectedRange();
       range.load("address");
-      range.format.fill.color = "lightgrey";
+      drawBorder();
       await context.sync();
 
       console.log('Marking a reference cell');
@@ -123,6 +124,34 @@ async function markAsReferenceCell() {
     showVisualizationOption();
   }
 }
+
+async function drawBorder(address: string = null, color: string = 'orange', isSetWeight: boolean = true) {
+
+  Excel.run(async context => {
+    let range: Excel.Range;
+
+    if (address == null) {
+      range = context.workbook.getSelectedRange();
+    } else {
+      range = context.workbook.worksheets.getActiveWorksheet().getRange(address);
+    }
+
+    range.format.borders.getItem('EdgeTop').color = color;
+    range.format.borders.getItem('EdgeBottom').color = color;
+    range.format.borders.getItem("EdgeLeft").color = color;
+    range.format.borders.getItem('EdgeRight').color = color;
+
+    // else --> make the border transparent
+    if (isSetWeight) {
+      range.format.borders.getItem('EdgeTop').weight = "Thick";
+      range.format.borders.getItem('EdgeBottom').weight = "Thick";
+      range.format.borders.getItem('EdgeLeft').weight = "Thick";
+      range.format.borders.getItem('EdgeRight').weight = "Thick";
+    }
+    await context.sync();
+  })
+}
+
 
 function inputRelationship() {
   try {
@@ -683,19 +712,13 @@ async function removeShapesFromReferenceCell() {
   });
 }
 
-async function clearPreviousReferenceCell() {
+function clearPreviousReferenceCell() {
 
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-    if (SheetProperties.referenceCell != null) {
-      if (SheetProperties.referenceCell.address != null) {
-        const cell = sheet.getRange(SheetProperties.referenceCell.address);
-        cell.format.fill.clear();
-      }
+  if (SheetProperties.referenceCell != null) {
+    if (SheetProperties.referenceCell.address != null) {
+      drawBorder(SheetProperties.referenceCell.address, 'red');
     }
-    await context.sync();
-  })
+  }
 }
 
 function checkCellChanged() {
