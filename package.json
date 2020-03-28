@@ -33,10 +33,13 @@
     "@types/jquery": "^3.3.31",
     "@types/mathjs": "^6.0.4",
     "d3": "^5.15.0",
+    "d3-svg-legend": "^2.25.6",
     "discrete-sampling": "^1.0.3",
     "jstat": "^1.9.2",
     "mathjs": "^6.6.0",
-    "outliers": "0.0.3"
+    "outliers": "0.0.3",
+    "vega": "^5.10.0",
+    "vega-typings": "^0.14.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.3",

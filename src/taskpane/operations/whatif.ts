@@ -1,6 +1,7 @@
 import CellProperties from "../cellproperties";
 import Spread from "./spread";
 import { increment } from "src/functions/functions";
+import { image, utcFormat } from "d3";
 
 // only new cells contain what if values
 /* global console, Excel */
@@ -28,10 +29,13 @@ export default class WhatIf {
       this.newCells.forEach((newCell: CellProperties, index: number) => {
 
         newCell.whatIf.value = newCell.value - this.oldCells[index].value;
-        // newCell.whatIf.variance = this.newCells[index + 1].value - newCell.variance;
+        if (newCell.whatIf.value > 0) {
+          console.log('For cell: ' + newCell.address + ' changed Value: ' + newCell.whatIf.value);
+        }
 
         if (this.referenceCell.id == newCell.id) {
           this.newReferenceCell = newCell;
+          console.log('Reference Cell Formula', this.newReferenceCell.formula);
         }
         i++;
       })
@@ -61,11 +65,8 @@ export default class WhatIf {
   }
 
   showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-
     try {
-      const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell, 'orange');
-
-      console.log('Computing new spread. Input: ' + isInput + ' Output: ' + isOutput);
+      const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
       spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
@@ -118,6 +119,8 @@ export default class WhatIf {
       console.log(error);
     }
   }
+
+
 
   deleteSpreadNameWise(namesToBeDeleted: string[]) {
 
@@ -224,32 +227,36 @@ export default class WhatIf {
           text += '+';
         }
 
-        text = updatedValue.toPrecision(1).toString();
+        if (updatedValue == Math.ceil(updatedValue)) {
+          text += updatedValue;
+        } else {
+          text += updatedValue.toFixed(2);
+        }
 
         const textbox = sheet.shapes.addTextBox(text);
         textbox.name = "Update1";
         textbox.left = cell.left + 5;
-        textbox.top = cell.top;
+        textbox.top = cell.top + 2;
         textbox.height = cell.height + 4;
-        textbox.width = cell.width / 2;
+        textbox.width = cell.width - 5;
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
 
-        let arrow: Excel.Shape;
+        let rotation = 0;
 
         if (color == 'red') {
-          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.downArrow);
-        } else {
-          arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.upArrow);
+          rotation = 180;
         }
 
+        let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.triangle);
         arrow.name = 'Update2';
         arrow.width = 5;
-        arrow.height = cell.height;
-        arrow.top = cell.top;
-        arrow.left = cell.left;
+        arrow.height = cell.height / 3;
+        arrow.top = cell.top + cell.height / 2 + 2;
+        arrow.left = cell.left + 5;
         arrow.lineFormat.color = color;
+        arrow.rotation = rotation;
         arrow.fill.setSolidColor(color);
         return context.sync().then(() => console.log('Updated shapes')).catch((reason: any) => console.log('Failed to draw the updated shape: ' + reason));
       });

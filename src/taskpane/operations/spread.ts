@@ -10,23 +10,35 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
-import { thresholdFreedmanDiaconis } from 'd3';
+import { lineRadial, hsl } from 'd3';
+import Bins from './bins';
 
 
 // code cleaning required
+// change to heatmap encoding
 export default class Spread {
 
   private cells: CellProperties[];
   private oldCells: CellProperties[];
   private referenceCell: CellProperties;
   private oldReferenceCell: CellProperties;
-  private color: string = null;
+  private colors: string[];
+  private blueColors: string[];
+  private orangeColors: string[];
+  private minDomain = -5;
+  private maxDomain = 40;
+  private binWidth = 3;
+  private binsObj: Bins;
 
-  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties, color: string = null) {
+
+  constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
     this.cells = cells;
     this.oldCells = oldCells;
     this.referenceCell = referenceCell;
-    this.color = color;
+    this.binsObj = new Bins(this.minDomain, this.maxDomain, this.binWidth);
+    this.blueColors = this.binsObj.generateBlueColors();
+    this.orangeColors = this.binsObj.generateOrangeColors();
+    this.colors = this.blueColors;
 
     if (this.oldCells == null) {
       return;
@@ -42,7 +54,7 @@ export default class Spread {
   public showSpread(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
-
+      // this.makeFontColorWhite(n, isInput, isOutput);
       this.addVarianceInfo();
 
       this.showReferenceCellSpread();
@@ -55,8 +67,74 @@ export default class Spread {
         this.showOutputSpread(this.referenceCell.outputCells, n);
       }
 
+
+      this.selectSomethingElse();
+
     } catch (error) {
+      this.selectSomethingElse();
       console.log('Error in Show spread', error);
+    }
+  }
+
+
+  makeFontColorWhite(n: number, isInput: boolean, isOutput: boolean) {
+
+    this.changeFontToWhite(this.referenceCell.address);
+
+    if (isInput) {
+      this.makeInputFontWhite(this.referenceCell.inputCells, n);
+    }
+
+    if (isOutput) {
+      this.makeOutputFontWhite(this.referenceCell.outputCells, n);
+    }
+  }
+
+  makeInputFontWhite(cells: CellProperties[], n: number) {
+
+    try {
+      cells.forEach((cell: CellProperties) => {
+
+        this.changeFontToWhite(cell.address);
+        if (n == 1) {
+          return;
+        }
+        this.makeInputFontWhite(cell.inputCells, n - 1);
+      })
+
+    } catch (error) {
+      console.log('Error', error);
+    }
+  }
+
+  makeOutputFontWhite(cells: CellProperties[], n: number) {
+    try {
+      cells.forEach((cell: CellProperties) => {
+
+        this.changeFontToWhite(cell.address);
+        if (n == 1) {
+          return;
+        }
+        this.makeOutputFontWhite(cell.outputCells, n - 1);
+      })
+
+    } catch (error) {
+      console.log('Error', error);
+    }
+  }
+
+  changeFontToWhite(address: string) {
+
+    try {
+      Excel.run(function (context) {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let range = sheet.getRange(address);
+        range.format.font.color = 'white';
+        return context.sync();
+      });
+
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -84,27 +162,25 @@ export default class Spread {
     try {
       cells.forEach((cell: CellProperties) => {
 
-        if (cell.isSpread) {
-          console.log(cell.address + ' already has a spread');
-          return;
-        }
-
-        cell.isSpread = true;
-
         let oldCell = null;
 
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        this.addSamplesToCell(cell, oldCell);
+        if (cell.isSpread) {
+          console.log(cell.address + ' already has a spread');
 
-        if (cell.samples == null) {
-          cell.isSpread = false;
-          return;
+        } else {
+
+          cell.isSpread = true;
+
+          if (cell.samples == null) {
+            this.addSamplesToCell(cell, oldCell);
+          }
+
+          this.showBarCodePlot(cell, oldCell, 'InputChart');
         }
-
-        this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
           return;
@@ -123,27 +199,25 @@ export default class Spread {
 
       cells.forEach((cell: CellProperties) => {
 
-        if (cell.isSpread) {
-          console.log(cell.address + ' already has a spread');
-          return;
-        }
-
-        cell.isSpread = true;
-
         let oldCell = null;
 
         if (this.oldCells != null) {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        this.addSamplesToCell(cell, oldCell);
+        if (cell.isSpread) {
+          console.log(cell.address + ' already has a spread');
 
-        if (cell.samples == null) {
-          cell.isSpread = false;
-          return;
+        } else {
+
+          cell.isSpread = true;
+
+          if (cell.samples == null) {
+            this.addSamplesToCell(cell, oldCell);
+          }
+
+          this.showBarCodePlot(cell, oldCell, 'OutputChart');
         }
-
-        this.showBarCodePlot(cell, oldCell, 'OutputChart');
 
         if (i == 1) {
           return;
@@ -159,108 +233,135 @@ export default class Spread {
   public showBarCodePlot(cell: CellProperties, oldCell: CellProperties, name: string) {
     try {
 
-      if (cell.samples == null) {
+      if (oldCell == null) {
+        this.drawBarCodePlot(cell, name);
         return;
       }
 
-      if (oldCell == null) {
-        this.drawBarCodePlot(cell, 'blue', name);
+      if (cell.samples == oldCell.samples) {
+        console.log('Returning because samples are the same for :' + cell.address);
         return;
       }
+
       // remove the original bar code plot
       this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
-      this.drawBarCodePlot(oldCell, 'blue', name, true)
+      this.drawBarCodePlot(oldCell, name, true);
       // add new bar code plot with half the length
       name = 'Update' + name;
-      this.drawBarCodePlot(cell, 'orange', name, false, true);
-
+      this.drawBarCodePlot(cell, name, false, true);
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }
-
   }
 
-  public drawBarCodePlot(cell: CellProperties, color: string, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
+  public drawBarCodePlot(cell: CellProperties, name: string, isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
     try {
+
+      let isDrawLine = false;
 
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let totalHeight = cell.height;
+        let height = cell.height - 2;
 
-        let startLineTop = cell.top;
-        let startLineLeft = cell.left + 20;
-        let endLineTop = cell.top + totalHeight;
-
-        if (isUpperHalf) {
-          endLineTop = cell.top + 0.5 * totalHeight;
+        if (isUpperHalf || isLowerHalf) {
+          height = height / 2;
         }
+
+        let top = cell.top + 1;
+        let left = cell.left + 20;
+
+        this.colors = this.blueColors;
 
         if (isLowerHalf) {
-          startLineTop = cell.top + 0.5 * totalHeight;
+          top = top + height;
+          this.colors = this.orangeColors; // always use orange colors in the bottom half
+          isDrawLine = true;
         }
 
-        let blueColors = ['#d8e1e7', '#98b0c2', '#4e7387', '#002e41', '#002534'] // light to dark
-        let orangeColors = ['#ff8000', '#ff9933', '#ffb266', '#ffcc99', '#ffe5cc'];
+        let sortedLinesWithColors = this.computeColorsAndBins(cell);
 
-        let colors = blueColors;
-
-        if (color == 'orange') {
-          colors = orangeColors;
-        }
-
-
-        let data = cell.samples;
-
-        var count = 5;
-
-        let domain = d3.max(data, function (d) { return +d })
-
-        var x = d3.scaleLinear().domain([0, domain]).nice(count);
-
-        var histogram = d3.histogram().value(function (d) { return d }).domain([0, domain]).thresholds(x.ticks(count));
-        var bins = histogram(data);
-
-
-        let sortedBins = bins.sort((n1, n2) => {
-          if (n1.length > n2.length) {
-            return 1;
-          }
-
-          if (n1.length < n2.length) {
-            return -1;
-          }
-          return 0;
-        })
-
-        let colorIndex = 0;
-
-        if (cell.samples.length == 1) {
-          colorIndex = 4;
-        }
-
-        sortedBins.forEach((bin) => {
-
-          const bin_zero = bin[0];
-
-          if (bin_zero == undefined) {
-            return;
-          }
-
-          let line = sheet.shapes.addLine(startLineLeft + bin_zero, startLineTop, startLineLeft + bin_zero, endLineTop);
-          line.lineFormat.color = colors[colorIndex];
+        if (isDrawLine) {
+          let line = sheet.shapes.addLine(cell.left + 15, top, cell.left + cell.width - 15, top);
           line.name = cell.address + name;
-          line.lineFormat.weight = 3;
+          line.lineFormat.color = 'white';
+          line.lineFormat.weight = 2;
           line.lineFormat.transparency = 0.5;
-          colorIndex++;
+        }
+
+
+        if (isLowerHalf) {
+          cell.binOrangeColors = new Array<string>();
+        } else {
+          cell.binBlueColors = new Array<string>();
+        }
+
+        sortedLinesWithColors.forEach((el) => {
+
+          if (isLowerHalf) {
+            cell.binOrangeColors.push(el.color);
+          } else {
+            cell.binBlueColors.push(el.color);
+          }
+
+          let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
+          rect.name = cell.address + name;
+          rect.top = top;
+          rect.left = left + el.value;
+          rect.width = 1.2;
+          rect.height = height;
+          rect.fill.setSolidColor(el.color);
+          rect.fill.transparency = 0.5;
+          rect.lineFormat.color = el.color;
+          rect.lineFormat.transparency = 0.5;
         })
 
         return context.sync();
       });
     } catch (error) {
+      this.selectSomethingElse();
       console.log('Could not draw the bar code plot because of the following error', error);
     }
+  }
+
+
+  selectSomethingElse() {
+    Excel.run(function (context) {
+
+      var sheet = context.workbook.worksheets.getActiveWorksheet();
+
+      var range = sheet.getRange(SheetProperties.referenceCell.address);
+
+      range.select();
+
+      return context.sync();
+    })
+  }
+
+  private computeColorsAndBins(cell: CellProperties) {
+
+    let sortedLinesWithColors = new Array<{ value: number, color: string, freq: number }>();
+
+    try {
+
+      let data = cell.samples;
+
+      let bins = this.binsObj.createBins(data);
+
+      bins.forEach((bin) => {
+        let binValue = bin.x0;
+        let binFreq = bin.length;
+        let binColorIndex = Math.ceil((binFreq / data.length) * bins.length);
+        let binColor = this.colors[binColorIndex];
+
+        const element = { value: binValue, color: binColor, freq: binFreq };
+        sortedLinesWithColors.push(element);
+      })
+    } catch (error) {
+      console.log(error);
+    }
+    return sortedLinesWithColors;
   }
 
   public addSamplesToCell(cell: CellProperties, oldCell: CellProperties) {
@@ -270,41 +371,57 @@ export default class Spread {
       cell.samples = new Array<number>();
 
       const mean = cell.value;
-      const variance = cell.variance;
+      const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
-      // temporary check: to be removed after adding mean & variance value to the formula cells
-      if (oldCell != null && !cell.formula.includes('SUM') && !cell.formula.includes('-')) {
+      let isCellUnary = false;
+
+
+      if (cell.formula.includes('SUM')) {
+        cell.samples = this.addSamplesToSumCell(cell);
+      }
+
+      if (cell.formula.includes('-')) {
+        cell.samples = this.addSamplesToSumCell(cell, true);
+      }
+
+      if (cell.formula.includes('AVERAGE')) {
+        cell.samples = this.addSamplesToAverageCell(cell);
+        isCellUnary = true;
+      }
+
+      // fix values for certain cells
+      if (cell.formula == "") {
+        if (stdev == 0 && likelihood == 1) {
+          let i = 0;
+          while (i < 95) {
+            cell.samples.push(mean);
+            i++;
+          }
+        }
+        isCellUnary = true;
+      }
+
+      cell.computedMean = jStat.mean(cell.samples);
+      cell.computedStdDev = jStat.stdev(cell.samples);
+
+      if (oldCell == null) {
+        return;
+      }
+
+      if (isCellUnary) {
+
         const oldMean = oldCell.value;
-        const oldVariance = oldCell.variance;
+        const oldStdev = oldCell.stdev;
         const oldLikelihood = oldCell.likelihood;
 
         if (mean == oldMean) {
-          if (variance == oldVariance) {
+          if (stdev == oldStdev) {
             if (likelihood == oldLikelihood) {
-              cell.samples = null;
-              return;
+              cell.samples = oldCell.samples;
             }
           }
         }
-      }
-
-      if (variance == 0 && likelihood == 1) {
-        cell.samples.push(mean);
-      }
-      else {
-
-        if (cell.formula.includes('SUM')) {
-          cell.samples = this.addSamplesToSumCell(cell);
-          return;
-        }
-
-        if (cell.formula.includes('-')) {
-          cell.samples = this.addSamplesToSumCell(cell, true);
-          return;
-        }
-
-        cell.samples = this.addSamplesToAverageCell(cell);
       }
     } catch (error) {
       console.log(error);
@@ -316,7 +433,7 @@ export default class Spread {
     try {
 
       const mean = cell.value;
-      const variance = cell.variance;
+      const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
       cell.samples = new Array<number>();
@@ -325,7 +442,7 @@ export default class Spread {
       const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
 
       values.forEach((val: number) => {
-        normalSamples.push(jStat.normal.inv(val, mean, variance));
+        normalSamples.push(jStat.normal.inv(val, mean, stdev));
       })
 
       normalSamples = normalSamples.filter(outliers());
@@ -351,16 +468,36 @@ export default class Spread {
     try {
 
       let inputCells = cell.inputCells;
+      let oldCell = null;
+      let count = 0;
+      if (this.oldCells != null) {
+        oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
+      }
 
       cell.inputCells.forEach((inCell: CellProperties) => {
 
-        let oldCell = null;
+        let oldInCell = null;
 
         if (this.oldCells != null) {
-          oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
+          oldInCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == inCell.id)
         }
-        this.addSamplesToCell(inCell, oldCell);
+
+        this.addSamplesToCell(inCell, oldInCell);
+
+        if (this.oldCells != null) {
+          if (inCell.samples == oldInCell.samples) {
+            count++;
+          }
+        }
       })
+
+      if (oldCell != null) {
+
+        if (count == cell.inputCells.length) {
+          cell.samples = oldCell.samples;
+          return cell.samples;
+        }
+      }
 
       let index = 0;
 
@@ -373,7 +510,6 @@ export default class Spread {
       }
 
       while (index < inputCells.length) {
-
         resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
         index = index + 1;
       }
@@ -393,7 +529,6 @@ export default class Spread {
     resultantSample.samples = new Array<number>();
 
     try {
-
       sample1.samples.forEach((sampleCell1: number, index: number) => {
 
         if (sample2.samples.length <= index) {
@@ -420,11 +555,11 @@ export default class Spread {
 
     try {
       for (let i = 0; i < this.cells.length; i++) {
-        this.cells[i].variance = 0;
+        this.cells[i].stdev = 0;
 
         if (this.cells[i].isUncertain) {
 
-          this.cells[i].variance = this.cells[i + 1].value;
+          this.cells[i].stdev = this.cells[i + 1].value;
           this.cells[i].likelihood = this.cells[i + 2].value;
         }
       }
