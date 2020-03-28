@@ -354,29 +354,58 @@ async function processWhatIf() {
 
 // To be fixed!!
 async function useNewValues() {
-
-  console.log('Remove Event Handler');
-
-  remove();
-  SheetProperties.cellOp.deleteUpdateshapes();
-  if (SheetProperties.isSpread) {
-    const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
-    whatif.deleteNewSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
+  try {
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    removeHandler();
     removeHtmlSpreadInfoForOriginalChart();
     removeHtmlSpreadInfoForNewChart();
+    removeAllShapes();
+    SheetProperties.newCells = null;
+    SheetProperties.cellProp = new CellProperties();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cells = await SheetProperties.cellProp.getCells();
+    SheetProperties.cellProp.getRelationshipOfCells();
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.referenceCell = SheetProperties.cellProp.getReferenceAndNeighbouringCells(SheetProperties.referenceCell.address);
+    SheetProperties.cellProp.checkUncertainty(SheetProperties.cells);
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
+    // eslint-disable-next-line require-atomic-updates
+    SheetProperties.isReferenceCell = true;
+    displayOptions();
+  } catch (error) {
+    console.log(error);
   }
+}
 
-  await parseSheet();
+function removeAllShapes() {
 
+  Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    var shapes = sheet.shapes;
+    shapes.load("items/$none");
+    return context.sync().then(function () {
+      shapes.items.forEach(function (shape) {
+        shape.delete();
+      });
+      return context.sync();
+    });
+  });
+
+  // function setCellPropsToFalse() {
+
+  // }
 }
 
 async function dismissValues() {
 
   try {
-
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
     console.log('Remove Event Handler');
 
-    remove();
+    removeHandler();
 
     if (SheetProperties.isSpread) {
       const whatif = new WhatIf(SheetProperties.newCells, SheetProperties.cells, SheetProperties.referenceCell);
@@ -417,14 +446,13 @@ async function dismissValues() {
         i++;
       })
     });
-    document.getElementById('useNewValues').hidden = true;
-    document.getElementById('dismissValues').hidden = true;
+
   } catch (error) {
     console.log('Error: ', error);
   }
 }
 
-function remove() {
+function removeHandler() {
   return Excel.run(eventResult.context, function (context) {
     eventResult.remove();
 
