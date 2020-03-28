@@ -238,6 +238,7 @@ function impact() {
       }
       checkCellChanged();
     } else {
+      removeImpactPercentage();
       SheetProperties.isImpact = false;
       SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -246,6 +247,10 @@ function impact() {
   } catch (error) {
     console.error(error);
   }
+}
+
+function removeImpactPercentage() {
+  document.getElementById('impactPercentage').innerHTML = '';
 }
 
 function likelihood() {
@@ -648,6 +653,7 @@ function showVisualizationOption() {
   document.getElementById('relationshipDiv').hidden = false;
   document.getElementById('neighborhoodDiv').hidden = false;
   document.getElementById('impactDiv').hidden = false;
+  drawImpactLegend(-200);
   document.getElementById('likelihoodDiv').hidden = false;
   document.getElementById('spreadDiv').hidden = false;
   document.getElementById('relationshipInfoDiv').hidden = false;
@@ -753,8 +759,11 @@ function handleSelectionChange(event) {
 
           if (cell.address.includes(event.address)) {
 
+            removeImpactPercentage();
+
             if (cell.isImpact) {
               addImpactPercentage(cell);
+              drawImpactLegend(cell.impact, cell.rectColor);
             }
 
             if (cell.isLikelihood) {
@@ -791,6 +800,55 @@ function handleSelectionChange(event) {
       });
   }).catch((reason: any) => { console.log(reason) });
 }
+
+function drawImpactLegend(impact: number = 0, color: string = 'green') {
+
+
+  d3.select("#impactLegend").select('svg').remove();
+  impact = Math.ceil(impact * 0.5);
+
+  if (color == 'green') {
+    impact = impact + 50;
+  }
+
+  const minDomain = -5;
+  const maxDomain = 40;
+  const binWidth = 3;
+
+  let binsObj = new Bins(minDomain, maxDomain, binWidth);
+  var colors = binsObj.generateRedGreenColors();
+
+  var Svg = d3.select('#impactLegend').append("svg")
+    .attr("width", 200)
+    .attr("height", 20);
+
+  Svg.selectAll("mydots")
+    .data(colors)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i) * 2 })
+    .attr("y", function (d, i) {
+      if (i == impact) {
+        return 5;
+      }
+      return 10;
+    })
+    .attr("width", function (d, i) {
+      if (i == impact) {
+        return 8;
+      }
+      return 2;
+    })
+    .attr("height", function (d, i) {
+      if (i == impact) {
+        return 15;
+      }
+      return 5;
+    }
+    )
+    .style("fill", (d) => { return d });
+}
+
 
 function removeHtmlSpreadInfoForOriginalChart() {
   try {

@@ -85,6 +85,31 @@ export default class Bins {
 
     return orangeColors;
   }
+
+  generateRedGreenColors() {
+
+    let redGreenColors = [];
+    let redColors = [];
+    let greenColors = [];
+    let i = 0;
+
+    while (i < 50) {
+      let color = hsl(0, 1, 0.5 + 0.01 * i);
+      redColors.push(color.hex());
+      i++;
+    }
+
+    i = 0;
+    while (i < 50) {
+      let color = hsl(120, 1, 1 - 0.015 * i);
+      greenColors.push(color.hex());
+      i++;
+    }
+
+    redGreenColors.push(...redColors);
+    redGreenColors.push(...greenColors);
+    return redGreenColors;
+  }
 }
 
 interface Bin {
