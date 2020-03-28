@@ -112,6 +112,7 @@ async function markAsReferenceCell() {
       SheetProperties.cellOp = new CellOperations(SheetProperties.cells, SheetProperties.referenceCell, 1);
       SheetProperties.isReferenceCell = true;
       console.log('Done Marking a reference cell');
+
       showVisualizationOption();
       displayOptions();
       selectSomethingElse();
