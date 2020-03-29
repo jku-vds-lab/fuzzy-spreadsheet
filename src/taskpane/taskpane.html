@@ -54,6 +54,8 @@
                 src="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as
             Reference Cell</button>
 
+
+
         <!-- <hr> -->
 
         <div class="relationship" id="relationshipDiv" hidden="true">
@@ -105,31 +107,19 @@
                     <td><input type="checkbox" id="impact"></td>
                     <td>Impact</td>
                     <td>
-                        <font size="1" color="#333" text-align="center">MIN<font>
+                        <font size="1" color="#333" text-align="center">-100%<font>
                     </td>
                     <td>
-                        <i class="fa fa-square" style="font-size:15px;color:red;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#ff4d4d;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#ff8080;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#ffb3b3;"></i>
-                        <i class="far fa-square" style="font-size:15px;color:#eaeaea;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#1aff1a;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#00e600;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:#00b300;"></i>
-                        <i class="fa fa-square" style="font-size:15px;color:green;"></i>
-                        <!-- <font size="1" color="#333" text-align="center">MAX</font> -->
-                        <!-- <img width="10" height="10" src="../../assets/impact.png" alt="influence"
-                            title="Influencing the reference cell" /> -->
-                        <!-- <br>
-                        <div class="slidecontainer">
-                            <input type="range" min="0" max="100" value="50" class="slider" id="impact_range">
-                          </div> -->
+                        <div id='impactLegend'>
+                        </div>
                     </td>
                     <td>
-                        <font size="1" color="#333" text-align="center">MAX</font>
+                        <font size="1" color="#333" text-align="center">+100%</font>
                     </td>
                     <td>
-                        <p id="impactPercentage"></p>
+                        <font size="2" color="#333" text-align="center">
+                            <p id="impactPercentage"></p>
+                        </font>
                     </td>
 
                 </tr>
@@ -184,6 +174,71 @@
                 <tr>
                     <td><input type="checkbox" id="relationship"></td>
                     <td>Relationship
+                    </td>
+                    <td>
+                        <table style="width: 100%;">
+                            <col width="20" style="text-align: center;">
+                            <col width="20" style="text-align: center;">
+                            <col width="20" style="text-align: center;">
+                            <tr>
+                                <td>
+                                    <p class="none" id="diamond1"><i class="fa fa-square fa-rotate-45"
+                                            style="font-size:10px;color:#333;"></i>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="none" id="diamond2"><i class="fa fa-square fa-rotate-45"
+                                            style="font-size:10px;color:#848484;"></i>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="none" id="diamond3"><i class="fa fa-square fa-rotate-45"
+                                            style="font-size:10px;color:#eaeaea;"></i>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="none" id="circle1"><i class="fa fa-circle fa-rotate-45"
+                                            style="font-size:10px;color:#333;"></i>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
+                                            style="font-size:10px;color:#848484;"></i>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
+                                            style="font-size:10px;color:#eaeaea;"></i>
+                                    </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p class="none" id="number1">1</p>
+                                </td>
+                                <td>
+                                    <p class="none" id="number2">2</p>
+                                </td>
+                                <td>
+                                    <p class="none" id="number3">3</p>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- <table style="width: 100%;">
+                <col width="15" style="text-align: center;">
+                <col width="150" style="text-align: center;">
+                <col width="auto" style="text-align: center;">
+                <tr>
+                    <td><input type="checkbox" id="relationship"></td>
+                    <td>Relationship
                         <br><small>First degree neighbor input the reference cell</small>
                     </td>
                     <td>
@@ -209,16 +264,7 @@
                         </table>
                     </td>
                 </tr>
-            </table>
-            <!-- <span class="fa-stack fa-2x">
-                <i class="fa fa-square fa-rotate-45 fa-stack-1x"></i>
-                <i class="far fa-square fa-stack-2x" ></i>
-              </span> -->
-
-            <!-- <span class="fa-stack fa-1x">
-                <i class="fa fa-square fa-rotate-45 fa-stack-1x" style="font-size:10px;color:#333;"></i>
-                <i class="far fa-square fa-stack-1x" style="font-size:25px;color:#333;"></i>
-            </span> -->
+            </table> -->
         </div>
 
         <!-- <hr> -->

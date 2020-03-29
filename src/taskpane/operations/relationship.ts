@@ -96,13 +96,11 @@ export default class Relationship {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
-      if (inCell.isInputRelationship) {
-        return;
+      if (!inCell.isInputRelationship) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.drawInputRelation(inCell, colors[colorIndex]), 100);
+        inCell.isInputRelationship = true;
       }
-
-      inCell.isInputRelationship = true;
-
-      this.drawInputRelation(inCell, colors[colorIndex]);
 
       if (n == 1) {
         return;
@@ -118,12 +116,11 @@ export default class Relationship {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
-      if (outCell.isOutputRelationship) {
-        return;
+      if (!outCell.isOutputRelationship) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.drawOutputRelation(outCell, colors[colorIndex]), 100);
+        outCell.isOutputRelationship = true;
       }
-
-      outCell.isOutputRelationship = true;
-      this.drawOutputRelation(outCell, colors[colorIndex]);
 
       if (n == 1) {
         return;

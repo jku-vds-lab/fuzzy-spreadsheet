@@ -11,6 +11,8 @@ import Likelihood from './operations/likelihood';
 import Bins from './operations/bins';
 import { add } from 'src/functions/functions';
 
+// show cell info in the taskpane
+
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -18,6 +20,7 @@ import { add } from 'src/functions/functions';
 /* global console, document, Excel, Office */
 // discrete samples and continuous samples
 Office.initialize = () => {
+
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
   document.getElementById("parseSheet").onclick = parseSheet;
@@ -166,6 +169,7 @@ function inputRelationship() {
       showAllOptions();
       SheetProperties.isInputRelationship = true;
       showInputRelationForOptions();
+      checkCellChanged();
     } else {
       SheetProperties.isInputRelationship = false;
       removeInputRelationFromOptions();
@@ -185,6 +189,7 @@ function outputRelationship() {
       showAllOptions();
       SheetProperties.isOutputRelationship = true;
       showOutputRelationForOptions();
+      checkCellChanged();
     } else {
       SheetProperties.isOutputRelationship = false;
       removeOutputRelationFromOptions();
@@ -235,6 +240,7 @@ function impact() {
       }
       checkCellChanged();
     } else {
+      removeImpactPercentage();
       SheetProperties.isImpact = false;
       SheetProperties.cellOp.removeInputImpact(SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.removeOutputImpact(SheetProperties.degreeOfNeighbourhood);
@@ -243,6 +249,10 @@ function impact() {
   } catch (error) {
     console.error(error);
   }
+}
+
+function removeImpactPercentage() {
+  document.getElementById('impactPercentage').innerHTML = '';
 }
 
 function likelihood() {
@@ -300,6 +310,7 @@ function relationshipIcons() {
     SheetProperties.isRelationship = true;
 
     if (SheetProperties.isInputRelationship) {
+      console.log('Input Relation for: ' + SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     }
 
@@ -499,71 +510,52 @@ function removeHandler() {
 
 function displayOptions() {
 
-  let timeout = 1500;
+  try {
 
+    if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+      SheetProperties.cellOp.addLikelihoodInfo();
+      impact();
+    } else if (SheetProperties.isImpact) {
+      impact();
+    } else if (SheetProperties.isLikelihood) {
+      likelihood();
+    }
 
-  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    SheetProperties.cellOp.addLikelihoodInfo();
-    impact();
-  } else if (SheetProperties.isImpact) {
-    impact();
-  } else if (SheetProperties.isLikelihood) {
-    likelihood();
-  }
-
-  if (SheetProperties.isRelationship) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
+    if (SheetProperties.isRelationship) {
       relationshipIcons();
-    }, timeout);
-  }
+    }
 
-  if (SheetProperties.isSpread) {
-    timeout = 3000;
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
+    if (SheetProperties.isSpread) {
       spread();
-    }, timeout);
-  }
+    }
 
+  } catch (error) {
+    console.log(error);
+  }
   selectSomethingElse();
 }
 
 function showInputRelationForOptions() {
 
 
-  let timeout = 0;
-
   if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    timeout = 1000;
+
     SheetProperties.cellOp.addLikelihoodInfo();
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   } else if (SheetProperties.isImpact) {
-    timeout = 1000;
+
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   } else if (SheetProperties.isLikelihood) {
-    timeout = 1000;
+
     SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
 
   if (SheetProperties.isRelationship) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
-      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-    }, timeout);
-
-    if (timeout == 0) {
-      timeout = 1000;
-    } else {
-      timeout = 2 * timeout;
-    }
+    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
   }
 
   if (SheetProperties.isSpread) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
-      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-    }, timeout);
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 
   selectSomethingElse();
@@ -645,6 +637,7 @@ function showVisualizationOption() {
   document.getElementById('relationshipDiv').hidden = false;
   document.getElementById('neighborhoodDiv').hidden = false;
   document.getElementById('impactDiv').hidden = false;
+  drawImpactLegend(-200);
   document.getElementById('likelihoodDiv').hidden = false;
   document.getElementById('spreadDiv').hidden = false;
   document.getElementById('relationshipInfoDiv').hidden = false;
@@ -750,12 +743,24 @@ function handleSelectionChange(event) {
 
           if (cell.address.includes(event.address)) {
 
+            removeImpactPercentage();
+            clearRelationshipInfoInTaskpane();
+
             if (cell.isImpact) {
               addImpactPercentage(cell);
+              drawImpactLegend(cell.impact, cell.rectColor);
             }
 
             if (cell.isLikelihood) {
               addLikelihoodPercentage(cell);
+            }
+
+            if (cell.isInputRelationship) {
+              highlightInputRelationshipInfo(cell);
+            }
+
+            if (cell.isOutputRelationship) {
+              highlightOutputRelationshipInfo(cell);
             }
 
             if (cell.isSpread) {
@@ -788,6 +793,134 @@ function handleSelectionChange(event) {
       });
   }).catch((reason: any) => { console.log(reason) });
 }
+
+function highlightInputRelationshipInfo(cell: CellProperties) {
+
+  clearRelationshipInfoInTaskpane();
+
+  if (!cell.isInputRelationship) {
+    return;
+  }
+
+  if (cell.degreeToFocus == 1) {
+    document.getElementById('diamond1').className = 'dotted';
+    document.getElementById('number1').className = 'dotted';
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 2) {
+    if (cell.degreeToFocus > 1) {
+      document.getElementById('diamond2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    }
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 3) {
+
+    console.log('Degree to focus: ' + cell.degreeToFocus);
+    if (cell.degreeToFocus == 2) {
+      document.getElementById('diamond2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    } else if (cell.degreeToFocus > 2) {
+      document.getElementById('diamond3').className = 'dotted';
+      document.getElementById('number3').className = 'dotted';
+    }
+  }
+}
+
+function highlightOutputRelationshipInfo(cell: CellProperties) {
+
+  clearRelationshipInfoInTaskpane();
+
+  if (!cell.isOutputRelationship) {
+    return;
+  }
+
+  if (cell.degreeToFocus == 1) {
+    document.getElementById('circle1').className = 'dotted';
+    document.getElementById('number1').className = 'dotted';
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 2) {
+    if (cell.degreeToFocus > 1) {
+      document.getElementById('circle2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    }
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 3) {
+    if (cell.degreeToFocus == 2) {
+      document.getElementById('circle2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    } else {
+      document.getElementById('circle3').className = 'dotted';
+      document.getElementById('number3').className = 'dotted';
+    }
+  }
+}
+
+function clearRelationshipInfoInTaskpane() {
+  document.getElementById('number1').className = 'none';
+  document.getElementById('number2').className = 'none';
+  document.getElementById('number3').className = 'none';
+
+  document.getElementById('diamond1').className = 'none';
+  document.getElementById('diamond2').className = 'none';
+  document.getElementById('diamond3').className = 'none';
+
+  document.getElementById('circle1').className = 'none';
+  document.getElementById('circle2').className = 'none';
+  document.getElementById('circle3').className = 'none';
+}
+
+
+function drawImpactLegend(impact: number = 0, color: string = 'green') {
+
+
+  d3.select("#impactLegend").select('svg').remove();
+  impact = Math.ceil(impact * 0.5);
+
+  if (color == 'green') {
+    impact = impact + 50;
+  }
+
+  const minDomain = -5;
+  const maxDomain = 40;
+  const binWidth = 3;
+
+  let binsObj = new Bins(minDomain, maxDomain, binWidth);
+  var colors = binsObj.generateRedGreenColors();
+
+  var Svg = d3.select('#impactLegend').append("svg")
+    .attr("width", 200)
+    .attr("height", 20);
+
+  Svg.selectAll("mydots")
+    .data(colors)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return (i) * 2 })
+    .attr("y", function (d, i) {
+      if (i == impact) {
+        return 5;
+      }
+      return 10;
+    })
+    .attr("width", function (d, i) {
+      if (i == impact) {
+        return 8;
+      }
+      return 2;
+    })
+    .attr("height", function (d, i) {
+      if (i == impact) {
+        return 15;
+      }
+      return 5;
+    }
+    )
+    .style("fill", (d) => { return d });
+}
+
 
 function removeHtmlSpreadInfoForOriginalChart() {
   try {

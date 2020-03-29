@@ -234,7 +234,8 @@ export default class Spread {
     try {
 
       if (oldCell == null) {
-        this.drawBarCodePlot(cell, name);
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.drawBarCodePlot(cell, name), 100);
         return;
       }
 
@@ -246,10 +247,12 @@ export default class Spread {
       // remove the original bar code plot
       this.removeSpreadCellWise(oldCell);
       // add old bar code plot with half the length
-      this.drawBarCodePlot(oldCell, name, true);
+      // eslint-disable-next-line no-undef
+      setTimeout(() => this.drawBarCodePlot(oldCell, name, true), 100);
       // add new bar code plot with half the length
       name = 'Update' + name;
-      this.drawBarCodePlot(cell, name, false, true);
+      // eslint-disable-next-line no-undef
+      setTimeout(() => this.drawBarCodePlot(cell, name, false, true), 100);
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
     }

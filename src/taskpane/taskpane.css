@@ -329,3 +329,15 @@ div.tooltip {
     pointer-events: none;
     color: #a6a6a6;
 }
+
+.dotted {
+    border-style: dashed;
+    border-width: 1px;
+    text-align: center;
+}
+
+.none {
+    border-style: none;
+    border-width: 1px;
+    text-align: center;
+}
