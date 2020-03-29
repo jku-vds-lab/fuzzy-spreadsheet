@@ -169,6 +169,7 @@ function inputRelationship() {
       showAllOptions();
       SheetProperties.isInputRelationship = true;
       showInputRelationForOptions();
+      checkCellChanged();
     } else {
       SheetProperties.isInputRelationship = false;
       removeInputRelationFromOptions();
@@ -188,6 +189,7 @@ function outputRelationship() {
       showAllOptions();
       SheetProperties.isOutputRelationship = true;
       showOutputRelationForOptions();
+      checkCellChanged();
     } else {
       SheetProperties.isOutputRelationship = false;
       removeOutputRelationFromOptions();
@@ -760,6 +762,7 @@ function handleSelectionChange(event) {
           if (cell.address.includes(event.address)) {
 
             removeImpactPercentage();
+            clearRelationshipInfoInTaskpane();
 
             if (cell.isImpact) {
               addImpactPercentage(cell);
@@ -768,6 +771,14 @@ function handleSelectionChange(event) {
 
             if (cell.isLikelihood) {
               addLikelihoodPercentage(cell);
+            }
+
+            if (cell.isInputRelationship) {
+              highlightInputRelationshipInfo(cell);
+            }
+
+            if (cell.isOutputRelationship) {
+              highlightOutputRelationshipInfo(cell);
             }
 
             if (cell.isSpread) {
@@ -800,6 +811,85 @@ function handleSelectionChange(event) {
       });
   }).catch((reason: any) => { console.log(reason) });
 }
+
+function highlightInputRelationshipInfo(cell: CellProperties) {
+
+  clearRelationshipInfoInTaskpane();
+
+  if (!cell.isInputRelationship) {
+    return;
+  }
+
+  if (cell.degreeToFocus == 1) {
+    document.getElementById('diamond1').className = 'dotted';
+    document.getElementById('number1').className = 'dotted';
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 2) {
+    if (cell.degreeToFocus > 1) {
+      document.getElementById('diamond2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    }
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 3) {
+
+    console.log('Degree to focus: ' + cell.degreeToFocus);
+    if (cell.degreeToFocus == 2) {
+      document.getElementById('diamond2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    } else if (cell.degreeToFocus > 2) {
+      document.getElementById('diamond3').className = 'dotted';
+      document.getElementById('number3').className = 'dotted';
+    }
+  }
+}
+
+function highlightOutputRelationshipInfo(cell: CellProperties) {
+
+  clearRelationshipInfoInTaskpane();
+
+  if (!cell.isOutputRelationship) {
+    return;
+  }
+
+  if (cell.degreeToFocus == 1) {
+    document.getElementById('circle1').className = 'dotted';
+    document.getElementById('number1').className = 'dotted';
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 2) {
+    if (cell.degreeToFocus > 1) {
+      document.getElementById('circle2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    }
+  }
+
+  if (SheetProperties.degreeOfNeighbourhood == 3) {
+    if (cell.degreeToFocus == 2) {
+      document.getElementById('circle2').className = 'dotted';
+      document.getElementById('number2').className = 'dotted';
+    } else {
+      document.getElementById('circle3').className = 'dotted';
+      document.getElementById('number3').className = 'dotted';
+    }
+  }
+}
+
+function clearRelationshipInfoInTaskpane() {
+  document.getElementById('number1').className = 'none';
+  document.getElementById('number2').className = 'none';
+  document.getElementById('number3').className = 'none';
+
+  document.getElementById('diamond1').className = 'none';
+  document.getElementById('diamond2').className = 'none';
+  document.getElementById('diamond3').className = 'none';
+
+  document.getElementById('circle1').className = 'none';
+  document.getElementById('circle2').className = 'none';
+  document.getElementById('circle3').className = 'none';
+}
+
 
 function drawImpactLegend(impact: number = 0, color: string = 'green') {
 
