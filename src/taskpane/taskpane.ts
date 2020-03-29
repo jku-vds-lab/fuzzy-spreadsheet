@@ -511,7 +511,6 @@ function removeHandler() {
 function displayOptions() {
 
   try {
-    console.log('Display for: ' + SheetProperties.degreeOfNeighbourhood);
 
     if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
       SheetProperties.cellOp.addLikelihoodInfo();
