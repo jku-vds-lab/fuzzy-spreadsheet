@@ -119,12 +119,11 @@ export default class Likelihood {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
-      if (inCell.isLikelihood) {
-        return;
+      if (!inCell.isLikelihood) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.commonOps.drawRectangle(inCell, 'InputLikelihood'), 100);
+        inCell.isLikelihood = true;
       }
-
-      inCell.isLikelihood = true;
-      this.commonOps.drawRectangle(inCell, 'InputLikelihood');
 
       if (n == 1) {
         return;
@@ -138,12 +137,11 @@ export default class Likelihood {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
-      if (outCell.isLikelihood) {
-        return;
+      if (!outCell.isLikelihood) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.commonOps.drawRectangle(outCell, 'OutputLikelihood'), 100);
+        outCell.isLikelihood = true;
       }
-
-      outCell.isLikelihood = true;
-      this.commonOps.drawRectangle(outCell, 'OutputLikelihood');
 
       if (n == 1) {
         return;

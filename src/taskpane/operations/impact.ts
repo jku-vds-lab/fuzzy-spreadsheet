@@ -121,13 +121,11 @@ export default class Impact {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
-      if (inCell.isImpact) {
-        console.log(cell.address + ' Returning because impact is already there');
-        return;
+      if (!inCell.isImpact) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.commonOps.drawRectangle(inCell, 'InputImpact'), 100);
+        inCell.isImpact = true;
       }
-
-      inCell.isImpact = true;
-      this.commonOps.drawRectangle(inCell, 'InputImpact');
 
       if (i == 1) {
         return;
@@ -140,12 +138,11 @@ export default class Impact {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
-      if (outCell.isImpact) {
-        return;
+      if (!outCell.isImpact) {
+        // eslint-disable-next-line no-undef
+        setTimeout(() => this.commonOps.drawRectangle(outCell, 'OutputImpact'), 100);
+        outCell.isImpact = true;
       }
-
-      outCell.isImpact = true;
-      this.commonOps.drawRectangle(outCell, 'OutputImpact');
 
       if (i == 1) {
         return;

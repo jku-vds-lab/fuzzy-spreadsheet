@@ -310,6 +310,7 @@ function relationshipIcons() {
     SheetProperties.isRelationship = true;
 
     if (SheetProperties.isInputRelationship) {
+      console.log('Input Relation for: ' + SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     }
 
@@ -509,71 +510,53 @@ function removeHandler() {
 
 function displayOptions() {
 
-  let timeout = 1500;
+  try {
+    console.log('Display for: ' + SheetProperties.degreeOfNeighbourhood);
 
+    if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
+      SheetProperties.cellOp.addLikelihoodInfo();
+      impact();
+    } else if (SheetProperties.isImpact) {
+      impact();
+    } else if (SheetProperties.isLikelihood) {
+      likelihood();
+    }
 
-  if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    SheetProperties.cellOp.addLikelihoodInfo();
-    impact();
-  } else if (SheetProperties.isImpact) {
-    impact();
-  } else if (SheetProperties.isLikelihood) {
-    likelihood();
-  }
-
-  if (SheetProperties.isRelationship) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
+    if (SheetProperties.isRelationship) {
       relationshipIcons();
-    }, timeout);
-  }
+    }
 
-  if (SheetProperties.isSpread) {
-    timeout = 3000;
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
+    if (SheetProperties.isSpread) {
       spread();
-    }, timeout);
-  }
+    }
 
+  } catch (error) {
+    console.log(error);
+  }
   selectSomethingElse();
 }
 
 function showInputRelationForOptions() {
 
 
-  let timeout = 0;
-
   if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
-    timeout = 1000;
+
     SheetProperties.cellOp.addLikelihoodInfo();
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   } else if (SheetProperties.isImpact) {
-    timeout = 1000;
+
     SheetProperties.cellOp.showInputImpact(SheetProperties.degreeOfNeighbourhood);
   } else if (SheetProperties.isLikelihood) {
-    timeout = 1000;
+
     SheetProperties.cellOp.showInputLikelihood(SheetProperties.degreeOfNeighbourhood);
   }
 
   if (SheetProperties.isRelationship) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
-      SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
-    }, timeout);
-
-    if (timeout == 0) {
-      timeout = 1000;
-    } else {
-      timeout = 2 * timeout;
-    }
+    SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
   }
 
   if (SheetProperties.isSpread) {
-    // eslint-disable-next-line no-undef
-    setTimeout(() => {
-      SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
-    }, timeout);
+    SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
   }
 
   selectSomethingElse();
