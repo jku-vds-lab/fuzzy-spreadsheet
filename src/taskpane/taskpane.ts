@@ -19,6 +19,7 @@ import { add } from 'src/functions/functions';
  */
 /* global console, document, Excel, Office */
 // discrete samples and continuous samples
+
 Office.initialize = () => {
 
   document.getElementById("sideload-msg").style.display = "none";
@@ -60,8 +61,6 @@ async function unprotectSheet() {
     console.log('Sheet is unprotected');
   });
 }
-
-
 
 async function parseSheet() {
 
@@ -152,11 +151,12 @@ async function markAsReferenceCell() {
   }
 }
 
-function drawBorder(address: string = null, color: string = 'orange', isSetWeight: boolean = true) {
+function drawBorder(address: string = null, isSetToOriginal: boolean = false) {
 
   try {
     Excel.run(async context => {
       let range: Excel.Range;
+      let color: string = 'orange'
 
       if (address == null) {
         range = context.workbook.getSelectedRange();
@@ -164,18 +164,45 @@ function drawBorder(address: string = null, color: string = 'orange', isSetWeigh
         range = context.workbook.worksheets.getActiveWorksheet().getRange(address);
       }
 
-      range.format.borders.getItem('EdgeTop').color = color;
-      range.format.borders.getItem('EdgeBottom').color = color;
-      range.format.borders.getItem("EdgeLeft").color = color;
-      range.format.borders.getItem('EdgeRight').color = color;
 
-      // else --> make the border transparent
-      if (isSetWeight) {
+      if (isSetToOriginal) {
+        range.format.borders.getItem('EdgeTop').color = SheetProperties.originalTopBorder.color;
+        range.format.borders.getItem('EdgeBottom').color = SheetProperties.originalBottomBorder.color;
+        range.format.borders.getItem("EdgeLeft").color = SheetProperties.originalLeftBorder.color;
+        range.format.borders.getItem('EdgeRight').color = SheetProperties.originalRightBorder.color;
+
+        range.format.borders.getItem('EdgeTop').weight = SheetProperties.originalTopBorder.weight;
+        range.format.borders.getItem('EdgeBottom').weight = SheetProperties.originalBottomBorder.weight;
+        range.format.borders.getItem("EdgeLeft").weight = SheetProperties.originalLeftBorder.weight;
+        range.format.borders.getItem('EdgeRight').weight = SheetProperties.originalRightBorder.weight;
+
+        range.format.borders.getItem('EdgeTop').style = SheetProperties.originalTopBorder.style;
+        range.format.borders.getItem('EdgeBottom').style = SheetProperties.originalBottomBorder.style;
+        range.format.borders.getItem("EdgeLeft").style = SheetProperties.originalLeftBorder.style;
+        range.format.borders.getItem('EdgeRight').style = SheetProperties.originalRightBorder.style;
+      }
+      else {
+        SheetProperties.originalTopBorder = range.format.borders.getItem('EdgeTop');
+        SheetProperties.originalBottomBorder = range.format.borders.getItem('EdgeBottom');
+        SheetProperties.originalLeftBorder = range.format.borders.getItem('EdgeLeft');
+        SheetProperties.originalRightBorder = range.format.borders.getItem('EdgeRight');
+
+        SheetProperties.originalTopBorder.load(['color', 'weight', 'style']);
+        SheetProperties.originalBottomBorder.load(['color', 'weight', 'style']);
+        SheetProperties.originalLeftBorder.load(['color', 'weight', 'style']);
+        SheetProperties.originalRightBorder.load(['color', 'weight', 'style']);
+
+        range.format.borders.getItem('EdgeTop').color = color;
+        range.format.borders.getItem('EdgeBottom').color = color;
+        range.format.borders.getItem("EdgeLeft").color = color;
+        range.format.borders.getItem('EdgeRight').color = color;
+
         range.format.borders.getItem('EdgeTop').weight = "Thick";
         range.format.borders.getItem('EdgeBottom').weight = "Thick";
         range.format.borders.getItem('EdgeLeft').weight = "Thick";
         range.format.borders.getItem('EdgeRight').weight = "Thick";
       }
+
       return context.sync().then(() => { }).catch((reason: any) => console.log(reason));
     })
   } catch (error) {
@@ -738,7 +765,7 @@ function clearPreviousReferenceCell() {
 
   if (SheetProperties.referenceCell != null) {
     if (SheetProperties.referenceCell.address != null) {
-      drawBorder(SheetProperties.referenceCell.address, 'white');
+      drawBorder(SheetProperties.referenceCell.address, true);
     }
   }
 }

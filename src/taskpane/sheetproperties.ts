@@ -20,4 +20,8 @@ export default class SheetProperties {
   static isSheetParsed = false;
   static newValues: any[][];
   static newFormulas: any[][];
+  static originalTopBorder: Excel.RangeBorder;
+  static originalBottomBorder: Excel.RangeBorder;
+  static originalLeftBorder: Excel.RangeBorder;
+  static originalRightBorder: Excel.RangeBorder;
 }
