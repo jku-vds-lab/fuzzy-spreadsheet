@@ -39,6 +39,30 @@ Office.initialize = () => {
   document.getElementById("dismissValues").onclick = dismissValues;
 }
 
+async function protectSheet() {
+  await Excel.run(async (context) => {
+    let workbook = context.workbook;
+    workbook.load("protection/protected");
+
+    await context.sync();
+
+    if (!workbook.protection.protected) {
+      console.log('Sheet is protected');
+      workbook.protection.protect();
+    }
+  });
+}
+
+async function unprotectSheet() {
+  await Excel.run(async (context) => {
+    let workbook = context.workbook;
+    workbook.protection.unprotect();
+    console.log('Sheet is unprotected');
+  });
+}
+
+
+
 async function parseSheet() {
 
   SheetProperties.isSheetParsed = true;
@@ -283,7 +307,7 @@ function likelihood() {
 async function spread() {
   try {
     var element = <HTMLInputElement>document.getElementById("spread");
-
+    await unprotectSheet();
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
@@ -296,6 +320,7 @@ async function spread() {
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
     selectSomethingElse();
+    await protectSheet();
   } catch (error) {
     console.error(error);
   }
