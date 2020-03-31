@@ -10,7 +10,7 @@ export default class CommonOperations {
     this.referenceCell = referenceCell;
   }
 
-  drawRectangle(cell: CellProperties, type: string) {
+  drawRectangle(cell: CellProperties, name: string) {
 
     try {
 
@@ -24,7 +24,7 @@ export default class CommonOperations {
         let width = 5;
 
         cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-        cell.rect.name = "Shape" + type;
+        cell.rect.name = cell.address + "Shape" + name;
         cell.rect.left = cell.left + MARGIN;
         cell.rect.top = cell.top + cell.height / 4;
 
@@ -45,7 +45,7 @@ export default class CommonOperations {
         return context.sync();
       });
     } catch (error) {
-      console.log('---' + type + ' : ', error);
+      console.log('---' + name + ' : ', error);
     }
   }
 
