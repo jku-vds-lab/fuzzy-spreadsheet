@@ -45,6 +45,91 @@ export default class WhatIf {
     }
   }
 
+  getChangedCells() {
+    let changedCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+
+    this.newCells.forEach((newCell: CellProperties, index: number) => {
+
+      if (newCell.value == this.oldCells[index].value) {
+        if (newCell.stdev == this.oldCells[index].stdev) {
+          if (newCell.likelihood == this.oldCells[index].likelihood) {
+            return;
+          }
+        }
+      }
+
+      changedCells.push({ oldCell: this.oldCells[index], newCell: newCell });
+
+    });
+  }
+
+  displayOptionsForChangeCells(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
+    if (isImpact) {
+      // calculate new impact
+    }
+
+    if (isLikelihood) {
+      // calculate new likelihood
+    }
+
+    if (isRelationship) {
+      // do nothing at the moment
+    }
+
+    if (isSpread) {
+      // delete old spread
+      // add original spread in first half
+      // compute samples for new spread
+      // add new spread in second half
+    }
+  }
+
+  dismissWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
+
+    if (isImpact) {
+      // remove new impact, only change the newcells.impact to zero
+
+    }
+
+    if (isLikelihood) {
+      // remove new likelihood, only change the newcells.impact to zero
+    }
+
+    if (isRelationship) {
+      // do nothing at the moment
+    }
+
+    if (isSpread) {
+      // delete old spread & mark is spread as false
+      // delete new spread
+      // add old spread again
+    }
+  }
+
+
+  keepWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
+    if (isImpact) {
+      // do something
+      // calculate new impact
+    }
+
+    if (isLikelihood) {
+      // calculate new likelihood
+    }
+
+    if (isRelationship) {
+      // do nothing at the moment
+    }
+
+    if (isSpread) {
+      // delete old spread
+      // add original spread in first half
+      // compute samples for new spread
+      // add new spread in second half
+    }
+  }
+
+
   showUpdateTextInCells(n: number, isInput: boolean, isOutput: boolean) {
 
     try {
@@ -65,13 +150,13 @@ export default class WhatIf {
   }
 
   showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-    try {
-      const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
-      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+    // try {
+    //   const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
+    //   spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
-    } catch (error) {
-      console.log(error);
-    }
+    // } catch (error) {
+    //   console.log(error);
+    // }
   }
 
   deleteNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
@@ -90,8 +175,8 @@ export default class WhatIf {
 
       this.deleteSpreadNameWise(namesToBeDeleted);
 
-      const spread = new Spread(this.oldCells, null, this.referenceCell);
-      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+      // const spread = new Spread(this.oldCells, null, this.referenceCell);
+      // spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
       console.log(error);
@@ -112,8 +197,8 @@ export default class WhatIf {
 
       this.deleteSpreadNameWise(namesToBeDeleted);
 
-      const spread = new Spread(this.newCells, null, this.newReferenceCell);
-      spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
+      // const spread = new Spread(this.newCells, null, this.newReferenceCell);
+      // spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
       console.log(error);

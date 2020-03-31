@@ -17,15 +17,17 @@ export default class CellOperations {
   private likelihood: Likelihood;
   private spread: Spread;
   private relationship: Relationship;
+  private commonOps: CommonOperations;
 
   constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
     this.cells = cells;
     this.referenceCell = referenceCell;
     this.degreeOfNeighbourhood = n;
-    this.impact = new Impact(this.referenceCell, this.cells);
-    this.likelihood = new Likelihood(this.cells, this.referenceCell);
-    this.spread = new Spread(this.cells, null, this.referenceCell);
-    this.relationship = new Relationship(this.cells, this.referenceCell);
+    this.impact = new Impact(this.referenceCell);
+    this.likelihood = new Likelihood(this.referenceCell);
+    this.spread = new Spread(this.referenceCell);
+    this.relationship = new Relationship(this.referenceCell);
+    this.commonOps = new CommonOperations(this.referenceCell);
   }
 
   getCells() {
@@ -35,9 +37,25 @@ export default class CellOperations {
   getDegreeOfNeighbourhood() {
     return this.degreeOfNeighbourhood;
   }
-  removeShapesInNeighbours(n: number) {
-    const commonOps = new CommonOperations(this.referenceCell);
-    commonOps.removeShapesInNeighbours(n);
+
+  removeShapesReferenceCellWise() {
+    this.commonOps.removeShapesReferenceCellWise();
+  }
+
+  removeShapesOptionWise(optionName: string) {
+    this.commonOps.removeShapesOptionWise(optionName);
+  }
+
+  removeShapesInfluenceWise(influenceType: string) {
+    this.commonOps.removeShapesInfluenceWise(influenceType);
+  }
+
+  removeShapesUpdatedWise() {
+    this.commonOps.removeShapesUpdatedWise();
+  }
+
+  removeShapesNeighbourWise(n: number) {
+    this.commonOps.removeShapesNeighbourWise(n);
   }
 
   showInputImpact(n: number) {
@@ -45,22 +63,6 @@ export default class CellOperations {
   }
   showOutputImpact(n: number) {
     this.impact.showOutputImpact(n);
-  }
-
-  removeInputImpact(n: number) {
-    this.impact.removeInputImpact(n);
-  }
-
-  removeOutputImpact(n: number) {
-    this.impact.removeOutputImpact(n);
-  }
-
-  removeAllImpacts() {
-    this.impact.removeAllImpacts();
-  }
-
-  addLikelihoodInfo() {
-    this.likelihood.addLikelihoodInfo();
   }
 
   showInputLikelihood(n: number) {
@@ -71,60 +73,15 @@ export default class CellOperations {
     this.likelihood.showOutputLikelihood(n);
   }
 
-  removeInputLikelihood(n: number) {
-    this.likelihood.removeInputLikelihood(n);
-  }
-
-  removeOutputLikelihood(n: number) {
-    this.likelihood.removeOutputLikelihood(n);
-  }
-
-  removeAllLikelihoods() {
-    this.likelihood.removeAllLikelihoods();
-  }
-
   showSpread(n: number, isInput: boolean, isOutput: boolean) {
     this.spread.showSpread(n, isInput, isOutput);
-  }
-
-  removeSpread(isInput: boolean, isOutput: boolean, isRemoveAll: boolean) {
-    this.spread.removeSpread(isInput, isOutput, isRemoveAll);
-  }
-
-  removeSpreadFromReferenceCell() {
-    this.spread.removeSpreadFromReferenceCell();
   }
 
   showInputRelationship(n: number) {
     this.relationship.showInputRelationship(n);
   }
 
-  removeInputRelationship() {
-    this.relationship.removeInputRelationship();
-  }
-
   showOutputRelationship(n: number) {
     this.relationship.showOutputRelationship(n);
-  }
-
-  removeOutputRelationship() {
-    this.relationship.removeOutputRelationship();
-  }
-
-  deleteUpdateshapes() {
-
-    Excel.run(function (context) {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-      const oldTextbox = sheet.shapes;
-      oldTextbox.load("items/name");
-      return context.sync().then(function () {
-        oldTextbox.items.forEach(function (c) {
-          if (c.name.includes('Update'))
-            c.delete();
-        });
-      });
-
-    })
   }
 }

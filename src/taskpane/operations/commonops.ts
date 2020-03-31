@@ -6,42 +6,45 @@ import SheetProperties from "../sheetproperties";
 export default class CommonOperations {
   private referenceCell: CellProperties;
 
-  constructor(referenceCell: CellProperties = null) {
+  constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
   }
 
-  drawRectangle(cell: CellProperties, name: string) {
+  drawRectangle(cells: CellProperties[], name: string) {
 
     try {
-
-
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let i = 0;
         let MARGIN = 10;
         let height = 5;
         let width = 5;
 
-        cell.rect = sheet.shapes.addGeometricShape("Rectangle");
-        cell.rect.name = cell.address + "Shape" + name;
-        cell.rect.left = cell.left + MARGIN;
-        cell.rect.top = cell.top + cell.height / 4;
+        cells.forEach((cell: CellProperties) => {
 
-        if (SheetProperties.isLikelihood) {
-          height = cell.likelihood * 10;
-          width = cell.likelihood * 10;
-        }
+          cell.rect = sheet.shapes.addGeometricShape("Rectangle");
+          cell.rect.name = cell.address + name;
+          cell.rect.left = cell.left + MARGIN;
+          cell.rect.top = cell.top + cell.height / 4;
 
-        cell.rect.height = height;
-        cell.rect.width = width;
+          // if impact does not exist, only then
+          if (cell.isLikelihood) {
+            height = cell.likelihood * 10;
+            width = cell.likelihood * 10;
+            cell.rectColor = 'gray';
+            cell.rectTransparency = 0;
+          }
 
-        cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
-        cell.rect.fill.setSolidColor(cell.rectColor);
-        cell.rect.fill.transparency = cell.rectTransparency;
-        cell.rect.lineFormat.weight = 0;
-        cell.rect.lineFormat.color = cell.rectColor;
-        i++;
+          cell.rect.height = height;
+          cell.rect.width = width;
+
+          cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
+          cell.rect.fill.setSolidColor(cell.rectColor);
+          cell.rect.fill.transparency = cell.rectTransparency;
+          cell.rect.lineFormat.weight = 0;
+          cell.rect.lineFormat.color = cell.rectColor;
+        })
+
         return context.sync();
       });
     } catch (error) {
@@ -49,33 +52,28 @@ export default class CommonOperations {
     }
   }
 
-  deleteRectangles(cells: CellProperties[], type: string) {
-
-    try {
-
-      Excel.run((context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        var shapes = sheet.shapes;
-        shapes.load("items/name");
-
-        return context.sync().then(function () {
-          shapes.items.forEach(function (shape) {
-            if (shape.name.includes('Shape' + type)) {
-              console.log('Name: ' + shape.name);
-              shape.delete();
-            }
-          });
-        }).catch((reason: any) => {
-          console.log('Step 1:', reason, type)
-        });
-      });
-    } catch (error) {
-      console.log('Step 2:', error);
-      OfficeHelpers.Utilities.log(error);
-    }
+  // To remove shapes from reference cell
+  removeShapesReferenceCellWise() {
+    this.deleteShapes('Reference');
   }
 
-  removeShapesInNeighbours(n: number) {
+  // To remove a particular option: such as spread
+  removeShapesOptionWise(optionName: string) {
+    this.deleteShapes(optionName);
+  }
+
+  // To remove a particular influence: such as influence by (or input cells)
+  removeShapesInfluenceWise(influenceType: string) {
+    this.deleteShapes(influenceType);
+  }
+
+  // To remove updated shapes
+  removeShapesUpdatedWise() {
+    this.deleteShapes('Update');
+  }
+
+  // To remove shapes based of degree of neighbourhood
+  removeShapesNeighbourWise(n: number) {
     if (n == 1) {
       this.removeSecondDegreeInputNeighbours();
       this.removeThirdDegreeInputNeighbours();
@@ -91,7 +89,7 @@ export default class CommonOperations {
     }
   }
 
-  setPropertiesToFalse(cell: CellProperties) {
+  private setPropertiesToFalse(cell: CellProperties) {
     cell.isSpread = false;
     cell.isInputRelationship = false;
     cell.isOutputRelationship = false;
@@ -99,7 +97,7 @@ export default class CommonOperations {
     cell.isImpact = false;
   }
 
-  removeSecondDegreeInputNeighbours() {
+  private removeSecondDegreeInputNeighbours() {
 
     let names = new Array<string>();
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
@@ -111,7 +109,7 @@ export default class CommonOperations {
     this.deleteShapesInCells(names);
   }
 
-  removeThirdDegreeInputNeighbours() {
+  private removeThirdDegreeInputNeighbours() {
     let names = new Array<string>();
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
       inCell.inputCells.forEach((inincell: CellProperties) => {
@@ -124,7 +122,7 @@ export default class CommonOperations {
     this.deleteShapesInCells(names);
   }
 
-  removeSecondDegreeOutputNeighbours() {
+  private removeSecondDegreeOutputNeighbours() {
     let names = new Array<string>();
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.outputCells.forEach((outoutcell: CellProperties) => {
@@ -135,7 +133,7 @@ export default class CommonOperations {
     this.deleteShapesInCells(names);
   }
 
-  removeThirdDegreeOutputNeighbours() {
+  private removeThirdDegreeOutputNeighbours() {
     let names = new Array<string>();
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.outputCells.forEach((outoutcell: CellProperties) => {
@@ -148,7 +146,7 @@ export default class CommonOperations {
     this.deleteShapesInCells(names);
   }
 
-  deleteShapesInCells(names: string[]) {
+  private deleteShapesInCells(names: string[]) {
 
     try {
 
@@ -174,4 +172,26 @@ export default class CommonOperations {
     }
   }
 
+  private deleteShapes(name: string) {
+    try {
+
+      Excel.run((context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(function () {
+          shapes.items.forEach(function (shape) {
+            if (shape.name.includes(name)) {
+              shape.delete();
+            }
+          });
+        }).catch((reason: any) => {
+          console.log('Step 1:', reason, name)
+        });
+      });
+    } catch (error) {
+      console.log('Step 2:', error);
+    }
+  }
 }

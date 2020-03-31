@@ -205,6 +205,7 @@ export default class CellProperties {
       this.getRelationshipOfCells(this.newCells);
 
       this.checkUncertainty(this.newCells);
+      this.addVarianceAndLikelihoodInfo(this.newCells);
 
     } catch (error) {
       console.log('Error: ' + error);
@@ -212,6 +213,25 @@ export default class CellProperties {
 
     return this.newCells;
   }
+
+  public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
+
+    try {
+      for (let i = 0; i < this.cells.length; i++) {
+        cells[i].stdev = 0;
+        cells[i].likelihood = 1;
+
+        if (cells[i].isUncertain) {
+
+          cells[i].stdev = this.cells[i + 1].value;
+          cells[i].likelihood = this.cells[i + 2].value;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
   private convertIdToIndices(id: string) {
 
