@@ -30,6 +30,8 @@ export default class Spread {
   private maxDomain = 40;
   private binWidth = 3;
   private binsObj: Bins;
+  private inputCellsWithSpread: CellProperties[];
+  private outputCellsWithSpread: CellProperties[];
 
 
   constructor(cells: CellProperties[], oldCells: CellProperties[], referenceCell: CellProperties) {
@@ -40,6 +42,8 @@ export default class Spread {
     this.blueColors = this.binsObj.generateBlueColors();
     this.orangeColors = this.binsObj.generateOrangeColors();
     this.colors = this.blueColors;
+    this.inputCellsWithSpread = new Array<CellProperties>();
+    this.outputCellsWithSpread = new Array<CellProperties>();
 
     if (this.oldCells == null) {
       return;
@@ -61,81 +65,19 @@ export default class Spread {
       this.showReferenceCellSpread();
 
       if (isInput) {
+        this.inputCellsWithSpread = new Array<CellProperties>();
         this.showInputSpread(this.referenceCell.inputCells, n);
+        this.showBarCodePlotInBulk(this.inputCellsWithSpread, 'InputChart');
       }
 
       if (isOutput) {
+        this.outputCellsWithSpread = new Array<CellProperties>();
         this.showOutputSpread(this.referenceCell.outputCells, n);
+        this.showBarCodePlotInBulk(this.outputCellsWithSpread, 'OutputChart');
       }
 
-
-      this.selectSomethingElse();
-
     } catch (error) {
-      this.selectSomethingElse();
       console.log('Error in Show spread', error);
-    }
-  }
-
-
-  makeFontColorWhite(n: number, isInput: boolean, isOutput: boolean) {
-
-    this.changeFontToWhite(this.referenceCell.address);
-
-    if (isInput) {
-      this.makeInputFontWhite(this.referenceCell.inputCells, n);
-    }
-
-    if (isOutput) {
-      this.makeOutputFontWhite(this.referenceCell.outputCells, n);
-    }
-  }
-
-  makeInputFontWhite(cells: CellProperties[], n: number) {
-
-    try {
-      cells.forEach((cell: CellProperties) => {
-
-        this.changeFontToWhite(cell.address);
-        if (n == 1) {
-          return;
-        }
-        this.makeInputFontWhite(cell.inputCells, n - 1);
-      })
-
-    } catch (error) {
-      console.log('Error', error);
-    }
-  }
-
-  makeOutputFontWhite(cells: CellProperties[], n: number) {
-    try {
-      cells.forEach((cell: CellProperties) => {
-
-        this.changeFontToWhite(cell.address);
-        if (n == 1) {
-          return;
-        }
-        this.makeOutputFontWhite(cell.outputCells, n - 1);
-      })
-
-    } catch (error) {
-      console.log('Error', error);
-    }
-  }
-
-  changeFontToWhite(address: string) {
-
-    try {
-      Excel.run(function (context) {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let range = sheet.getRange(address);
-        range.format.font.color = 'white';
-        return context.sync();
-      });
-
-    } catch (error) {
-      console.log(error);
     }
   }
 
@@ -147,8 +89,6 @@ export default class Spread {
         console.log('Returning because reference cell has a spread');
         return;
       }
-
-
       this.referenceCell.isSpread = true;
       this.addSamplesToCell(this.referenceCell, this.oldReferenceCell);
       this.showBarCodePlot(this.referenceCell, this.oldReferenceCell, 'ReferenceChart');
@@ -169,10 +109,7 @@ export default class Spread {
           oldCell = this.oldCells.find((oldCell: CellProperties) => oldCell.id == cell.id)
         }
 
-        if (cell.isSpread) {
-          console.log(cell.address + ' already has a spread');
-
-        } else {
+        if (!cell.isSpread) {
 
           cell.isSpread = true;
 
@@ -180,8 +117,11 @@ export default class Spread {
             this.addSamplesToCell(cell, oldCell);
           }
 
-          this.showBarCodePlot(cell, oldCell, 'InputChart');
+          this.inputCellsWithSpread.push(cell);
         }
+
+
+        // this.showBarCodePlot(cell, oldCell, 'InputChart');
 
         if (i == 1) {
           return;
@@ -217,7 +157,8 @@ export default class Spread {
             this.addSamplesToCell(cell, oldCell);
           }
 
-          this.showBarCodePlot(cell, oldCell, 'OutputChart');
+          this.outputCellsWithSpread.push(cell);
+          // this.showBarCodePlot(cell, oldCell, 'OutputChart');
         }
 
         if (i == 1) {
@@ -229,6 +170,40 @@ export default class Spread {
     } catch (error) {
       console.log('Error in Show Output Cell Spread', error);
     }
+  }
+
+  public showBarCodePlotInBulk(cells: CellProperties[], name: string) {
+    try {
+
+      Excel.run((context) => {
+
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        cells.forEach((cell: CellProperties) => {
+          let height = cell.height - 2;
+          let top = cell.top + 1;
+          let left = cell.left + 20;
+          this.colors = this.blueColors;
+          let sortedLinesWithColors = this.computeColorsAndBins(cell);
+          sortedLinesWithColors.forEach((el) => {
+            let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
+            rect.name = cell.address + name;
+            rect.top = top;
+            rect.left = left + el.value;
+            rect.width = 1.2;
+            rect.height = height;
+            rect.fill.setSolidColor(el.color);
+            rect.fill.transparency = 0.5;
+            rect.lineFormat.color = el.color;
+            rect.lineFormat.transparency = 0.5;
+          })
+        })
+        return context.sync();
+      });
+    } catch (error) {
+      this.selectSomethingElse();
+      console.log('Could not draw the bar code plot because of the following error', error);
+    }
+
   }
 
   public showBarCodePlot(cell: CellProperties, oldCell: CellProperties, name: string) {
