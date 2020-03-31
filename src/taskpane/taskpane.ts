@@ -255,7 +255,6 @@ function outputRelationship() {
 function first() {
 
   SheetProperties.degreeOfNeighbourhood = 1;
-  // removeShapesFromReferenceCell();
   displayOptions();
   selectSomethingElse();
 }
@@ -263,7 +262,6 @@ function first() {
 
 function second() {
   SheetProperties.degreeOfNeighbourhood = 2;
-  // removeShapesFromReferenceCell();
   displayOptions();
   selectSomethingElse();
 }
@@ -271,7 +269,6 @@ function second() {
 
 function third() {
   SheetProperties.degreeOfNeighbourhood = 3;
-  // removeShapesFromReferenceCell();
   displayOptions();
   selectSomethingElse();
 }
@@ -331,10 +328,10 @@ function likelihood() {
   }
 }
 
-async function spread() {
+function spread() {
   try {
     var element = <HTMLInputElement>document.getElementById("spread");
-    await unprotectSheet();
+
     if (element.checked) {
       SheetProperties.isSpread = true;
       SheetProperties.cellOp.showSpread(SheetProperties.degreeOfNeighbourhood, SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship);
@@ -346,8 +343,8 @@ async function spread() {
       SheetProperties.cellOp.removeSpread(SheetProperties.isInputRelationship, SheetProperties.isOutputRelationship, true);
       SheetProperties.cellOp.removeSpreadFromReferenceCell();
     }
+
     selectSomethingElse();
-    await protectSheet();
   } catch (error) {
     console.error(error);
   }
@@ -362,7 +359,6 @@ function relationshipIcons() {
     SheetProperties.isRelationship = true;
 
     if (SheetProperties.isInputRelationship) {
-      console.log('Input Relation for: ' + SheetProperties.degreeOfNeighbourhood);
       SheetProperties.cellOp.showInputRelationship(SheetProperties.degreeOfNeighbourhood);
     }
 
@@ -563,6 +559,8 @@ function removeHandler() {
 function displayOptions() {
 
   try {
+
+    SheetProperties.cellOp.removeShapesInNeighbours(SheetProperties.degreeOfNeighbourhood);
 
     if (SheetProperties.isImpact && SheetProperties.isLikelihood) {
       SheetProperties.cellOp.addLikelihoodInfo();
@@ -1082,33 +1080,43 @@ function showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart
 
 function drawLinesBeneathChart(cell: CellProperties, isLegendOrange: boolean = false) {
 
-  var colors = cell.binBlueColors;
-  let div = '#lines';
+  try {
 
-  if (isLegendOrange) {
-    div = '#newLines';
-    colors = cell.binOrangeColors;
+    var colors = cell.binBlueColors;
+
+    if (colors == undefined) {
+      return;
+    }
+
+    let div = '#lines';
+
+    if (isLegendOrange) {
+      div = '#newLines';
+      colors = cell.binOrangeColors;
+    }
+
+    var legendSvg = d3.select(div)
+      .append("svg")
+      .attr("width", 260)
+      .attr("height", 10);
+
+    // create a list of keys
+    var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+    // Add one dot in the legend for each name.
+    legendSvg.selectAll("mydots")
+      .data(keys)
+      .enter()
+      .append("rect")
+      .attr("width", 3)
+      .attr("x", function (d, i) { return 40 + i * 13 })
+      .attr("y", 0)
+      .attr("width", 12)
+      .attr("height", 10)
+      .style("fill", (d) => { return colors[d] });
+  } catch (error) {
+    console.log(error);
   }
-
-  var legendSvg = d3.select(div)
-    .append("svg")
-    .attr("width", 260)
-    .attr("height", 10);
-
-  // create a list of keys
-  var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-
-  // Add one dot in the legend for each name.
-  legendSvg.selectAll("mydots")
-    .data(keys)
-    .enter()
-    .append("rect")
-    .attr("width", 3)
-    .attr("x", function (d, i) { return 40 + i * 13 })
-    .attr("y", 0)
-    .attr("width", 12)
-    .attr("height", 10)
-    .style("fill", (d) => { return colors[d] });
 }
 
 function drawLegend(isLegendOrange: boolean = false) {

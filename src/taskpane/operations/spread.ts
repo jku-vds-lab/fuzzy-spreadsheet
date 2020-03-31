@@ -1,4 +1,4 @@
-/* global console, Excel */
+/* global setTimeout, console, Excel */
 import { ceil } from 'mathjs';
 import * as jstat from 'jstat';
 import CellProperties from '../cellproperties';
@@ -10,8 +10,9 @@ import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import * as d3 from 'd3';
 import CellOperations from '../celloperations';
-import { lineRadial, hsl } from 'd3';
+import { lineRadial, hsl, thresholdScott, isoFormat } from 'd3';
 import Bins from './bins';
+import CommonOperations from './commonops';
 
 
 // code cleaning required
@@ -234,7 +235,7 @@ export default class Spread {
     try {
 
       if (oldCell == null) {
-        // eslint-disable-next-line no-undef
+
         setTimeout(() => this.drawBarCodePlot(cell, name), 100);
         return;
       }
@@ -245,13 +246,13 @@ export default class Spread {
       }
 
       // remove the original bar code plot
-      this.removeSpreadCellWise(oldCell);
+      this.removeSpreadCellWise(oldCell, '');
       // add old bar code plot with half the length
-      // eslint-disable-next-line no-undef
+
       setTimeout(() => this.drawBarCodePlot(oldCell, name, true), 100);
       // add new bar code plot with half the length
       name = 'Update' + name;
-      // eslint-disable-next-line no-undef
+
       setTimeout(() => this.drawBarCodePlot(cell, name, false, true), 100);
     } catch (error) {
       console.log('Could not draw the bar code plot because of the following error', error);
@@ -581,27 +582,124 @@ export default class Spread {
 
     if (!isInput) {
       name = 'InputChart';
-      this.deleteBarCodePlot(name);
+      setTimeout(() => this.deleteBarCodePlot(name), 100);
     }
 
     if (!isOutput) {
       name = 'OutputChart';
-      this.deleteBarCodePlot(name);
+      setTimeout(() => this.deleteBarCodePlot(name), 100);
     }
 
     if (isRemoveAll) {
-      this.deleteBarCodePlot('InputChart');
-      this.deleteBarCodePlot('OutputChart');
+      setTimeout(() => this.deleteBarCodePlot('InputChart'), 100);
+      setTimeout(() => this.deleteBarCodePlot('OutputChart'), 100);
     }
   }
 
   public removeSpreadFromReferenceCell() {
     this.referenceCell.isSpread = false;
-    this.deleteBarCodePlot('ReferenceChart');
+    setTimeout(() => this.deleteBarCodePlot('ReferenceChart'), 100);
   }
 
-  public removeSpreadCellWise(cell: CellProperties) {
-    this.deleteBarCodePlot(cell.address);
+  public removeSpreadCellWise(cell: CellProperties, name: string) {
+
+    name = cell.address + name;
+    this.deleteBarCodePlot(name);
+    // setTimeout(() => this.deleteBarCodePlot(name), 100);
+  }
+
+  // Remove the spread from the nth neighbour
+  public removeSpreadInNeighbourhood(n: number, isInput: boolean, isOutput: boolean) {
+    if (this.oldCells == null) {
+      console.log('No old cell found');
+    }
+
+    if (isInput) {
+      this.removeInputSpreadInNeighbourhood(n);
+    }
+
+    if (isOutput) {
+      this.removeOutputSpreadInNeighbourhood(n);
+    }
+  }
+
+  public removeInputSpreadInNeighbourhood(n: number) {
+    let name = 'InputChart';
+
+    const commonOps = new CommonOperations();
+
+
+    if (n == 1) {
+
+      commonOps.deleteShapesInCells(this.getSecondDegreeInputNeighbours());
+      commonOps.deleteShapesInCells(this.getThirdDegreeInputNeighbours());
+    }
+
+    if (n == 2) {
+      commonOps.deleteShapesInCells(this.getThirdDegreeInputNeighbours());
+    }
+  }
+
+  getSecondDegreeInputNeighbours() {
+    let names = new Array<string>();
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.inputCells.forEach((inincell: CellProperties) => {
+        names.push(inincell.address);
+      })
+    })
+    return names;
+  }
+
+  getThirdDegreeInputNeighbours() {
+    let names = new Array<string>();
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.inputCells.forEach((inincell: CellProperties) => {
+        inincell.inputCells.forEach((ininincell: CellProperties) => {
+          names.push(ininincell.address);
+        })
+      })
+    })
+    return names;
+  }
+
+  public removeOutputSpreadInNeighbourhood(n: number) {
+
+    let name = 'OutputChart';
+
+    if (n == 1) {
+      this.removeSecondDegreeOutputNeighbours(name);
+      this.removeThirdDegreeOutputNeighbours(name);
+    }
+
+    if (n == 2) {
+      this.removeThirdDegreeOutputNeighbours(name);
+    }
+  }
+
+
+  removeSecondDegreeOutputNeighbours(name: string) {
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      this.removeSpreadFromCells(outCell.outputCells, name);
+    })
+  }
+
+  removeThirdDegreeOutputNeighbours(name: string) {
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      outCell.outputCells.forEach((outOutCell: CellProperties) => {
+        this.removeSpreadFromCells(outOutCell.outputCells, name);
+      })
+    })
+  }
+
+  public removeSpreadFromCells(cells: CellProperties[], name: string) {
+
+    cells.forEach((cell: CellProperties) => {
+
+      if (cell.isSpread) {
+        this.removeSpreadCellWise(cell, name);
+      }
+      cell.isSpread = false;
+    })
   }
 
 
@@ -629,27 +727,4 @@ export default class Spread {
     }
   }
 
-  async asyncDeleteBarCodePlot(name: string) {
-
-    try {
-
-      await Excel.run(async (context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        var shapes = sheet.shapes;
-        shapes.load("items/name");
-
-        await context.sync();
-
-        shapes.items.forEach(function (shape) {
-          if (shape.name.includes(name)) {
-            shape.delete();
-          }
-        })
-
-        await context.sync();
-      });
-    } catch (error) {
-      console.log('Async Delete Error:', error);
-    }
-  }
 }

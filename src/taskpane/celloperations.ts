@@ -6,6 +6,7 @@ import Spread from './operations/spread';
 import Relationship from './operations/relationship';
 import SheetProperties from './sheetproperties';
 import DiscreteSpread from './operations/spread';
+import CommonOperations from './operations/commonops';
 
 export default class CellOperations {
 
@@ -34,12 +35,14 @@ export default class CellOperations {
   getDegreeOfNeighbourhood() {
     return this.degreeOfNeighbourhood;
   }
+  removeShapesInNeighbours(n: number) {
+    const commonOps = new CommonOperations(this.referenceCell);
+    commonOps.removeShapesInNeighbours(n);
+  }
 
   showInputImpact(n: number) {
     this.impact.showInputImpact(n);
   }
-
-
   showOutputImpact(n: number) {
     this.impact.showOutputImpact(n);
   }

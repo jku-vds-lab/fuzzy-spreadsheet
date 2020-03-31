@@ -4,6 +4,11 @@ import CellProperties from "../cellproperties";
 import SheetProperties from "../sheetproperties";
 
 export default class CommonOperations {
+  private referenceCell: CellProperties;
+
+  constructor(referenceCell: CellProperties = null) {
+    this.referenceCell = referenceCell;
+  }
 
   drawRectangle(cell: CellProperties, type: string) {
 
@@ -69,4 +74,104 @@ export default class CommonOperations {
       OfficeHelpers.Utilities.log(error);
     }
   }
+
+  removeShapesInNeighbours(n: number) {
+    if (n == 1) {
+      this.removeSecondDegreeInputNeighbours();
+      this.removeThirdDegreeInputNeighbours();
+
+      this.removeSecondDegreeOutputNeighbours();
+      this.removeThirdDegreeOutputNeighbours();
+    }
+
+    if (n == 2) {
+      this.removeThirdDegreeInputNeighbours();
+
+      this.removeThirdDegreeOutputNeighbours();
+    }
+  }
+
+  setPropertiesToFalse(cell: CellProperties) {
+    cell.isSpread = false;
+    cell.isInputRelationship = false;
+    cell.isOutputRelationship = false;
+    cell.isLikelihood = false;
+    cell.isImpact = false;
+  }
+
+  removeSecondDegreeInputNeighbours() {
+
+    let names = new Array<string>();
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.inputCells.forEach((inincell: CellProperties) => {
+        this.setPropertiesToFalse(inincell);
+        names.push(inincell.address);
+      })
+    })
+    this.deleteShapesInCells(names);
+  }
+
+  removeThirdDegreeInputNeighbours() {
+    let names = new Array<string>();
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.inputCells.forEach((inincell: CellProperties) => {
+        inincell.inputCells.forEach((ininincell: CellProperties) => {
+          this.setPropertiesToFalse(ininincell);
+          names.push(ininincell.address);
+        })
+      })
+    })
+    this.deleteShapesInCells(names);
+  }
+
+  removeSecondDegreeOutputNeighbours() {
+    let names = new Array<string>();
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      outCell.outputCells.forEach((outoutcell: CellProperties) => {
+        this.setPropertiesToFalse(outoutcell);
+        names.push(outoutcell.address);
+      })
+    })
+    this.deleteShapesInCells(names);
+  }
+
+  removeThirdDegreeOutputNeighbours() {
+    let names = new Array<string>();
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      outCell.outputCells.forEach((outoutcell: CellProperties) => {
+        outoutcell.outputCells.forEach((outoutoutCell: CellProperties) => {
+          this.setPropertiesToFalse(outoutoutCell);
+          names.push(outoutoutCell.address);
+        })
+      })
+    })
+    this.deleteShapesInCells(names);
+  }
+
+  deleteShapesInCells(names: string[]) {
+
+    try {
+
+      Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+        shapes.load("items/name");
+
+        return context.sync().then(function () {
+          names.forEach((name: string) => {
+            shapes.items.forEach(function (shape) {
+              if (shape.name.includes(name)) {
+                shape.delete();
+              }
+            });
+          })
+        }).catch((reason: any) => {
+          console.log('Step 1:', reason)
+        });
+      });
+    } catch (error) {
+      console.log('Step 2:', error);
+    }
+  }
+
 }

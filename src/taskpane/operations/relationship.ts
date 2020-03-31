@@ -1,5 +1,6 @@
 import CellProperties from "../cellproperties";
-import { timeTuesday } from "d3";
+import { timeTuesday, stackOrderInsideOut } from "d3";
+import CellOperations from "../celloperations";
 
 /* global console, Excel */
 export default class Relationship {
@@ -26,27 +27,100 @@ export default class Relationship {
   }
 
   removeInputRelationship() {
-    this.deleteTriangles('Input');
+    this.cells.forEach((cell: CellProperties) => {
+      if (cell.isInputRelationship) {
+        cell.isInputRelationship = false;
+      }
+    })
+    this.deleteRelationshipIcons('InputRelationship');
   }
 
   removeOutputRelationship() {
-    this.deleteTriangles('Output');
+    this.cells.forEach((cell: CellProperties) => {
+      if (cell.isOutputRelationship) {
+        cell.isOutputRelationship = false;
+      }
+    })
+    this.deleteRelationshipIcons('OutputRelationship');
   }
 
-  private async deleteTriangles(type: string) {
+  removeRelationshipCellWise(cell: CellProperties, name: string) {
+    try {
+      this.deleteRelationshipIcons(cell.address + name);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  removeInputRelationshipInNeighbourhood(n: number) {
+    let name = 'InputRelationship';
+
+    if (n == 1) {
+      this.removeSecondDegreeInputNeighbours(name);
+      this.removeThirdDegreeInputNeighbours(name);
+    }
+
+    if (n == 2) {
+      this.removeThirdDegreeInputNeighbours(name);
+    }
+  }
+
+  removeSecondDegreeInputNeighbours(name: string) {
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      this.removeRelationshipFromCells(inCell.inputCells, name, true);
+    })
+  }
+
+  removeThirdDegreeInputNeighbours(name: string) {
+    this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
+      inCell.inputCells.forEach((inInCell: CellProperties) => {
+        this.removeRelationshipFromCells(inInCell.inputCells, name, true);
+      })
+    })
+  }
+
+  removeOutputRelationshipInNeighbourhood(n: number) {
+    let name = 'OutputRelationship';
+
+    if (n == 1) {
+      this.removeSecondDegreeOutputNeighbours(name);
+      this.removeThirdDegreeOutputNeighbours(name);
+    }
+
+    if (n == 2) {
+      this.removeThirdDegreeOutputNeighbours(name);
+    }
+
+  }
+
+  removeSecondDegreeOutputNeighbours(name: string) {
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      this.removeRelationshipFromCells(outCell.outputCells, name, false);
+    })
+  }
+
+  removeThirdDegreeOutputNeighbours(name: string) {
+    this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
+      outCell.outputCells.forEach((outOutCell: CellProperties) => {
+        this.removeRelationshipFromCells(outOutCell.outputCells, name, false);
+      })
+    })
+  }
+
+  removeRelationshipFromCells(cells: CellProperties[], name: string, isInput: boolean) {
+    cells.forEach((cell: CellProperties) => {
+      if (isInput) {
+        cell.isInputRelationship = false;
+      } else {
+        cell.isOutputRelationship = false;
+      }
+      this.removeRelationshipCellWise(cell, name);
+    })
+  }
+
+  private async deleteRelationshipIcons(name: string) {
 
     try {
-
-      console.log('Delete type: ' + type);
-      this.cells.forEach((cell: CellProperties) => {
-        if (type == 'Input') {
-          cell.isInputRelationship = false;
-        }
-        if (type == 'Output') {
-          cell.isOutputRelationship = false;
-        }
-      })
-
       await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         var shapes = sheet.shapes;
@@ -54,7 +128,7 @@ export default class Relationship {
 
         return context.sync().then(function () {
           shapes.items.forEach(function (shape) {
-            if (shape.name.includes('Relationship' + type)) {
+            if (shape.name.includes(name)) {
               shape.delete();
             }
           });
@@ -76,7 +150,7 @@ export default class Relationship {
 
         type = Excel.GeometricShapeType.diamond;
         let diamond = shapes.addGeometricShape(type);
-        diamond.name = "RelationshipInput"
+        diamond.name = cell.address + "InputRelationship";
         diamond.left = cell.left;
         diamond.top = cell.top + cell.height / 4;
         diamond.height = 6;
@@ -141,7 +215,7 @@ export default class Relationship {
 
         type = Excel.GeometricShapeType.ellipse;
         let circle = shapes.addGeometricShape(type);
-        circle.name = "RelationshipOutput"
+        circle.name = cell.address + "OutputRelationship"
         circle.left = cell.left;
         circle.top = cell.top + cell.height / 4;
         circle.height = 6;
