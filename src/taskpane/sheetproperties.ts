@@ -1,7 +1,8 @@
 import CellOperations from "./celloperations";
 import CellProperties from "./cellproperties";
 import UIOptions from "./uioptions";
-/* global console, document, Excel, Office */
+import { image } from "d3";
+/* global console, setTimeout, Excel, Office */
 export default class SheetProperties {
 
   private isInputRelationship: boolean = false;
@@ -26,8 +27,6 @@ export default class SheetProperties {
   private originalLeftBorder: Excel.RangeBorder;
   private originalRightBorder: Excel.RangeBorder;
   private uiOptions: UIOptions;
-  private isImpactOffscreen: boolean;
-  private isLikelihoodOffscreen: boolean;
 
   constructor() {
     this.uiOptions = new UIOptions();
@@ -235,17 +234,13 @@ export default class SheetProperties {
   public setDegreeOfNeighbourhood(n: number) {
     this.degreeOfNeighbourhood = n;
     this.cellOp.removeShapesNeighbourWise(n);
-    this.displayOptions();
+    setTimeout(() => this.displayOptions(), 1000);
   }
 
   public impact() {
 
     try {
       this.isImpact = this.uiOptions.isElementChecked('impact');
-
-      if (!this.isImpact) {
-        this.cellOp.removeShapesOptionWise('Impact');
-      }
       this.displayOptions();
     } catch (error) {
       console.log(error);
@@ -256,12 +251,7 @@ export default class SheetProperties {
 
     try {
       this.isLikelihood = this.uiOptions.isElementChecked('likelihood');
-
-      if (!this.isLikelihood) {
-        this.cellOp.removeShapesOptionWise('Likelihood');
-      }
       this.displayOptions();
-
     } catch (error) {
       console.log(error);
     }
@@ -271,37 +261,62 @@ export default class SheetProperties {
 
     try {
 
-      if (this.isImpact) {
+      if (this.isImpact && this.isLikelihood) {
+
+        this.cellOp.setOptions(false, false, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+        this.cellOp.removeShapesOptionWise('Likelihood');
+        this.cellOp.removeShapesOptionWise('Impact');
+        this.cellOp.setOptions(true, true, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+
         if (this.isInputRelationship) {
-          this.cellOp.removeShapesOptionWise('Likelihood');
+          this.cellOp.showInputImpact(this.degreeOfNeighbourhood, true);
+          this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood, false);
+        }
+
+        if (this.isOutputRelationship) {
+          this.cellOp.showOutputImpact(this.degreeOfNeighbourhood, true);
+          this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood, false);
+        }
+
+      } else if (this.isImpact) {
+
+        this.cellOp.setOptions(false, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+        this.cellOp.removeShapesOptionWise('Likelihood');
+        this.cellOp.removeShapesOptionWise('Impact');
+
+        if (this.isInputRelationship) {
           this.cellOp.showInputImpact(this.degreeOfNeighbourhood, true);
         }
 
         if (this.isOutputRelationship) {
-          this.cellOp.removeShapesOptionWise('Likelihood');
           this.cellOp.showOutputImpact(this.degreeOfNeighbourhood, true);
         }
-      }
 
-      if (this.isLikelihood) {
+        this.cellOp.setOptions(true, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+
+      } else if (this.isLikelihood) {
+
+        this.cellOp.setOptions(this.isImpact, false, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+        this.cellOp.removeShapesOptionWise('Likelihood');
+        this.cellOp.removeShapesOptionWise('Impact');
+
         if (this.isInputRelationship) {
-          this.cellOp.removeShapesOptionWise('Impact');
           this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood, true);
         }
 
         if (this.isOutputRelationship) {
-          this.cellOp.removeShapesOptionWise('Impact');
           this.cellOp.showOutputLikelihood(this.degreeOfNeighbourhood, true);
         }
-      }
 
+        this.cellOp.setOptions(this.isImpact, true, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+      } else {
+
+        this.cellOp.removeShapesOptionWise('Impact');
+        this.cellOp.removeShapesOptionWise('Likelihood');
+      }
     } catch (error) {
       console.log(error);
     }
-  }
-
-  public redrawImpact() {
-
   }
 
   public relationshipIcons() {
@@ -337,7 +352,7 @@ export default class SheetProperties {
         this.cellOp.showSpread(this.degreeOfNeighbourhood, this.isInputRelationship, this.isOutputRelationship);
 
       } else {
-        this.cellOp.removeShapesOptionWise('Relationship');
+        this.cellOp.removeShapesOptionWise('Spread');
 
       }
     } catch (error) {

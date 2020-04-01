@@ -40,23 +40,27 @@ export default class CommonOperations {
           cell.rect.left = cell.left + MARGIN;
           cell.rect.top = cell.top + cell.height / 4;
 
-          if (cell.isLikelihood && cell.isImpact) {
+          let color = 'gray';
+          let transparency = 0;
 
+          if (cell.isImpact) {
+            color = cell.rectColor;
+            transparency = cell.rectTransparency;
+          }
+
+          if (cell.isLikelihood) {
             height = cell.likelihood * 10;
             width = cell.likelihood * 10;
-          } else if (cell.isLikelihood) {
-            cell.rectColor = 'gray';
-            cell.rectTransparency = 0;
           }
 
           cell.rect.height = height;
           cell.rect.width = width;
 
           cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
-          cell.rect.fill.setSolidColor(cell.rectColor);
-          cell.rect.fill.transparency = cell.rectTransparency;
+          cell.rect.fill.setSolidColor(color);
+          cell.rect.fill.transparency = transparency;
           cell.rect.lineFormat.weight = 0;
-          cell.rect.lineFormat.color = cell.rectColor;
+          cell.rect.lineFormat.color = color;
         })
 
         return context.sync();
@@ -96,6 +100,11 @@ export default class CommonOperations {
 
       if (!this.isLikelihood) {
         cell.isLikelihood = false;
+      }
+
+      if (!this.isRelationshipIcons) {
+        cell.isInputRelationship = false;
+        cell.isOutputRelationship = false;
       }
 
       if (!(this.isInputRelationship || this.isRelationshipIcons)) {
@@ -151,7 +160,7 @@ export default class CommonOperations {
     let names = new Array<string>();
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
       inCell.inputCells.forEach((inincell: CellProperties) => {
-        this.setPropertiesToFalse(inincell);
+        this.setInputPropertiesToFalse(inincell);
         names.push(inincell.address);
       })
     })
@@ -163,7 +172,7 @@ export default class CommonOperations {
     this.referenceCell.inputCells.forEach((inCell: CellProperties) => {
       inCell.inputCells.forEach((inincell: CellProperties) => {
         inincell.inputCells.forEach((ininincell: CellProperties) => {
-          this.setPropertiesToFalse(ininincell);
+          this.setInputPropertiesToFalse(ininincell);
           names.push(ininincell.address);
         })
       })
@@ -175,7 +184,7 @@ export default class CommonOperations {
     let names = new Array<string>();
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.outputCells.forEach((outoutcell: CellProperties) => {
-        this.setPropertiesToFalse(outoutcell);
+        this.setOutputPropertiesToFalse(outoutcell);
         names.push(outoutcell.address);
       })
     })
@@ -187,7 +196,7 @@ export default class CommonOperations {
     this.referenceCell.outputCells.forEach((outCell: CellProperties) => {
       outCell.outputCells.forEach((outoutcell: CellProperties) => {
         outoutcell.outputCells.forEach((outoutoutCell: CellProperties) => {
-          this.setPropertiesToFalse(outoutoutCell);
+          this.setOutputPropertiesToFalse(outoutoutCell);
           names.push(outoutoutCell.address);
         })
       })
