@@ -374,6 +374,8 @@ export default class UIOptions {
 
     if (color == 'green') {
       impact = impact + 50;
+    } else {
+      impact = 50 - impact;
     }
 
     const minDomain = -5;

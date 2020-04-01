@@ -141,7 +141,13 @@ export default class Spread {
           let left = cell.left + 20;
           this.colors = this.blueColors;
           let sortedLinesWithColors = this.computeColorsAndBins(cell);
+
+          cell.binBlueColors = new Array<string>();
+
           sortedLinesWithColors.forEach((el) => {
+
+            cell.binBlueColors.push(el.color);
+
             let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
             rect.name = cell.address + name;
             rect.top = top;

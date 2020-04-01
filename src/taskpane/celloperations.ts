@@ -38,6 +38,15 @@ export default class CellOperations {
     return this.degreeOfNeighbourhood;
   }
 
+
+  setCells(cells: CellProperties[]) {
+    this.cells = cells;
+    this.commonOps.setCells(this.cells);
+  }
+  setOptions(isImpact: boolean, isLikelihood: boolean, isRelationshipIcons: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
+    this.commonOps.setOptions(isImpact, isLikelihood, isRelationshipIcons, isSpread, isInputRelationship, isOutputRelationship);
+  }
+
   removeShapesReferenceCellWise() {
     this.commonOps.removeShapesReferenceCellWise();
   }
@@ -58,19 +67,19 @@ export default class CellOperations {
     this.commonOps.removeShapesNeighbourWise(n);
   }
 
-  showInputImpact(n: number) {
-    this.impact.showInputImpact(n);
+  showInputImpact(n: number, isDraw: boolean) {
+    this.impact.showInputImpact(n, isDraw);
   }
-  showOutputImpact(n: number) {
-    this.impact.showOutputImpact(n);
-  }
-
-  showInputLikelihood(n: number) {
-    this.likelihood.showInputLikelihood(n);
+  showOutputImpact(n: number, isDraw: boolean) {
+    this.impact.showOutputImpact(n, isDraw);
   }
 
-  showOutputLikelihood(n: number) {
-    this.likelihood.showOutputLikelihood(n);
+  showInputLikelihood(n: number, isDraw: boolean) {
+    this.likelihood.showInputLikelihood(n, isDraw);
+  }
+
+  showOutputLikelihood(n: number, isDraw: boolean) {
+    this.likelihood.showOutputLikelihood(n, isDraw);
   }
 
   showSpread(n: number, isInput: boolean, isOutput: boolean) {

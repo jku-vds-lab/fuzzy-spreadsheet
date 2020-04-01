@@ -15,33 +15,27 @@ export default class Likelihood {
     this.commonOps = new CommonOperations(this.referenceCell);
   }
 
-  public showInputLikelihood(n: number) {
+  public showInputLikelihood(n: number, isDraw: boolean) {
 
     try {
-      // if (SheetProperties.isImpact) {
-      //   this.commonOps.removeShapesOptionWise('Impact')
-      // }
       this.inputCellsWithLikelihood = new Array<CellProperties>();
       this.addInputLikelihood(this.referenceCell, n);
-      this.commonOps.drawRectangle(this.inputCellsWithLikelihood, 'InputLikelihood');
-
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.inputCellsWithLikelihood, 'InputLikelihood');
+      }
     } catch (error) {
       console.log(error);
     }
   }
 
-  public showOutputLikelihood(n: number) {
+  public showOutputLikelihood(n: number, isDraw: boolean) {
 
     try {
-
-      // if (SheetProperties.isImpact) {
-      //   this.commonOps.removeShapesOptionWise('Impact')
-      // }
-
       this.outputCellsWithLikelihood = new Array<CellProperties>();
       this.addOutputLikelihood(this.referenceCell, n);
-      this.commonOps.drawRectangle(this.outputCellsWithLikelihood, 'OutputLikelihood');
-
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.outputCellsWithLikelihood, 'OutputLikelihood');
+      }
     } catch (error) {
       console.log(error);
     }

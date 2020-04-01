@@ -17,37 +17,31 @@ export default class Impact {
     this.commonOps = new CommonOperations(this.referenceCell);
   }
 
-  public showInputImpact(n: number) {
+  public showInputImpact(n: number, isDraw: boolean) {
 
     try {
       this.addImpactInfoInputCells(n);
-
-      // if (SheetProperties.isLikelihood) {
-      //   this.commonOps.removeShapesOptionWise('Likelihood');
-      // }
-
       this.inputCellsWithImpact = new Array<CellProperties>();
       this.addInputImpact(this.referenceCell, n);
-      this.commonOps.drawRectangle(this.inputCellsWithImpact, 'InputImpact');
 
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.inputCellsWithImpact, 'InputImpact');
+      }
     } catch (error) {
       console.log(error);
     }
   }
 
-  public showOutputImpact(n: number) {
+  public showOutputImpact(n: number, isDraw: boolean) {
 
     try {
       this.addImpactInfoOutputCells(this.referenceCell, n);
-
-      // if (SheetProperties.isLikelihood) {
-      //   this.commonOps.removeShapesOptionWise('Likelihood');
-      // }
-
       this.outputCellsWithImpact = new Array<CellProperties>();
       this.addOutputImpact(this.referenceCell, n);
-      this.commonOps.drawRectangle(this.outputCellsWithImpact, 'OutputImpact');
 
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.outputCellsWithImpact, 'OutputImpact');
+      }
     } catch (error) {
       console.log(error);
     }

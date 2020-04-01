@@ -26,6 +26,8 @@ export default class SheetProperties {
   private originalLeftBorder: Excel.RangeBorder;
   private originalRightBorder: Excel.RangeBorder;
   private uiOptions: UIOptions;
+  private isImpactOffscreen: boolean;
+  private isLikelihoodOffscreen: boolean;
 
   constructor() {
     this.uiOptions = new UIOptions();
@@ -60,7 +62,8 @@ export default class SheetProperties {
     try {
 
       if (this.isReferenceCell) {
-        this.cellOp.removeShapesReferenceCellWise();
+        this.cellOp.removeShapesInfluenceWise('Input');
+        this.cellOp.removeShapesInfluenceWise('Output');
         this.setBorderToOriginal();
       }
 
@@ -80,6 +83,7 @@ export default class SheetProperties {
         this.cellProp.addVarianceAndLikelihoodInfo(this.cells);
         this.cellOp = new CellOperations(this.cells, this.referenceCell, 1);
         this.isReferenceCell = true;
+        this.cellOp.setCells(this.cells);
 
         console.log('Done Marking a reference cell');
 
@@ -177,15 +181,10 @@ export default class SheetProperties {
   private displayOptions() {
 
     try {
-      // this.cellOp.removeShapesNeighbourWise(this.degreeOfNeighbourhood);
 
-      if (this.isImpact) {
-        this.impact();
-      }
+      this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
 
-      if (this.isLikelihood) {
-        this.likelihood();
-      }
+      this.handleImpactLikelihood();
 
       if (this.isRelationshipIcons) {
         this.relationshipIcons();
@@ -235,6 +234,8 @@ export default class SheetProperties {
 
   public setDegreeOfNeighbourhood(n: number) {
     this.degreeOfNeighbourhood = n;
+    this.cellOp.removeShapesNeighbourWise(n);
+    this.displayOptions();
   }
 
   public impact() {
@@ -242,20 +243,10 @@ export default class SheetProperties {
     try {
       this.isImpact = this.uiOptions.isElementChecked('impact');
 
-      if (this.impact) {
-
-        if (this.isInputRelationship) {
-          this.cellOp.showInputImpact(this.degreeOfNeighbourhood);
-        }
-
-        if (this.isOutputRelationship) {
-          this.cellOp.showOutputImpact(this.degreeOfNeighbourhood);
-        }
-
-      } else {
+      if (!this.isImpact) {
         this.cellOp.removeShapesOptionWise('Impact');
-
       }
+      this.displayOptions();
     } catch (error) {
       console.log(error);
     }
@@ -266,23 +257,51 @@ export default class SheetProperties {
     try {
       this.isLikelihood = this.uiOptions.isElementChecked('likelihood');
 
-      if (this.isLikelihood) {
-
-        if (this.isInputRelationship) {
-          this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood);
-        }
-
-        if (this.isOutputRelationship) {
-          this.cellOp.showOutputLikelihood(this.degreeOfNeighbourhood);
-        }
-
-      } else {
-        this.cellOp.removeShapesOptionWise('likelihood');
-
+      if (!this.isLikelihood) {
+        this.cellOp.removeShapesOptionWise('Likelihood');
       }
+      this.displayOptions();
+
     } catch (error) {
       console.log(error);
     }
+  }
+
+  public handleImpactLikelihood() {
+
+    try {
+
+      if (this.isImpact) {
+        if (this.isInputRelationship) {
+          this.cellOp.removeShapesOptionWise('Likelihood');
+          this.cellOp.showInputImpact(this.degreeOfNeighbourhood, true);
+        }
+
+        if (this.isOutputRelationship) {
+          this.cellOp.removeShapesOptionWise('Likelihood');
+          this.cellOp.showOutputImpact(this.degreeOfNeighbourhood, true);
+        }
+      }
+
+      if (this.isLikelihood) {
+        if (this.isInputRelationship) {
+          this.cellOp.removeShapesOptionWise('Impact');
+          this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood, true);
+        }
+
+        if (this.isOutputRelationship) {
+          this.cellOp.removeShapesOptionWise('Impact');
+          this.cellOp.showOutputLikelihood(this.degreeOfNeighbourhood, true);
+        }
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public redrawImpact() {
+
   }
 
   public relationshipIcons() {

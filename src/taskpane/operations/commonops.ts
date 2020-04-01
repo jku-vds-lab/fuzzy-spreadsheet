@@ -5,9 +5,22 @@ import SheetProperties from "../sheetproperties";
 
 export default class CommonOperations {
   private referenceCell: CellProperties;
+  private cells: CellProperties[];
+  private isImpact: boolean;
+  private isLikelihood: boolean;
+  private isRelationshipIcons: boolean;
+  private isSpread: boolean;
+  private isInputRelationship: boolean;
+  private isOutputRelationship: boolean;
 
   constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
+    this.isImpact = false;
+    this.isLikelihood = false;
+    this.isRelationshipIcons = false;
+    this.isSpread = false;
+    this.isInputRelationship = false;
+    this.isOutputRelationship = false;
   }
 
   drawRectangle(cells: CellProperties[], name: string) {
@@ -27,10 +40,11 @@ export default class CommonOperations {
           cell.rect.left = cell.left + MARGIN;
           cell.rect.top = cell.top + cell.height / 4;
 
-          // if impact does not exist, only then
-          if (cell.isLikelihood) {
+          if (cell.isLikelihood && cell.isImpact) {
+
             height = cell.likelihood * 10;
             width = cell.likelihood * 10;
+          } else if (cell.isLikelihood) {
             cell.rectColor = 'gray';
             cell.rectTransparency = 0;
           }
@@ -52,18 +66,61 @@ export default class CommonOperations {
     }
   }
 
+  setCells(cells: CellProperties[]) {
+    this.cells = cells;
+  }
+
+  setOptions(isImpact: boolean, isLikelihood: boolean, isRelationshipIcons: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
+    this.isImpact = isImpact;
+    this.isLikelihood = isLikelihood;
+    this.isRelationshipIcons = isRelationshipIcons;
+    this.isSpread = isSpread;
+    this.isInputRelationship = isInputRelationship;
+    this.isOutputRelationship = isOutputRelationship;
+  }
+
   // To remove shapes from reference cell
   removeShapesReferenceCellWise() {
+    this.referenceCell.isSpread = false;
     this.deleteShapes('Reference');
   }
 
   // To remove a particular option: such as spread
   removeShapesOptionWise(optionName: string) {
+
+    this.cells.forEach((cell: CellProperties) => {
+
+      if (!this.isImpact) {
+        cell.isImpact = false;
+      }
+
+      if (!this.isLikelihood) {
+        cell.isLikelihood = false;
+      }
+
+      if (!(this.isInputRelationship || this.isRelationshipIcons)) {
+        cell.isInputRelationship = false;
+      }
+
+      if (!(this.isOutputRelationship || this.isRelationshipIcons)) {
+        cell.isOutputRelationship = false;
+      }
+    })
+
     this.deleteShapes(optionName);
   }
 
   // To remove a particular influence: such as influence by (or input cells)
   removeShapesInfluenceWise(influenceType: string) {
+
+    if (influenceType.includes('Input')) {
+      this.setInputCellsToFalse(this.referenceCell.inputCells, 3);
+    }
+
+    if (influenceType.includes('Output')) {
+      this.setOutputCellsToFalse(this.referenceCell.outputCells, 3);
+    }
+
     this.deleteShapes(influenceType);
   }
 
@@ -87,14 +144,6 @@ export default class CommonOperations {
 
       this.removeThirdDegreeOutputNeighbours();
     }
-  }
-
-  private setPropertiesToFalse(cell: CellProperties) {
-    cell.isSpread = false;
-    cell.isInputRelationship = false;
-    cell.isOutputRelationship = false;
-    cell.isLikelihood = false;
-    cell.isImpact = false;
   }
 
   private removeSecondDegreeInputNeighbours() {
@@ -145,6 +194,51 @@ export default class CommonOperations {
     })
     this.deleteShapesInCells(names);
   }
+
+  private setInputCellsToFalse(cells: CellProperties[], n: number) {
+
+    cells.forEach((cell: CellProperties) => {
+      this.setInputPropertiesToFalse(cell);
+
+      if (n == 1) {
+        return;
+      }
+      this.setInputCellsToFalse(cell.inputCells, n - 1);
+    })
+  }
+
+  private setOutputCellsToFalse(cells: CellProperties[], n: number) {
+
+    cells.forEach((cell: CellProperties) => {
+      this.setOutputPropertiesToFalse(cell);
+
+      if (n == 1) {
+        return;
+      }
+      this.setOutputCellsToFalse(cell.outputCells, n - 1);
+    })
+  }
+
+
+  private setPropertiesToFalse(cell: CellProperties) {
+
+    cell.isImpact = false;
+    cell.isLikelihood = false;
+    cell.isSpread = false;
+  }
+
+  private setInputPropertiesToFalse(cell: CellProperties) {
+    this.setPropertiesToFalse(cell);
+    cell.isInputRelationship = false;
+  }
+
+
+  private setOutputPropertiesToFalse(cell: CellProperties) {
+    this.setPropertiesToFalse(cell);
+    cell.isOutputRelationship = false;
+  }
+
+
 
   private deleteShapesInCells(names: string[]) {
 
