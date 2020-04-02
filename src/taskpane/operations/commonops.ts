@@ -102,6 +102,10 @@ export default class CommonOperations {
         cell.isLikelihood = false;
       }
 
+      if (!this.isSpread) {
+        cell.isSpread = false;
+      }
+
       if (!this.isRelationshipIcons) {
         cell.isInputRelationship = false;
         cell.isOutputRelationship = false;
