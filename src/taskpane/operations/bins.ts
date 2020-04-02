@@ -64,7 +64,6 @@ export default class Bins {
     blueColors.push(color.hex());
     while (i < this.nrOfBins) {
       let color = hsl(210, 1, (0.9 * (1 - i / 15)));
-      color.opacity = 0.5;
       blueColors.push(color.hex());
 
       i++;
