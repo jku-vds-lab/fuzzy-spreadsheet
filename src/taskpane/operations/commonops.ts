@@ -1,4 +1,4 @@
-/* global console, Excel */
+/* global setTimeout, console, Excel */
 import * as OfficeHelpers from '@microsoft/office-js-helpers';
 import CellProperties from "../cellproperties";
 import SheetProperties from "../sheetproperties";
@@ -159,12 +159,13 @@ export default class CommonOperations {
 
   // To remove shapes based of degree of neighbourhood
   removeShapesNeighbourWise(n: number) {
-    if (n == 1) {
-      this.removeSecondDegreeInputNeighbours();
-      this.removeThirdDegreeInputNeighbours();
 
-      this.removeSecondDegreeOutputNeighbours();
+    if (n == 1) {
+      this.removeThirdDegreeInputNeighbours();
+      setTimeout(() => this.removeSecondDegreeInputNeighbours(), 1000);
+
       this.removeThirdDegreeOutputNeighbours();
+      setTimeout(() => this.removeSecondDegreeOutputNeighbours(), 1000);
     }
 
     if (n == 2) {
