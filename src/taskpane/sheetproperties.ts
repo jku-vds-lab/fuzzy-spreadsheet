@@ -60,6 +60,8 @@ export default class SheetProperties {
 
     try {
 
+      this.unprotectSheet();
+
       if (this.isReferenceCell) {
         this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
         this.cellOp.removeAllShapes();
@@ -89,11 +91,9 @@ export default class SheetProperties {
         this.uiOptions.showVisualizationOption();
         this.registerCellSelectionChangedEvent();
         this.displayOptions();
+        setTimeout(() => this.protectSheet(), 1000);
+
       });
-
-
-
-
     } catch (error) {
       console.error(error);
     }
@@ -185,6 +185,29 @@ export default class SheetProperties {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  private protectSheet() {
+    Excel.run(function (context) {
+      var activeSheet = context.workbook.worksheets.getActiveWorksheet();
+      activeSheet.load("protection/protected");
+
+      return context.sync().then(function () {
+        if (!activeSheet.protection.protected) {
+          activeSheet.protection.protect();
+          console.log('Sheet is protected');
+        }
+      })
+    }).catch((reason) => console.log(reason));
+  }
+
+  public unprotectSheet() {
+    Excel.run(async (context) => {
+      let workbook = context.workbook;
+      // workbook.protection.unprotect();
+      workbook.worksheets.getActiveWorksheet().protection.unprotect();
+      return context.sync().then(() => (console.log('Sheet is unprotected'))).catch((reason) => console.log(reason));
+    });
   }
 
   public inputRelationship() {
