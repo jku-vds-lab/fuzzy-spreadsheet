@@ -91,7 +91,7 @@ export default class SheetProperties {
         this.uiOptions.showVisualizationOption();
         this.registerCellSelectionChangedEvent();
         this.displayOptions();
-        setTimeout(() => this.protectSheet(), 1000);
+        this.protectSheet();
 
       });
     } catch (error) {
@@ -182,6 +182,7 @@ export default class SheetProperties {
       if (this.isSpread) {
         this.spread();
       }
+
     } catch (error) {
       console.log(error);
     }

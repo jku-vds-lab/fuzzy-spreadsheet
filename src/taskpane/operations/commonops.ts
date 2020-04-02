@@ -69,6 +69,8 @@ export default class CommonOperations {
           cell.rect.lineFormat.color = borderColor;
         })
 
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
         return context.sync();
       });
     } catch (error) {

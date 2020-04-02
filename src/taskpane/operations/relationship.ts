@@ -70,9 +70,10 @@ export default class Relationship {
   private drawInputRelation(cellsWithColors: { cell: CellProperties, color: string }[], name: string) {
     try {
 
-      Excel.run(function (context) {
+      Excel.run((context) => {
 
-        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let shapes = sheet.shapes;
 
         cellsWithColors.forEach((element: { cell: CellProperties, color: string }) => {
           let type = Excel.GeometricShapeType.diamond;
@@ -87,6 +88,8 @@ export default class Relationship {
           diamond.fill.setSolidColor(element.color);
         })
 
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
         return context.sync();
       })
     } catch (error) {
@@ -99,7 +102,8 @@ export default class Relationship {
     try {
       Excel.run(async (context) => {
 
-        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
 
         cellsWithColors.forEach((element: { cell: CellProperties, color: string }) => {
           let type = Excel.GeometricShapeType.ellipse;
@@ -113,7 +117,8 @@ export default class Relationship {
           circle.lineFormat.color = element.color;
           circle.fill.setSolidColor(element.color);
         });
-
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
         return context.sync();
       })
     } catch (error) {

@@ -160,6 +160,8 @@ export default class Spread {
             rect.lineFormat.transparency = 0.5;
           })
         })
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
         return context.sync();
       });
     } catch (error) {
