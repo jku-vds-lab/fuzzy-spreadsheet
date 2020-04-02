@@ -67,6 +67,10 @@ export default class CellOperations {
     this.commonOps.removeShapesNeighbourWise(n);
   }
 
+  removeAllShapes() {
+    this.commonOps.removeAllShapes();
+  }
+
   showInputImpact(n: number, isDraw: boolean) {
     this.impact.showInputImpact(n, isDraw);
   }

@@ -62,8 +62,7 @@ export default class SheetProperties {
 
       if (this.isReferenceCell) {
         this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
-        this.cellOp.removeShapesInfluenceWise('Input');
-        this.cellOp.removeShapesInfluenceWise('Output');
+        this.cellOp.removeAllShapes();
         this.setBorderToOriginal();
       }
 
@@ -74,7 +73,7 @@ export default class SheetProperties {
         range = context.workbook.getSelectedRange();
         range.load("address");
         await context.sync();
-        this.setNewBorder();
+        this.setNewBorder(range.address);
 
         console.log('Marking a reference cell');
 
@@ -89,10 +88,11 @@ export default class SheetProperties {
 
         this.uiOptions.showVisualizationOption();
         this.registerCellSelectionChangedEvent();
+        this.displayOptions();
       });
 
 
-      this.displayOptions();
+
 
     } catch (error) {
       console.error(error);
@@ -102,6 +102,8 @@ export default class SheetProperties {
   private setBorderToOriginal() {
     try {
       Excel.run(async context => {
+
+        console.log('Setting back the original border of: ' + this.referenceCell.address);
 
         let range = context.workbook.worksheets.getActiveWorksheet().getRange(this.referenceCell.address);
 
@@ -127,15 +129,25 @@ export default class SheetProperties {
     }
   }
 
-  private setNewBorder() {
+  private setNewBorder(address: string) {
     try {
       Excel.run(async context => {
 
         let color: string = 'orange';
 
-        let range = context.workbook.getSelectedRange();
+        let range = context.workbook.worksheets.getActiveWorksheet().getRange(address);
 
-        this.getOriginalBorder();
+        // this.getOriginalBorder();
+
+        this.originalTopBorder = range.format.borders.getItem('EdgeTop');
+        this.originalBottomBorder = range.format.borders.getItem('EdgeBottom');
+        this.originalLeftBorder = range.format.borders.getItem('EdgeLeft');
+        this.originalRightBorder = range.format.borders.getItem('EdgeRight');
+
+        this.originalTopBorder.load(['color', 'weight', 'style']);
+        this.originalBottomBorder.load(['color', 'weight', 'style']);
+        this.originalLeftBorder.load(['color', 'weight', 'style']);
+        this.originalRightBorder.load(['color', 'weight', 'style']);
 
         range.format.borders.getItem('EdgeTop').color = color;
         range.format.borders.getItem('EdgeBottom').color = color;
@@ -147,29 +159,6 @@ export default class SheetProperties {
         range.format.borders.getItem('EdgeLeft').weight = "Thick";
         range.format.borders.getItem('EdgeRight').weight = "Thick";
 
-
-        return context.sync().then(() => { }).catch((reason: any) => console.log(reason));
-      })
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  private getOriginalBorder() {
-    try {
-      Excel.run(async context => {
-
-        let range = context.workbook.getSelectedRange();
-
-        this.originalTopBorder = range.format.borders.getItem('EdgeTop');
-        this.originalBottomBorder = range.format.borders.getItem('EdgeBottom');
-        this.originalLeftBorder = range.format.borders.getItem('EdgeLeft');
-        this.originalRightBorder = range.format.borders.getItem('EdgeRight');
-
-        this.originalTopBorder.load(['color', 'weight', 'style']);
-        this.originalBottomBorder.load(['color', 'weight', 'style']);
-        this.originalLeftBorder.load(['color', 'weight', 'style']);
-        this.originalRightBorder.load(['color', 'weight', 'style']);
 
         return context.sync().then(() => { }).catch((reason: any) => console.log(reason));
       })
@@ -270,7 +259,6 @@ export default class SheetProperties {
         this.cellOp.setOptions(false, false, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
         this.cellOp.removeShapesOptionWise('Likelihood');
         this.cellOp.removeShapesOptionWise('Impact');
-        this.cellOp.setOptions(true, true, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
 
         if (this.isInputRelationship) {
           this.cellOp.showInputImpact(this.degreeOfNeighbourhood, true);
@@ -279,8 +267,10 @@ export default class SheetProperties {
 
         if (this.isOutputRelationship) {
           this.cellOp.showOutputImpact(this.degreeOfNeighbourhood, true);
-          this.cellOp.showInputLikelihood(this.degreeOfNeighbourhood, false);
+          this.cellOp.showOutputLikelihood(this.degreeOfNeighbourhood, false);
         }
+
+        this.cellOp.setOptions(true, true, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
 
       } else if (this.isImpact) {
 
@@ -314,6 +304,7 @@ export default class SheetProperties {
 
         this.cellOp.setOptions(this.isImpact, true, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
       } else {
+
         this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
         this.cellOp.removeShapesOptionWise('Impact');
         this.cellOp.removeShapesOptionWise('Likelihood');

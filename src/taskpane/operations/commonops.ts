@@ -41,11 +41,17 @@ export default class CommonOperations {
           cell.rect.top = cell.top + cell.height / 4;
 
           let color = 'gray';
+          let borderColor = 'gray';
           let transparency = 0;
 
           if (cell.isImpact) {
             color = cell.rectColor;
             transparency = cell.rectTransparency;
+            borderColor = 'green';
+
+            if (color == 'red') {
+              borderColor = 'red';
+            }
           }
 
           if (cell.isLikelihood) {
@@ -59,8 +65,8 @@ export default class CommonOperations {
           cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
           cell.rect.fill.setSolidColor(color);
           cell.rect.fill.transparency = transparency;
-          cell.rect.lineFormat.weight = 0;
-          cell.rect.lineFormat.color = color;
+          cell.rect.lineFormat.weight = 1;
+          cell.rect.lineFormat.color = borderColor;
         })
 
         return context.sync();
@@ -140,6 +146,15 @@ export default class CommonOperations {
   // To remove updated shapes
   removeShapesUpdatedWise() {
     this.deleteShapes('Update');
+  }
+
+  // To remove all the shapes when a reference cell is changed
+  removeAllShapes() {
+    this.cells.forEach((cell: CellProperties) => {
+      this.setInputPropertiesToFalse(cell);
+      this.setOutputPropertiesToFalse(cell);
+    });
+    this.deleteShapes('');
   }
 
   // To remove shapes based of degree of neighbourhood

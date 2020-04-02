@@ -136,8 +136,8 @@ export default class Spread {
 
         cells.forEach((cell: CellProperties) => {
 
-          let height = cell.height - 2;
-          let top = cell.top + 1;
+          let height = cell.height;
+          let top = cell.top;
           let left = cell.left + 20;
           this.colors = this.blueColors;
           let sortedLinesWithColors = this.computeColorsAndBins(cell);
