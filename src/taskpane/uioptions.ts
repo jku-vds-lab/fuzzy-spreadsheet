@@ -219,7 +219,7 @@ export default class UIOptions {
 
       var margin = { top: 10, right: 30, bottom: 20, left: 40 },
         width = 260 - margin.left - margin.right,
-        height = 150 - margin.top - margin.bottom;
+        height = 160 - margin.top - margin.bottom;
 
       // append the svg object to the body of the page
       var svg = d3.select(divClass)
@@ -243,7 +243,7 @@ export default class UIOptions {
 
       svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x).tickValues(ticks));
+        .call(d3.axisBottom(x).tickValues(ticks))
 
       var y = d3.scaleLinear()
         .range([height, 0])
@@ -265,6 +265,24 @@ export default class UIOptions {
         })
         .attr("height", function (d) { return height - y(d.length); })
         .style("fill", color);
+
+      svg.append('text')
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text('Probability in %');
+
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width / 2 + " ," +
+          (height + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text('Values in Mio.(€)');
+
 
       this.drawLinesBeneathChart(cell);
       this.drawLegend();

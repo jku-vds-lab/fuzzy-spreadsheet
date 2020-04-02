@@ -184,7 +184,7 @@ export default class Impact {
   }
 
   private getDivisor(cell: CellProperties) {
-    let divisor = 1;
+    let divisor = 0;
 
     cell.inputCells.forEach((c: CellProperties) => {
       divisor += c.value;
