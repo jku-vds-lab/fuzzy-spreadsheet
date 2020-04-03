@@ -1,7 +1,7 @@
 /* global console, document */
 import * as d3 from 'd3';
-import Bins from './operations/bins';
-import CellProperties from './cellproperties';
+import Bins from '../operations/bins';
+import CellProperties from '../cell/cellproperties';
 export default class UIOptions {
   constructor() {
   }

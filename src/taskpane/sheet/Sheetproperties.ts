@@ -1,8 +1,8 @@
-import CellOperations from "./celloperations";
-import CellProperties from "./cellproperties";
-import UIOptions from "./uioptions";
-import { image } from "d3";
-/* global console, setTimeout, Excel, Office */
+import CellOperations from "../cell/celloperations";
+import CellProperties from "../cell/cellproperties";
+import UIOptions from "../ui/uioptions";
+
+/* global console, setTimeout, Excel */
 export default class SheetProperties {
 
   private isInputRelationship: boolean = false;
@@ -13,41 +13,46 @@ export default class SheetProperties {
   private isSpread: boolean = false;
   private isReferenceCell: boolean = false;
   private degreeOfNeighbourhood: number = 1;
-  private isCheatSheetExist: boolean = false;
   private cellOp: CellOperations;
   private cellProp = new CellProperties();
   private cells: CellProperties[];
-  private newCells: CellProperties[] = null;
   private referenceCell: CellProperties = null;
-  private isSheetParsed = false;
-  private newValues: any[][];
-  private newFormulas: any[][];
   private originalTopBorder: Excel.RangeBorder;
   private originalBottomBorder: Excel.RangeBorder;
   private originalLeftBorder: Excel.RangeBorder;
   private originalRightBorder: Excel.RangeBorder;
   private uiOptions: UIOptions;
+  private isShowUi: boolean;
 
-  constructor() {
+
+  constructor(isShowUi: boolean = true) {
     this.uiOptions = new UIOptions();
     this.cellProp = new CellProperties();
     this.cells = new Array<CellProperties>();
     this.cellOp = new CellOperations(null, null, null);
+    this.isShowUi = isShowUi;
+  }
+
+  public getCells() {
+    return this.cells;
   }
 
   public async parseSheet() {
-
-    this.isSheetParsed = true;
-
     try {
 
       console.log('Parsing the sheet');
-      this.uiOptions.hideOptions();
+
+      if (this.isShowUi) {
+        this.uiOptions.hideOptions();
+      }
+
 
       this.cells = await this.cellProp.getCells();
       this.cellProp.getRelationshipOfCells(this.cells);
 
-      this.uiOptions.showReferenceCellOption();
+      if (this.isShowUi) {
+        this.uiOptions.showReferenceCellOption();
+      }
 
       console.log('Done parsing the sheet');
 
@@ -79,12 +84,7 @@ export default class SheetProperties {
 
         console.log('Marking a reference cell');
 
-        this.referenceCell = this.cellProp.getReferenceAndNeighbouringCells(range.address);
-        this.cellProp.checkUncertainty(this.cells);
-        this.cellProp.addVarianceAndLikelihoodInfo(this.cells);
-        this.cellOp = new CellOperations(this.cells, this.referenceCell, 1);
-        this.isReferenceCell = true;
-        this.cellOp.setCells(this.cells);
+        this.addPropertiesToCells(range.address);
 
         console.log('Done Marking a reference cell');
 
@@ -97,6 +97,16 @@ export default class SheetProperties {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  public addPropertiesToCells(address: string) {
+
+    this.referenceCell = this.cellProp.getReferenceAndNeighbouringCells(address);
+    this.cellProp.checkUncertainty(this.cells);
+    this.cellProp.addVarianceAndLikelihoodInfo(this.cells);
+    this.cellOp = new CellOperations(this.cells, this.referenceCell, 1);
+    this.isReferenceCell = true;
+    this.cellOp.setCells(this.cells);
   }
 
   private setBorderToOriginal() {
@@ -188,7 +198,7 @@ export default class SheetProperties {
     }
   }
 
-  private protectSheet() {
+  public protectSheet() {
     Excel.run(function (context) {
       var activeSheet = context.workbook.worksheets.getActiveWorksheet();
       activeSheet.load("protection/protected");
@@ -216,12 +226,17 @@ export default class SheetProperties {
     try {
 
       this.isInputRelationship = this.uiOptions.isElementChecked('inputRelationship');
+      this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
 
       if (this.isInputRelationship) {
-        this.uiOptions.showAllOptions();
+
+        if (this.isShowUi) {
+          this.uiOptions.showAllOptions();
+        }
+
         this.displayOptions();
       } else {
-        this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
+
         this.cellOp.removeShapesInfluenceWise('Input');
       }
     } catch (error) {
@@ -233,12 +248,16 @@ export default class SheetProperties {
 
     try {
       this.isOutputRelationship = this.uiOptions.isElementChecked('outputRelationship');
+      this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
 
       if (this.isOutputRelationship) {
-        this.uiOptions.showAllOptions();
+
+        if (this.isShowUi) {
+          this.uiOptions.showAllOptions();
+        }
+
         this.displayOptions();
       } else {
-        this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
         this.cellOp.removeShapesInfluenceWise('Output');
       }
 
@@ -258,6 +277,7 @@ export default class SheetProperties {
 
     try {
       this.isImpact = this.uiOptions.isElementChecked('impact');
+      this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
       this.displayOptions();
     } catch (error) {
       console.log(error);
@@ -268,6 +288,7 @@ export default class SheetProperties {
 
     try {
       this.isLikelihood = this.uiOptions.isElementChecked('likelihood');
+      this.cellOp.setOptions(this.isImpact, this.isLikelihood, this.isRelationshipIcons, this.isSpread, this.isInputRelationship, this.isOutputRelationship);
       this.displayOptions();
     } catch (error) {
       console.log(error);
@@ -437,7 +458,23 @@ export default class SheetProperties {
     }
   }
 
-  public startWhatIf() {
+  public async startWhatIf() {
+    this.unprotectSheet();
+
+    // let the user change something & call the following when the calculation is done
+    // transfer state with old and new cells
+    // this.newCells = await this.cellProp.getCells();
+    // this.cellProp.getRelationshipOfCells(this.newCells);
+    // // switch new and old ref cell
+    // this.addPropertiesToCells(this.referenceCell.address);
+    // disable ref cell option
+    // disable initialise option
+    // compute impact/likelihood/variance/ spread info with draw set to false
+    // calculate the changed cells
+    // for the DON, show the textbox in a cell with name: cell.address + Inputtextbox, cell.address + Inputarrow & same for output
+    // add is text box option in display options
+    // when a DON is changed:
+    //  The old cell should show the impact
 
   }
 

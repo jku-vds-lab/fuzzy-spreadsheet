@@ -1,12 +1,10 @@
 /* global console, Excel */
 import CellProperties from './cellproperties';
-import Impact from './operations/impact';
-import Likelihood from './operations/likelihood';
-import Spread from './operations/spread';
-import Relationship from './operations/relationship';
-import SheetProperties from './sheetproperties';
-import DiscreteSpread from './operations/spread';
-import CommonOperations from './operations/commonops';
+import Impact from '../operations/impact';
+import Likelihood from '../operations/likelihood';
+import Spread from '../operations/spread';
+import Relationship from '../operations/relationship';
+import CommonOperations from '../operations/commonops';
 
 export default class CellOperations {
 

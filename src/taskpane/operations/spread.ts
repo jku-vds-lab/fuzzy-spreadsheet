@@ -1,6 +1,5 @@
 /* global console, Excel */
-import CellProperties from '../cellproperties';
-import SheetProperties from '../sheetproperties';
+import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
 import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';

@@ -1,7 +1,6 @@
 /* global console, Excel */
-import CellProperties from '../cellproperties';
+import CellProperties from '../cell/cellproperties';
 import CommonOperations from './commonops';
-import SheetProperties from '../sheetproperties';
 
 export default class Likelihood {
 

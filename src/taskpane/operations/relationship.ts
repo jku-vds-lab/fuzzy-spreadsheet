@@ -1,4 +1,4 @@
-import CellProperties from "../cellproperties";
+import CellProperties from "../cell/cellproperties";
 
 /* global console, Excel */
 export default class Relationship {

@@ -1,7 +1,5 @@
-import SheetProperties from "./sheetproperties";
-import WhatIf from "./operations/whatif";
-import Spread from "./operations/spread";
-import { values } from "d3";
+import WhatIf from "../sheet/newsheetproperties";
+
 
 /* global console, Excel */
 
@@ -41,6 +39,7 @@ export default class CellProperties {
   public isImpact: boolean = false;
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
+  public isTextbox: boolean = false;
   public whatIf: WhatIf;
   public binBlueColors: string[];
   public binOrangeColors: string[];

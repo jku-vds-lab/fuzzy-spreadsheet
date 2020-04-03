@@ -1,9 +1,7 @@
 /* global console, Excel */
 import { abs, round } from 'mathjs';
-import CellProperties from '../cellproperties';
+import CellProperties from '../cell/cellproperties';
 import CommonOperations from './commonops';
-import SheetProperties from '../sheetproperties';
-
 
 export default class Impact {
 

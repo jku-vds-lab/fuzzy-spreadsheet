@@ -1,5 +1,5 @@
-import CellProperties from "../cellproperties";
-import Spread from "./spread";
+import CellProperties from "../cell/cellproperties";
+import Spread from "../operations/spread";
 import { increment } from "src/functions/functions";
 import { image, utcFormat } from "d3";
 

@@ -1,7 +1,6 @@
 /* global setTimeout, console, Excel */
 import * as OfficeHelpers from '@microsoft/office-js-helpers';
-import CellProperties from "../cellproperties";
-import SheetProperties from "../sheetproperties";
+import CellProperties from "../cell/cellproperties";
 
 export default class CommonOperations {
   private referenceCell: CellProperties;
