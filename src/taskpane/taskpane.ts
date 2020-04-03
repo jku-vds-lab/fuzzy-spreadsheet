@@ -1,4 +1,7 @@
-import SheetProperties from './sheet/Sheetproperties';
+import SheetProperties from './sheet/sheetproperties';
+import WhatIf from './sheet/whatifsheet';
+import CellProperties from './cell/cellproperties';
+import UIOptions from './ui/uioptions';
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -11,7 +14,7 @@ Office.initialize = () => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
   document.getElementById("parseSheet").onclick = MainClass.parseSheet;
-  document.getElementById("referenceCell").onclick = MainClass.referenceCell;
+  document.getElementById("referenceCell").onclick = MainClass.markAsReferenceCell;
   document.getElementById("inputRelationship").onclick = MainClass.inputRelationship;
   document.getElementById("outputRelationship").onclick = MainClass.outputRelationship;
   document.getElementById("first").onchange = MainClass.first;
@@ -29,54 +32,83 @@ Office.initialize = () => {
 class MainClass {
 
   public static SheetProp: SheetProperties = new SheetProperties();
+  public static WhatIfSheet: WhatIf;
+  public static isWhatIfStarted: boolean = false;
 
   public static parseSheet() {
     MainClass.SheetProp.parseSheet();
   }
 
-  public static referenceCell() {
+  public static markAsReferenceCell() {
     MainClass.SheetProp.markAsReferenceCell();
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+      let x = MainClass.SheetProp.getReferenceCell();
+      MainClass.WhatIfSheet = new WhatIf(MainClass.SheetProp.getCells(), x);
+      // eslint-disable-next-line no-undef
+      console.log(x);
+    }, 1000);
   }
 
   public static inputRelationship() {
     MainClass.SheetProp.inputRelationship();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.inputRelationship();
   }
 
   public static outputRelationship() {
     MainClass.SheetProp.outputRelationship();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.outputRelationship();
   }
 
   public static first() {
     MainClass.SheetProp.setDegreeOfNeighbourhood(1);
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(1);
   }
 
   public static second() {
     MainClass.SheetProp.setDegreeOfNeighbourhood(2);
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(2);
   }
-
 
   public static third() {
     MainClass.SheetProp.setDegreeOfNeighbourhood(3);
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(3);
   }
 
   public static impact() {
     MainClass.SheetProp.impact();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.impact();
   }
 
   public static likelihood() {
     MainClass.SheetProp.likelihood();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.likelihood();
   }
 
   public static relationshipIcons() {
     MainClass.SheetProp.relationshipIcons();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.relationshipIcons();
   }
 
   public static spread() {
     MainClass.SheetProp.spread();
+    if (MainClass.isWhatIfStarted)
+      MainClass.WhatIfSheet.spread();
   }
 
+
   public static whatIf() {
-    MainClass.SheetProp.startWhatIf();
+    MainClass.isWhatIfStarted = true;
+    MainClass.WhatIfSheet.registerSheetCalculatedEvent();
+    // MainClass.WhatIfSheet.startWhatIfAnalysis();
   }
 
   public static dismissNewValues() {
@@ -86,7 +118,6 @@ class MainClass {
   public static keepNewValues() {
     MainClass.SheetProp.keepNewValues();
   }
-
 }
 
 

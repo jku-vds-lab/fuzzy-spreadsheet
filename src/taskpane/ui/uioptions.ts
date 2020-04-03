@@ -69,8 +69,8 @@ export default class UIOptions {
     }
     return false;
   }
-  public removeImpactInfoInTaskpane() {
-    document.getElementById('impactPercentage').innerHTML = '';
+  public removeImpactInfoInTaskpane(id: string = 'impactPercentage') {
+    document.getElementById(id).innerHTML = '';
   }
 
   public removeRelationshipInfoInTaskpane() {
@@ -111,9 +111,9 @@ export default class UIOptions {
     }
   }
 
-  public addImpactPercentage(cell: CellProperties) {
+  public addImpactPercentage(cell: CellProperties, id: string = 'impactPercentage') {
 
-    var impactText = document.getElementById('impactPercentage');
+    var impactText = document.getElementById(id);
     impactText.innerHTML = cell.impact + '%';
     impactText.style.position = 'relative';
     impactText.style.left = 5 + 'px';

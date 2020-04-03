@@ -5,24 +5,24 @@ import UIOptions from "../ui/uioptions";
 /* global console, setTimeout, Excel */
 export default class SheetProperties {
 
-  private isInputRelationship: boolean = false;
-  private isOutputRelationship: boolean = false;
-  private isRelationshipIcons: boolean = false;
-  private isImpact: boolean = false;
-  private isLikelihood: boolean = false;
-  private isSpread: boolean = false;
-  private isReferenceCell: boolean = false;
-  private degreeOfNeighbourhood: number = 1;
-  private cellOp: CellOperations;
-  private cellProp = new CellProperties();
-  private cells: CellProperties[];
-  private referenceCell: CellProperties = null;
-  private originalTopBorder: Excel.RangeBorder;
-  private originalBottomBorder: Excel.RangeBorder;
-  private originalLeftBorder: Excel.RangeBorder;
-  private originalRightBorder: Excel.RangeBorder;
-  private uiOptions: UIOptions;
-  private isShowUi: boolean;
+  protected isInputRelationship: boolean = false;
+  protected isOutputRelationship: boolean = false;
+  protected isRelationshipIcons: boolean = false;
+  protected isImpact: boolean = false;
+  protected isLikelihood: boolean = false;
+  protected isSpread: boolean = false;
+  protected isReferenceCell: boolean = false;
+  protected degreeOfNeighbourhood: number = 1;
+  protected cellOp: CellOperations;
+  protected cellProp = new CellProperties();
+  protected cells: CellProperties[];
+  protected referenceCell: CellProperties = null;
+  protected originalTopBorder: Excel.RangeBorder;
+  protected originalBottomBorder: Excel.RangeBorder;
+  protected originalLeftBorder: Excel.RangeBorder;
+  protected originalRightBorder: Excel.RangeBorder;
+  protected uiOptions: UIOptions;
+  protected isShowUi: boolean;
 
 
   constructor(isShowUi: boolean = true) {
@@ -36,6 +36,11 @@ export default class SheetProperties {
   public getCells() {
     return this.cells;
   }
+
+  public getReferenceCell() {
+    return this.referenceCell;
+  }
+
 
   public async parseSheet() {
     try {
@@ -177,7 +182,7 @@ export default class SheetProperties {
     }
   }
 
-  private displayOptions() {
+  public displayOptions() {
 
     try {
 
