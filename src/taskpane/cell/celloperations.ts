@@ -17,7 +17,7 @@ export default class CellOperations {
   private relationship: Relationship;
   private commonOps: CommonOperations;
 
-  constructor(cells: CellProperties[], referenceCell: CellProperties, n: number) {
+  constructor(cells: CellProperties[], referenceCell: CellProperties, n: number, isDelete: boolean = true) {
     this.cells = cells;
     this.referenceCell = referenceCell;
     this.degreeOfNeighbourhood = n;
@@ -25,7 +25,7 @@ export default class CellOperations {
     this.likelihood = new Likelihood(this.referenceCell);
     this.spread = new Spread(this.referenceCell);
     this.relationship = new Relationship(this.referenceCell);
-    this.commonOps = new CommonOperations(this.referenceCell);
+    this.commonOps = new CommonOperations(this.referenceCell, isDelete);
   }
 
   getCells() {

@@ -1,6 +1,7 @@
 /* global setTimeout, console, Excel */
 import * as OfficeHelpers from '@microsoft/office-js-helpers';
 import CellProperties from "../cell/cellproperties";
+import { image } from 'd3';
 
 export default class CommonOperations {
   private referenceCell: CellProperties;
@@ -11,8 +12,9 @@ export default class CommonOperations {
   private isSpread: boolean;
   private isInputRelationship: boolean;
   private isOutputRelationship: boolean;
+  private isDelete: boolean;
 
-  constructor(referenceCell: CellProperties) {
+  constructor(referenceCell: CellProperties, isDelete: boolean = true) {
     this.referenceCell = referenceCell;
     this.isImpact = false;
     this.isLikelihood = false;
@@ -20,6 +22,7 @@ export default class CommonOperations {
     this.isSpread = false;
     this.isInputRelationship = false;
     this.isOutputRelationship = false;
+    this.isDelete = isDelete;
   }
 
   drawRectangle(cells: CellProperties[], name: string) {
@@ -93,7 +96,9 @@ export default class CommonOperations {
   // To remove shapes from reference cell
   removeShapesReferenceCellWise() {
     this.referenceCell.isSpread = false;
-    this.deleteShapes('Reference');
+    if (this.isDelete) {
+      this.deleteShapes('Reference');
+    }
   }
 
   // To remove a particular option: such as spread
@@ -127,7 +132,9 @@ export default class CommonOperations {
       }
     })
 
-    this.deleteShapes(optionName);
+    if (this.isDelete) {
+      this.deleteShapes(optionName);
+    }
   }
 
   // To remove a particular influence: such as influence by (or input cells)
@@ -141,7 +148,9 @@ export default class CommonOperations {
       this.setOutputCellsToFalse(this.referenceCell.outputCells, 3);
     }
 
-    this.deleteShapes(influenceType);
+    if (this.isDelete) {
+      this.deleteShapes(influenceType);
+    }
   }
 
   // To remove updated shapes
@@ -155,7 +164,9 @@ export default class CommonOperations {
       this.setInputPropertiesToFalse(cell);
       this.setOutputPropertiesToFalse(cell);
     });
-    this.deleteShapes('');
+    if (this.isDelete) {
+      this.deleteShapes('');
+    }
   }
 
   // To remove shapes based of degree of neighbourhood
@@ -185,7 +196,9 @@ export default class CommonOperations {
         names.push(inincell.address);
       })
     })
-    this.deleteShapesInCells(names);
+    if (this.isDelete) {
+      this.deleteShapesInCells(names);
+    }
   }
 
   private removeThirdDegreeInputNeighbours() {
@@ -198,7 +211,9 @@ export default class CommonOperations {
         })
       })
     })
-    this.deleteShapesInCells(names);
+    if (this.isDelete) {
+      this.deleteShapesInCells(names);
+    }
   }
 
   private removeSecondDegreeOutputNeighbours() {
@@ -209,7 +224,9 @@ export default class CommonOperations {
         names.push(outoutcell.address);
       })
     })
-    this.deleteShapesInCells(names);
+    if (this.isDelete) {
+      this.deleteShapesInCells(names);
+    }
   }
 
   private removeThirdDegreeOutputNeighbours() {
@@ -222,7 +239,9 @@ export default class CommonOperations {
         })
       })
     })
-    this.deleteShapesInCells(names);
+    if (this.isDelete) {
+      this.deleteShapesInCells(names);
+    }
   }
 
   private setInputCellsToFalse(cells: CellProperties[], n: number) {

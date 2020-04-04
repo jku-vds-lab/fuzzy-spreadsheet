@@ -120,9 +120,9 @@ export default class UIOptions {
 
   }
 
-  public addLikelihoodPercentage(cell: CellProperties) {
+  public addLikelihoodPercentage(cell: CellProperties, id: string = 'likelihoodPercentage') {
 
-    var likelihoodText = document.getElementById('likelihoodPercentage');
+    var likelihoodText = document.getElementById(id);
     likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
     likelihoodText.style.position = 'relative';
     likelihoodText.style.left = 5 + 'px';

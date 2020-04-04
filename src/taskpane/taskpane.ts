@@ -1,7 +1,6 @@
-import SheetProperties from './sheet/sheetproperties';
-import WhatIf from './sheet/whatifsheet';
-import CellProperties from './cell/cellproperties';
-import UIOptions from './ui/uioptions';
+import SheetProp from './sheet/sheetproperties';
+import WhatIfProps from './sheet/whatifproperties';
+
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
@@ -31,92 +30,105 @@ Office.initialize = () => {
 
 class MainClass {
 
-  public static SheetProp: SheetProperties = new SheetProperties();
-  public static WhatIfSheet: WhatIf;
+  public static sheetProp: SheetProp = new SheetProp();
+  public static whatIfProp: WhatIfProps;
   public static isWhatIfStarted: boolean = false;
 
   public static parseSheet() {
-    MainClass.SheetProp.parseSheet();
+    MainClass.sheetProp.parseSheet();
   }
 
   public static markAsReferenceCell() {
-    MainClass.SheetProp.markAsReferenceCell();
+    MainClass.sheetProp.markAsReferenceCell();
+
     // eslint-disable-next-line no-undef
-    setTimeout(() => {
-      let x = MainClass.SheetProp.getReferenceCell();
-      MainClass.WhatIfSheet = new WhatIf(MainClass.SheetProp.getCells(), x);
-      // eslint-disable-next-line no-undef
-      console.log(x);
-    }, 1000);
+    setTimeout(() => MainClass.whatIfProp = new WhatIfProps(MainClass.sheetProp.getCells(), MainClass.sheetProp.getReferenceCell()), 1000);
   }
 
   public static inputRelationship() {
-    MainClass.SheetProp.inputRelationship();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.inputRelationship();
+    MainClass.sheetProp.inputRelationship();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.inputRelationship();
+    }
   }
 
   public static outputRelationship() {
-    MainClass.SheetProp.outputRelationship();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.outputRelationship();
+    MainClass.sheetProp.outputRelationship();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.outputRelationship();
+    }
   }
 
   public static first() {
-    MainClass.SheetProp.setDegreeOfNeighbourhood(1);
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(1);
+    MainClass.sheetProp.setDegreeOfNeighbourhood(1);
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.setDegreeOfNeighbourhood(1);
+    }
   }
 
   public static second() {
-    MainClass.SheetProp.setDegreeOfNeighbourhood(2);
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(2);
+    MainClass.sheetProp.setDegreeOfNeighbourhood(2);
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.setDegreeOfNeighbourhood(2);
+    }
   }
 
   public static third() {
-    MainClass.SheetProp.setDegreeOfNeighbourhood(3);
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.setDegreeOfNeighbourhood(3);
+    MainClass.sheetProp.setDegreeOfNeighbourhood(3);
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.setDegreeOfNeighbourhood(3);
+    }
   }
 
   public static impact() {
-    MainClass.SheetProp.impact();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.impact();
+    MainClass.sheetProp.impact();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.impact();
+    }
   }
 
   public static likelihood() {
-    MainClass.SheetProp.likelihood();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.likelihood();
+    MainClass.sheetProp.likelihood();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.likelihood();
+    }
   }
 
   public static relationshipIcons() {
-    MainClass.SheetProp.relationshipIcons();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.relationshipIcons();
+    MainClass.sheetProp.relationshipIcons();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.relationshipIcons();
+    }
   }
 
   public static spread() {
-    MainClass.SheetProp.spread();
-    if (MainClass.isWhatIfStarted)
-      MainClass.WhatIfSheet.spread();
+    MainClass.sheetProp.spread();
+
+    if (MainClass.isWhatIfStarted) {
+      MainClass.whatIfProp.spread();
+    }
   }
 
 
   public static whatIf() {
     MainClass.isWhatIfStarted = true;
-    MainClass.WhatIfSheet.registerSheetCalculatedEvent();
-    // MainClass.WhatIfSheet.startWhatIfAnalysis();
+    MainClass.whatIfProp.registerSheetCalculatedEvent();
   }
 
   public static dismissNewValues() {
-    MainClass.SheetProp.dismissNewValues();
+    MainClass.sheetProp.dismissNewValues();
   }
 
   public static keepNewValues() {
-    MainClass.SheetProp.keepNewValues();
+    MainClass.sheetProp.keepNewValues();
   }
 }
 

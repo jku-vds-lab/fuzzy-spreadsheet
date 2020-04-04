@@ -1,61 +1,36 @@
 import CellProperties from "../cell/cellproperties";
 import Spread from "../operations/spread";
-import SheetProperties from "./sheetproperties";
+import SheetProp from "./sheetproperties";
 import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
 
 /* global console, Excel */
-export default class WhatIf {
+export default class WhatIfProps extends SheetProp {
 
-  private cells: CellProperties[];
   private oldCells: CellProperties[];
-  private referenceCell: CellProperties;
   private oldReferenceCell: CellProperties;
-  protected isInputRelationship: boolean = false;
-  protected isOutputRelationship: boolean = false;
-  protected isRelationshipIcons: boolean = false;
-  protected isImpact: boolean = false;
-  protected isLikelihood: boolean = false;
-  protected isSpread: boolean = false;
-  protected degreeOfNeighbourhood: number = 1;
-  protected cellOp: CellOperations;
-  protected uiOptions: UIOptions;
-  protected cellProp: CellProperties;
+  private newCells: CellProperties[];
+  private newReferenceCell: CellProperties;
   private sheetEventResult = null;
+  protected uiOptions: UIOptions;
 
   constructor(oldCells: CellProperties[], oldReferenceCell: CellProperties) {
 
+    super();
     this.uiOptions = new UIOptions();
-    this.oldCells = oldCells;
     this.cellProp = new CellProperties();
+    this.cellOp = new CellOperations(null, null, null);
+    this.oldCells = oldCells;
     this.oldReferenceCell = oldReferenceCell;
-    this.cells = new Array<CellProperties>();
-    this.referenceCell = new CellProperties();
-  }
-  public protectSheet() {
-    Excel.run((context) => {
-      var activeSheet = context.workbook.worksheets.getActiveWorksheet();
-      activeSheet.load("protection/protected");
-
-      return context.sync().then(function () {
-        if (!activeSheet.protection.protected) {
-          activeSheet.protection.protect();
-          console.log('Sheet is protected');
-        }
-      })
-    }).catch((reason) => console.log(reason));
+    this.newCells = new Array<CellProperties>();
+    this.newReferenceCell = new CellProperties();
   }
 
-  public unprotectSheet() {
-    Excel.run(async (context) => {
-      let workbook = context.workbook;
-      // workbook.protection.unprotect();
-      workbook.worksheets.getActiveWorksheet().protection.unprotect();
-      return context.sync().then(() => (console.log('Sheet is unprotected'))).catch((reason) => console.log(reason));
-    });
-  }
+
   registerSheetCalculatedEvent() {
+
     this.unprotectSheet();
+
     Excel.run(async (context) => {
 
       var worksheet = context.workbook.worksheets.getActiveWorksheet();
@@ -69,15 +44,21 @@ export default class WhatIf {
   }
 
   async processWhatIf() {
-    await this.parseSheet();
+
+    try {
+      await this.parseSheet();
+      this.addPropertiesToCells(this.oldReferenceCell.address);
+      this.displayOptions();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async parseSheet() {
+
     try {
-      this.cells = await this.cellProp.getCells();
-      this.cellProp.getRelationshipOfCells(this.cells);
-      console.log('Old Reference Cell:', this.oldReferenceCell);
-      this.addPropertiesToCells(this.oldReferenceCell.address);
+      this.newCells = await this.cellProp.getCells();
+      this.cellProp.getRelationshipOfCells(this.newCells);
     } catch (error) {
       console.log(error);
     }
@@ -86,12 +67,15 @@ export default class WhatIf {
   public addPropertiesToCells(address: string) {
 
     try {
-      this.referenceCell = this.cellProp.getReferenceAndNeighbouringCells(address);
-      this.cellProp.checkUncertainty(this.cells);
-      this.cellProp.addVarianceAndLikelihoodInfo(this.cells);
-      this.cellOp = new CellOperations(this.cells, this.referenceCell, 1);
-      this.cellOp.setCells(this.cells);
+
+      this.newReferenceCell = this.cellProp.getReferenceAndNeighbouringCells(address);
+      this.cellProp.checkUncertainty(this.newCells);
+      this.cellProp.addVarianceAndLikelihoodInfo(this.newCells);
+      this.cellOp = new CellOperations(this.newCells, this.newReferenceCell, 1, false);
+      this.cellOp.setCells(this.newCells);
       this.registerCellSelectionChangedEvent();
+
+      console.log('Old Ref: ' + this.oldReferenceCell.value + 'New Ref: ' + this.newReferenceCell.value);
 
     } catch (error) {
       console.log(error);
@@ -114,24 +98,24 @@ export default class WhatIf {
 
     try {
 
-      this.cells.forEach((cell: CellProperties) => {
+      this.newCells.forEach((newCell: CellProperties) => {
 
-        if (cell.address.includes(event.address)) {
+        if (newCell.address.includes(event.address)) {
 
           this.uiOptions.removeImpactInfoInTaskpane('newImpactPercentage');
 
 
-          if (cell.isImpact) {
-            this.uiOptions.addImpactPercentage(cell, 'newImpactPercentage');
+          if (newCell.isImpact) {
+            this.uiOptions.addImpactPercentage(newCell, 'newImpactPercentage');
           }
 
-          if (cell.isLikelihood) {
-            this.uiOptions.addLikelihoodPercentage(cell);
+          if (newCell.isLikelihood) {
+            this.uiOptions.addLikelihoodPercentage(newCell, 'newLikelihoodPercentage');
           }
 
-          if (cell.isSpread) {
-            this.uiOptions.showSpreadInTaskPane(cell);
-            this.uiOptions.showMeanAndStdDevValueInTaskpane(cell);
+          if (newCell.isSpread) {
+            this.uiOptions.showSpreadInTaskPane(newCell);
+            this.uiOptions.showMeanAndStdDevValueInTaskpane(newCell);
           } else {
             this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
             this.uiOptions.removeHtmlSpreadInfoForNewChart();
@@ -145,57 +129,95 @@ export default class WhatIf {
     }
   }
 
-  spread() {
-    this.isSpread = this.uiOptions.isElementChecked('spread');
 
+  displayOptions() {
+
+    this.impact();
+    this.likelihood();
+    this.spread();
   }
 
   impact() {
 
+    if (SheetProp.isImpact) {
+      console.log('Impact');
 
-    this.isImpact = this.uiOptions.isElementChecked('impact');
-    if (this.impact) {
-      // addinfo
-      this.cellOp.showInputImpact(this.degreeOfNeighbourhood, false);
+      if (SheetProp.isInputRelationship) {
+        console.log('Show Input Impact');
+        this.cellOp.showInputImpact(SheetProp.degreeOfNeighbourhood, false);
+      }
+
+      if (SheetProp.isOutputRelationship) {
+        console.log('Show Output Impact');
+        this.cellOp.showOutputImpact(SheetProp.degreeOfNeighbourhood, false);
+      }
     } else {
-      // remove info
+      console.log('Remove Impact');
+      this.cellOp.removeShapesOptionWise('Impact');
     }
   }
 
   likelihood() {
-    this.isLikelihood = this.uiOptions.isElementChecked('likelihood');
+
+    if (SheetProp.isImpact) {
+
+      if (SheetProp.isInputRelationship) {
+        this.cellOp.showInputLikelihood(SheetProp.degreeOfNeighbourhood, false);
+      }
+
+      if (SheetProp.isOutputRelationship) {
+        this.cellOp.showOutputLikelihood(SheetProp.degreeOfNeighbourhood, false);
+      }
+    } else {
+      this.cellOp.removeShapesOptionWise('Likelihood');
+    }
+
   }
 
-  setDegreeOfNeighbourhood(n: number) {
-    this.degreeOfNeighbourhood = n;
+  spread() {
+
   }
 
   relationshipIcons() {
-    this.isRelationshipIcons = this.uiOptions.isElementChecked('relationship');
+
+    if (SheetProp.isRelationshipIcons) {
+
+      if (SheetProp.isInputRelationship) {
+        this.cellOp.showInputRelationship(SheetProp.degreeOfNeighbourhood);
+      }
+
+      if (SheetProp.isOutputRelationship) {
+        this.cellOp.showOutputRelationship(SheetProp.degreeOfNeighbourhood);
+      }
+
+    } else {
+      this.cellOp.removeShapesOptionWise('Relationship');
+    }
   }
 
   inputRelationship() {
-    this.isInputRelationship = this.uiOptions.isElementChecked('inputRelationship');
+
+    if (SheetProp.isInputRelationship) {
+      this.displayOptions();
+    } else {
+      this.cellOp.removeShapesInfluenceWise('Input');
+    }
   }
 
   outputRelationship() {
-    this.isOutputRelationship = this.uiOptions.isElementChecked('outputRelationship');
+
+    if (SheetProp.isOutputRelationship) {
+      this.displayOptions();
+    } else {
+      this.cellOp.removeShapesInfluenceWise('Output');
+    }
   }
-
-
-
-
-  startWhatIfAnalysis() {
-
-  }
-
-
 
   calculateChange() {
 
     let i = 0;
     try {
-      this.cells.forEach((newCell: CellProperties, index: number) => {
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
 
         newCell.updatedValue = newCell.value - this.oldCells[index].value;
         if (newCell.updatedValue != 0) {
@@ -204,36 +226,15 @@ export default class WhatIf {
         }
 
         if (this.oldReferenceCell.id == newCell.id) {
-          this.referenceCell = newCell;
+          this.newReferenceCell = newCell;
         }
         i++;
       })
 
     } catch (error) {
-      console.log('calculateChange Error at ' + this.cells[i].address, error);
+      console.log('calculateChange Error at ' + this.newCells[i].address, error);
     }
   }
-
-  // public displayOptions() {
-  //   if (this.isImpact) {
-  //     // calculate new impact
-  //   }
-
-  //   if (this.isLikelihood) {
-  //     // calculate new likelihood
-  //   }
-
-  //   if (this.isRelationshipIcons) {
-  //     // do nothing at the moment
-  //   }
-
-  //   if (this.isSpread) {
-  //     // delete old spread
-  //     // add original spread in first half
-  //     // compute samples for new spread
-  //     // add new spread in second half
-  //   }
-  // }
 
   dismissWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
 
@@ -288,11 +289,11 @@ export default class WhatIf {
       this.showUpdateTextInReferenceCell();
 
       if (isInput) {
-        this.showUpdateTextInInputCells(this.referenceCell.inputCells, n)
+        this.showUpdateTextInInputCells(this.newReferenceCell.inputCells, n)
       }
 
       if (isOutput) {
-        this.showUpdateTextInOutputCells(this.referenceCell.outputCells, n)
+        this.showUpdateTextInOutputCells(this.newReferenceCell.outputCells, n)
       }
 
     } catch (error) {
@@ -315,7 +316,7 @@ export default class WhatIf {
 
       let namesToBeDeleted = new Array<string>();
 
-      this.cells.forEach((newCell: CellProperties, index: number) => {
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
         if (newCell.isSpread) {
           namesToBeDeleted.push(newCell.address);
           newCell.samples = null;
@@ -326,7 +327,7 @@ export default class WhatIf {
 
       this.deleteSpreadNameWise(namesToBeDeleted);
 
-      // const spread = new Spread(this.oldCells, null, this.referenceCell);
+      // const spread = new Spread(this.oldCells, null, this.newReferenceCell);
       // spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
 
     } catch (error) {
@@ -339,7 +340,7 @@ export default class WhatIf {
 
       let namesToBeDeleted = new Array<string>();
 
-      this.cells.forEach((newCell: CellProperties) => {
+      this.newCells.forEach((newCell: CellProperties) => {
         if (newCell.isSpread) {
           namesToBeDeleted.push(newCell.address);
           newCell.isSpread = false;
@@ -385,13 +386,13 @@ export default class WhatIf {
 
     try {
 
-      const updatedValue = this.referenceCell.updatedValue;
+      const updatedValue = this.newReferenceCell.updatedValue;
 
       if (updatedValue == 0) {
         return;
       }
 
-      this.addTextBoxOnUpdate(this.referenceCell, updatedValue);
+      this.addTextBoxOnUpdate(this.newReferenceCell, updatedValue);
 
     } catch (error) {
       console.log('showUpdateTextInReferenceCell: ' + error);
