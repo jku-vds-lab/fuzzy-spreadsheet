@@ -140,19 +140,15 @@ export default class WhatIfProps extends SheetProp {
   impact() {
 
     if (SheetProp.isImpact) {
-      console.log('Impact');
 
       if (SheetProp.isInputRelationship) {
-        console.log('Show Input Impact');
         this.cellOp.showInputImpact(SheetProp.degreeOfNeighbourhood, false);
       }
 
       if (SheetProp.isOutputRelationship) {
-        console.log('Show Output Impact');
         this.cellOp.showOutputImpact(SheetProp.degreeOfNeighbourhood, false);
       }
     } else {
-      console.log('Remove Impact');
       this.cellOp.removeShapesOptionWise('Impact');
     }
   }
