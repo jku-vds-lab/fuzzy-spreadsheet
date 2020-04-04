@@ -3,6 +3,7 @@ import Spread from "../operations/spread";
 import SheetProp from "./sheetproperties";
 import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
+import { tickStep } from "d3";
 
 /* global console, Excel */
 export default class WhatIfProps extends SheetProp {
@@ -131,10 +132,10 @@ export default class WhatIfProps extends SheetProp {
 
 
   displayOptions() {
-
     this.impact();
     this.likelihood();
     this.spread();
+    this.showTextBoxInCells();
   }
 
   impact() {
@@ -209,28 +210,7 @@ export default class WhatIfProps extends SheetProp {
     }
   }
 
-  calculateChange() {
 
-    let i = 0;
-    try {
-      this.newCells.forEach((newCell: CellProperties, index: number) => {
-
-        newCell.updatedValue = newCell.value - this.oldCells[index].value;
-        if (newCell.updatedValue != 0) {
-          //
-
-        }
-
-        if (this.oldReferenceCell.id == newCell.id) {
-          this.newReferenceCell = newCell;
-        }
-        i++;
-      })
-
-    } catch (error) {
-      console.log('calculateChange Error at ' + this.newCells[i].address, error);
-    }
-  }
 
   dismissWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
 
@@ -277,25 +257,6 @@ export default class WhatIfProps extends SheetProp {
     }
   }
 
-
-  showUpdateTextInCells(n: number, isInput: boolean, isOutput: boolean) {
-
-    try {
-
-      this.showUpdateTextInReferenceCell();
-
-      if (isInput) {
-        this.showUpdateTextInInputCells(this.newReferenceCell.inputCells, n)
-      }
-
-      if (isOutput) {
-        this.showUpdateTextInOutputCells(this.newReferenceCell.outputCells, n)
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
     // try {
@@ -353,8 +314,6 @@ export default class WhatIfProps extends SheetProp {
     }
   }
 
-
-
   deleteSpreadNameWise(namesToBeDeleted: string[]) {
 
     try {
@@ -375,6 +334,40 @@ export default class WhatIfProps extends SheetProp {
       });
     } catch (error) {
       console.log('Async Delete Error:', error);
+    }
+  }
+
+  showTextBoxInCells() {
+
+    try {
+
+      this.cellOp.removeShapesUpdatedWise();
+      this.calculateUpdatedValue();
+
+      this.showUpdateTextInReferenceCell();
+
+      if (SheetProp.isInputRelationship) {
+        this.showUpdateTextInInputCells(this.newReferenceCell.inputCells, SheetProp.degreeOfNeighbourhood)
+      }
+
+      if (SheetProp.isOutputRelationship) {
+        this.showUpdateTextInOutputCells(this.newReferenceCell.outputCells, SheetProp.degreeOfNeighbourhood)
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public calculateUpdatedValue() {
+
+    try {
+      this.newCells.forEach((newCell: CellProperties, index: number) => {
+        newCell.updatedValue = newCell.value - this.oldCells[index].value;
+      })
+
+    } catch (error) {
+      console.log('calculateChange Error: ', error);
     }
   }
 
@@ -467,7 +460,7 @@ export default class WhatIfProps extends SheetProp {
         }
 
         const textbox = sheet.shapes.addTextBox(text);
-        textbox.name = "Update1";
+        textbox.name = cell.address + 'TextBoxUpdate';
         textbox.left = cell.left + 5;
         textbox.top = cell.top + 2;
         textbox.height = cell.height + 4;
@@ -483,7 +476,7 @@ export default class WhatIfProps extends SheetProp {
         }
 
         let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.triangle);
-        arrow.name = 'Update2';
+        arrow.name = cell.address + 'TextBoxUpdate';
         arrow.width = 5;
         arrow.height = cell.height / 3;
         arrow.top = cell.top + cell.height / 2 + 2;
