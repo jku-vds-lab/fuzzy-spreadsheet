@@ -5,7 +5,7 @@ import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
 
 // Protect the sheet
-/* global console, Excel */
+/* global setTimeout, console, Excel */
 export default class WhatIfProps extends SheetProp {
 
   private oldCells: CellProperties[];
@@ -14,6 +14,9 @@ export default class WhatIfProps extends SheetProp {
   private newReferenceCell: CellProperties;
   private sheetEventResult = null;
   protected uiOptions: UIOptions;
+  private changedRefCell: { oldCell: CellProperties, newCell: CellProperties };
+  private changedInputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+  private changedOutputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
 
   constructor(oldCells: CellProperties[], oldReferenceCell: CellProperties) {
 
@@ -74,6 +77,11 @@ export default class WhatIfProps extends SheetProp {
       this.cellProp.addVarianceAndLikelihoodInfo(this.newCells);
       this.cellOp = new CellOperations(this.newCells, this.newReferenceCell, 1, false);
       this.cellOp.setCells(this.newCells);
+      this.cellOp.removeAllShapes(); // important to delete every information
+      this.changedRefCell = null;
+      this.changedInputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+      this.changedOutputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+
       this.registerCellSelectionChangedEvent();
 
       console.log('Old Ref: ' + this.oldReferenceCell.value + 'New Ref: ' + this.newReferenceCell.value);
@@ -114,14 +122,14 @@ export default class WhatIfProps extends SheetProp {
             this.uiOptions.addLikelihoodPercentage(newCell, 'newLikelihoodPercentage');
           }
 
-          if (newCell.isSpread) {
-            this.uiOptions.showSpreadInTaskPane(newCell);
-            this.uiOptions.showMeanAndStdDevValueInTaskpane(newCell);
-          } else {
-            this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
-            this.uiOptions.removeHtmlSpreadInfoForNewChart();
+          // if (newCell.isSpread) {
+          //   this.uiOptions.showSpreadInTaskPane(newCell);
+          //   this.uiOptions.showMeanAndStdDevValueInTaskpane(newCell);
+          // } else {
+          //   this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
+          //   this.uiOptions.removeHtmlSpreadInfoForNewChart();
 
-          }
+          // }
           return;
         }
       })
@@ -136,6 +144,7 @@ export default class WhatIfProps extends SheetProp {
     this.likelihood();
     this.spread();
     this.showTextBoxInCells();
+    setTimeout(() => this.compareSpread(), 1000);
   }
 
   impact() {
@@ -173,6 +182,12 @@ export default class WhatIfProps extends SheetProp {
 
   spread() {
 
+    if (SheetProp.isSpread) {
+      this.cellOp.showSpread(SheetProp.degreeOfNeighbourhood, SheetProp.isInputRelationship, SheetProp.isOutputRelationship);
+
+    } else {
+      this.cellOp.removeShapesOptionWise('Spread');
+    }
   }
 
   relationshipIcons() {
@@ -210,6 +225,142 @@ export default class WhatIfProps extends SheetProp {
     }
   }
 
+  compareSpread() {
+
+    try {
+      let n = SheetProp.degreeOfNeighbourhood;
+      this.changedRefCell = this.getChangedCell(this.oldReferenceCell, this.newReferenceCell);
+
+      if (!(this.changedRefCell == null)) {
+
+        this.cellOp.removeSpreadCellWise([this.changedRefCell.oldCell], 'ReferenceSpread');
+        this.cellOp.drawSpread([this.changedRefCell.oldCell], 'ReferenceSpread', 'blue', true);
+        this.cellOp.drawSpread([this.changedRefCell.newCell], 'ReferenceSpreadUpdate', 'orange', false, true);
+      }
+
+      if (SheetProp.isInputRelationship) {
+
+        this.compareInputSpread(this.oldReferenceCell.inputCells, this.newReferenceCell.inputCells, n);
+
+        if (this.changedInputCells.length > 0) {
+
+          let oldUnchangedCells = new Array<CellProperties>();
+          this.changedInputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
+
+          let newChangedCells = new Array<CellProperties>();
+          this.changedInputCells.forEach((cell) => newChangedCells.push(cell.newCell));
+
+          this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'InputSpread');
+          this.cellOp.drawSpread(oldUnchangedCells, 'InputSpread', 'blue', true);
+          this.cellOp.drawSpread(newChangedCells, 'InputSpreadUpdate', 'orange', false, true);
+        }
+      }
+
+      if (SheetProp.isOutputRelationship) {
+
+        this.compareOutputSpread(this.oldReferenceCell.outputCells, this.newReferenceCell.outputCells, n);
+
+        if (this.changedOutputCells.length > 0) {
+
+          let oldUnchangedCells = new Array<CellProperties>();
+          this.changedOutputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
+
+          let newChangedCells = new Array<CellProperties>();
+          this.changedOutputCells.forEach((cell) => newChangedCells.push(cell.newCell));
+
+          this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'OutputSpread');
+          this.cellOp.drawSpread(oldUnchangedCells, 'OutputSpread', 'blue', true);
+          this.cellOp.drawSpread(newChangedCells, 'OutputSpreadUpdate', 'orange', false, true);
+        }
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  compareInputSpread(oldInputCells: CellProperties[], newInputCells: CellProperties[], n: number) {
+
+    newInputCells.forEach((newCell: CellProperties) => {
+
+      oldInputCells.forEach((oldCell: CellProperties) => {
+
+        if (newCell.address == oldCell.address) {
+          if (newCell.isSpread) {
+
+            let changedCell = this.getChangedCell(oldCell, newCell);
+
+            if (changedCell == null) {
+              return;
+            }
+            if (!this.changedInputCells.includes(changedCell)) {
+              this.changedInputCells.push(changedCell);
+            }
+
+
+            if (n == 1) {
+              return;
+            }
+
+            this.compareInputSpread(oldCell.inputCells, newCell.inputCells, n - 1);
+          }
+        }
+      })
+      if (n == 1) {
+        return;
+      }
+    })
+  }
+
+
+  compareOutputSpread(oldOutputCells: CellProperties[], newOutputCells: CellProperties[], n: number) {
+
+    newOutputCells.forEach((newCell: CellProperties) => {
+
+      oldOutputCells.forEach((oldCell: CellProperties) => {
+
+        if (newCell.address == oldCell.address) {
+          if (newCell.isSpread) {
+
+            let changedCell = this.getChangedCell(oldCell, newCell);
+
+            if (changedCell == null) {
+              return;
+            }
+            if (!this.changedOutputCells.includes(changedCell)) {
+              this.changedOutputCells.push(changedCell);
+            }
+
+
+            if (n == 1) {
+              return;
+            }
+
+            this.compareOutputSpread(oldCell.outputCells, newCell.outputCells, n - 1);
+          }
+        }
+      })
+      if (n == 1) {
+        return;
+      }
+    })
+  }
+
+  getChangedCell(oldCell: CellProperties, newCell: CellProperties) {
+    let changedCell: { oldCell: CellProperties, newCell: CellProperties };
+
+    if (oldCell.value == newCell.value) {
+      if (oldCell.stdev == newCell.stdev) {
+        if (oldCell.likelihood == newCell.likelihood) {
+          changedCell = null;
+        }
+      }
+    } else {
+      changedCell = { oldCell: oldCell, newCell: newCell };
+    }
+
+    return changedCell;
+  }
 
 
   dismissWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
@@ -254,86 +405,6 @@ export default class WhatIfProps extends SheetProp {
       // add original spread in first half
       // compute samples for new spread
       // add new spread in second half
-    }
-  }
-
-
-  showNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-    // try {
-    //   const spread: Spread = new Spread(this.newCells, this.oldCells, this.newReferenceCell);
-    //   spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
-
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  }
-
-  deleteNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-    try {
-
-      let namesToBeDeleted = new Array<string>();
-
-      this.newCells.forEach((newCell: CellProperties, index: number) => {
-        if (newCell.isSpread) {
-          namesToBeDeleted.push(newCell.address);
-          newCell.samples = null;
-          this.oldCells[index].isSpread = false;
-
-        }
-      })
-
-      this.deleteSpreadNameWise(namesToBeDeleted);
-
-      // const spread = new Spread(this.oldCells, null, this.newReferenceCell);
-      // spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  keepNewSpread(degreeOfNeighbourhood: number, isInput: boolean, isOutput: boolean) {
-    try {
-
-      let namesToBeDeleted = new Array<string>();
-
-      this.newCells.forEach((newCell: CellProperties) => {
-        if (newCell.isSpread) {
-          namesToBeDeleted.push(newCell.address);
-          newCell.isSpread = false;
-        }
-      })
-
-      this.deleteSpreadNameWise(namesToBeDeleted);
-
-      // const spread = new Spread(this.newCells, null, this.newReferenceCell);
-      // spread.showSpread(degreeOfNeighbourhood, isInput, isOutput);
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  deleteSpreadNameWise(namesToBeDeleted: string[]) {
-
-    try {
-      Excel.run((context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let shapes = sheet.shapes;
-        shapes.load("items/name");
-
-        return context.sync().then(() => {
-          namesToBeDeleted.forEach((name: string) => {
-            shapes.items.forEach((shape) => {
-              if (shape.name.includes(name)) {
-                shape.delete();
-              }
-            })
-          })
-        }).catch((reason: any) => console.log(reason));
-      });
-    } catch (error) {
-      console.log('Async Delete Error:', error);
     }
   }
 

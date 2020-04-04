@@ -13,6 +13,7 @@ export default class SheetProp {
   protected static isSpread: boolean = false;
   protected static isReferenceCell: boolean = false;
   protected static degreeOfNeighbourhood: number = 1;
+
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
   protected cells: CellProperties[];

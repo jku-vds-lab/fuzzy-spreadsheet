@@ -169,6 +169,17 @@ export default class CommonOperations {
     }
   }
 
+  removeSpreadCellWise(cells: CellProperties[], name: string) {
+    let names = new Array<string>();
+
+    cells.forEach((cell: CellProperties) => {
+      cell.isSpread = false;
+      names.push(cell.address + name);
+    });
+
+    this.deleteShapesInCells(names);
+  }
+
   // To remove shapes based of degree of neighbourhood
   removeShapesNeighbourWise(n: number) {
 

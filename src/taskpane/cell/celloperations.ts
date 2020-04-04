@@ -88,6 +88,14 @@ export default class CellOperations {
     this.spread.showSpread(n, isInput, isOutput);
   }
 
+  drawSpread(cells: CellProperties[], name: string, color: string = 'blue', isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
+    this.spread.drawBarCodePlot(cells, name, color, isUpperHalf, isLowerHalf);
+  }
+
+  removeSpreadCellWise(cells: CellProperties[], name: string) {
+    this.commonOps.removeSpreadCellWise(cells, name);
+  }
+
   showInputRelationship(n: number) {
     this.relationship.showInputRelationship(n);
   }

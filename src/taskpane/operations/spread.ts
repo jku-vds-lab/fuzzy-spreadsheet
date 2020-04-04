@@ -30,7 +30,7 @@ export default class Spread {
     this.outputCellsWithSpread = new Array<CellProperties>();
   }
 
-  public showSpread(n: number, isInput: boolean, isOutput: boolean) {
+  public showSpread(n: number, isInput: boolean, isOutput: boolean, isDraw: boolean = true) {
 
     try {
 
@@ -39,18 +39,30 @@ export default class Spread {
       if (isInput) {
         this.inputCellsWithSpread = new Array<CellProperties>();
         this.showInputSpread(this.referenceCell.inputCells, n);
-        this.drawBarCodePlot(this.inputCellsWithSpread, 'InputSpread');
+        if (isDraw) {
+          this.drawBarCodePlot(this.inputCellsWithSpread, 'InputSpread');
+        }
       }
 
       if (isOutput) {
         this.outputCellsWithSpread = new Array<CellProperties>();
         this.showOutputSpread(this.referenceCell.outputCells, n);
-        this.drawBarCodePlot(this.outputCellsWithSpread, 'OutputSpread');
+        if (isDraw) {
+          this.drawBarCodePlot(this.outputCellsWithSpread, 'OutputSpread');
+        }
       }
 
     } catch (error) {
       console.log('Error in Show spread', error);
     }
+  }
+
+  public getInputCellsWithSpread() {
+    return this.inputCellsWithSpread;
+  }
+
+  public getOutputCellsWithSpread() {
+    return this.outputCellsWithSpread;
   }
 
   public showReferenceCellSpread() {
@@ -126,7 +138,7 @@ export default class Spread {
     }
   }
 
-  private drawBarCodePlot(cells: CellProperties[], name: string) {
+  public drawBarCodePlot(cells: CellProperties[], name: string, color: string = 'blue', isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
     try {
 
       Excel.run((context) => {
@@ -138,15 +150,37 @@ export default class Spread {
           let height = cell.height;
           let top = cell.top;
           let left = cell.left + 20;
-          this.colors = this.blueColors;
+
+          if (isUpperHalf) {
+            height = height / 2;
+          }
+
+          if (isLowerHalf) {
+            top = top + height / 2;
+            height = height / 2;
+          }
+
+          if (color == 'orange') {
+            this.colors = this.orangeColors;
+          } else {
+            this.colors = this.blueColors;
+          }
+
           let sortedLinesWithColors = this.computeColorsAndBins(cell);
 
-          cell.binBlueColors = new Array<string>();
+          if (color == 'orange') {
+            cell.binOrangeColors = new Array<string>();
+            sortedLinesWithColors.forEach((el) => {
+              cell.binOrangeColors.push(el.color);
+            })
+          } else {
+            cell.binBlueColors = new Array<string>();
+            sortedLinesWithColors.forEach((el) => {
+              cell.binBlueColors.push(el.color);
+            })
+          }
 
           sortedLinesWithColors.forEach((el) => {
-
-            cell.binBlueColors.push(el.color);
-
             let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
             rect.name = cell.address + name;
             rect.top = top;
