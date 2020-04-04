@@ -3,8 +3,8 @@ import Spread from "../operations/spread";
 import SheetProp from "./sheetproperties";
 import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
-import { tickStep } from "d3";
 
+// Protect the sheet
 /* global console, Excel */
 export default class WhatIfProps extends SheetProp {
 
@@ -465,6 +465,7 @@ export default class WhatIfProps extends SheetProp {
         textbox.top = cell.top + 2;
         textbox.height = cell.height + 4;
         textbox.width = cell.width - 5;
+        textbox.setZOrder(Excel.ShapeZOrder.sendToBack);
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
@@ -484,6 +485,9 @@ export default class WhatIfProps extends SheetProp {
         arrow.lineFormat.color = color;
         arrow.rotation = rotation;
         arrow.fill.setSolidColor(color);
+
+        let range = sheet.getRange(this.newReferenceCell.address);
+        range.select();
         return context.sync().then(() => console.log('Updated shapes')).catch((reason: any) => console.log('Failed to draw the updated shape: ' + reason));
       });
     } catch (error) {
