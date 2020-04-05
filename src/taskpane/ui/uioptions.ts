@@ -25,7 +25,6 @@ export default class UIOptions {
     document.getElementById('referenceCell').hidden = false;
   }
 
-
   public showVisualizationOption() {
 
     document.getElementById('relationshipDiv').hidden = false;
@@ -115,7 +114,6 @@ export default class UIOptions {
     document.getElementById("newDistribution").hidden = false;
     document.getElementById("spaceHack").hidden = false;
   }
-
 
   public addImpactPercentage(cell: CellProperties, id: string = 'impactPercentage') {
 
@@ -434,5 +432,14 @@ export default class UIOptions {
       .style("fill", (d) => { return d });
   }
 
+  public showWhatIfOptions() {
+    document.getElementById('useNewValues').hidden = false;
+    document.getElementById('dismissValues').hidden = false;
+  }
+
+  public hideWhatIfOptions() {
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+  }
 
 }

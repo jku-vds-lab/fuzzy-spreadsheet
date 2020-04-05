@@ -42,6 +42,19 @@ export default class SheetProp {
     return this.referenceCell;
   }
 
+  public async processNewValues() {
+
+    this.cells = await this.cellProp.getCells();
+    this.cellProp.getRelationshipOfCells(this.cells);
+    this.addPropertiesToCells(this.referenceCell.address);
+
+
+    console.log('Remove All shapes: ');
+    this.cellOp.removeAllShapes();
+    console.log('Display options');
+    this.displayOptions();
+  }
+
 
   public async parseSheet() {
     try {
@@ -452,33 +465,5 @@ export default class SheetProp {
     } catch (error) {
       console.log(error);
     }
-  }
-
-  public async startWhatIf() {
-    this.unprotectSheet();
-
-    // let the user change something & call the following when the calculation is done
-    // transfer state with old and new cells
-    // this.newCells = await this.cellProp.getCells();
-    // this.cellProp.getRelationshipOfCells(this.newCells);
-    // // switch new and old ref cell
-    // this.addPropertiesToCells(this.referenceCell.address);
-    // disable ref cell option
-    // disable initialise option
-    // compute impact/likelihood/variance/ spread info with draw set to false
-    // calculate the changed cells
-    // for the DON, show the textbox in a cell with name: cell.address + Inputtextbox, cell.address + Inputarrow & same for output
-    // add is text box option in display options
-    // when a DON is changed:
-    //  The old cell should show the impact
-
-  }
-
-  public keepNewValues() {
-
-  }
-
-  public dismissNewValues() {
-
   }
 }

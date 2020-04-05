@@ -120,15 +120,18 @@ class MainClass {
 
   public static whatIf() {
     MainClass.isWhatIfStarted = true;
-    MainClass.whatIfProp.registerSheetCalculatedEvent();
+    MainClass.whatIfProp.startWhatIf();
   }
 
   public static dismissNewValues() {
-    MainClass.sheetProp.dismissNewValues();
+    MainClass.isWhatIfStarted = false;
+    MainClass.whatIfProp.dismissNewValues();
   }
 
   public static keepNewValues() {
-    MainClass.sheetProp.keepNewValues();
+    MainClass.isWhatIfStarted = false;
+    MainClass.whatIfProp.keepNewValues();
+    MainClass.sheetProp.processNewValues();
   }
 }
 

@@ -14,6 +14,7 @@ export default class WhatIfProps extends SheetProp {
   private newCells: CellProperties[];
   private newReferenceCell: CellProperties;
   private sheetEventResult = null;
+  private cellSelectionEvent = null;
   protected uiOptions: UIOptions;
   private changedRefCell: { oldCell: CellProperties, newCell: CellProperties };
   private changedInputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
@@ -31,10 +32,79 @@ export default class WhatIfProps extends SheetProp {
     this.newReferenceCell = new CellProperties();
   }
 
+  startWhatIf() {
+    this.unprotectSheet();
+    this.uiOptions.showWhatIfOptions();
+    this.registerSheetCalculatedEvent();
+  }
+
+  dismissNewValues() {
+    this.uiOptions.hideWhatIfOptions();
+    this.removeHandler();
+    this.cellOp.removeShapesUpdatedWise(); // will remove new spread as well
+    this.cellProp.writeCellsToSheet(this.oldCells);
+
+    if (SheetProp.isSpread) {
+
+      let oldUnchangedCells = new Array<CellProperties>();
+      this.changedInputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
+
+      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'InputSpread');
+
+      oldUnchangedCells.forEach((oldCell: CellProperties) => {
+        oldCell.isSpread = true;
+      })
+      this.cellOp.drawSpread(oldUnchangedCells, 'InputSpread');
+
+
+      oldUnchangedCells = new Array<CellProperties>();
+      this.changedOutputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
+
+      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'OutputSpread');
+
+      oldUnchangedCells.forEach((oldCell: CellProperties) => {
+        oldCell.isSpread = true;
+      })
+      this.cellOp.drawSpread(oldUnchangedCells, 'OutputSpread');
+
+
+      oldUnchangedCells = [this.oldReferenceCell];
+
+      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'ReferenceSpread');
+
+      oldUnchangedCells.forEach((oldCell: CellProperties) => {
+        oldCell.isSpread = true;
+      })
+      this.cellOp.drawSpread(oldUnchangedCells, 'ReferenceSpread');
+
+    }
+  }
+
+  keepNewValues() {
+    this.uiOptions.hideWhatIfOptions();
+    this.removeHandler();
+    this.cellOp.removeShapesUpdatedWise();
+    // copy new cells to old cells and redraw shapes?
+
+    return this.newCells;
+  }
+
+  private removeHandler() {
+    return Excel.run(this.sheetEventResult.context, (context) => {
+      this.sheetEventResult.remove();
+      this.cellSelectionEvent.remove();
+
+      return context.sync()
+        .then(() => {
+          this.sheetEventResult = null;
+          this.cellSelectionEvent = null;
+          console.log("Event handler successfully removed.");
+        });
+    }).catch((reason: any) => { console.log(reason) });
+  }
+
 
   registerSheetCalculatedEvent() {
-
-    this.unprotectSheet();
 
     Excel.run(async (context) => {
 
@@ -95,7 +165,7 @@ export default class WhatIfProps extends SheetProp {
 
     Excel.run(async (context) => {
       let worksheet = context.workbook.worksheets.getActiveWorksheet();
-      worksheet.onSelectionChanged.add((event) => this.handleSelectionChange(event));
+      this.cellSelectionEvent = worksheet.onSelectionChanged.add((event) => this.handleSelectionChange(event));
 
       await context.sync();
       console.log("What-if Event handler successfully registered for onSelectionChanged event in the worksheet.");
@@ -409,53 +479,6 @@ export default class WhatIfProps extends SheetProp {
     return changedCell;
   }
 
-
-
-
-  dismissWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
-
-    if (isImpact) {
-      // remove new impact, only change the newcells.impact to zero
-
-    }
-
-    if (isLikelihood) {
-      // remove new likelihood, only change the newcells.impact to zero
-    }
-
-    if (isRelationship) {
-      // do nothing at the moment
-    }
-
-    if (isSpread) {
-      // delete old spread & mark is spread as false
-      // delete new spread
-      // add old spread again
-    }
-  }
-
-
-  keepWhatIf(isImpact: boolean, isLikelihood: boolean, isRelationship: boolean, isSpread: boolean) {
-    if (isImpact) {
-      // do something
-      // calculate new impact
-    }
-
-    if (isLikelihood) {
-      // calculate new likelihood
-    }
-
-    if (isRelationship) {
-      // do nothing at the moment
-    }
-
-    if (isSpread) {
-      // delete old spread
-      // add original spread in first half
-      // compute samples for new spread
-      // add new spread in second half
-    }
-  }
 
   showTextBoxInCells() {
 

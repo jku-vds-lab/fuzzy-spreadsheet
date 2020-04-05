@@ -157,6 +157,38 @@ export default class CellProperties {
     }
   }
 
+  public writeCellsToSheet(cells: CellProperties[]) {
+
+    Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      let cellRanges = new Array<Excel.Range>();
+      let cellValues = new Array<number>();
+      let cellFormulas = new Array<any>();
+
+      cells.forEach((cell: CellProperties) => {
+        let range = sheet.getRange(cell.address);
+        cellRanges.push(range.load(['values', 'formulas']));
+        cellValues.push(cell.value);
+
+        let formula = cell.formula;
+        if (formula == "") {
+          formula = cell.value.toString();
+        }
+        cellFormulas.push(formula);
+      })
+
+      await context.sync();
+
+      let i = 0;
+
+      cellRanges.forEach((cellRange: Excel.Range) => {
+        cellRange.values = [[cellValues[i]]];
+        cellRange.formulas = [[cellFormulas[i]]];
+        i++;
+      })
+    });
+  }
+
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
 
     try {
