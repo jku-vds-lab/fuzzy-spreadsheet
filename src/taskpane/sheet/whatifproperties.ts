@@ -41,43 +41,10 @@ export default class WhatIfProps extends SheetProp {
   dismissNewValues() {
     this.uiOptions.hideWhatIfOptions();
     this.removeHandler();
-    this.cellOp.removeShapesUpdatedWise(); // will remove new spread as well
+    this.cellOp.removeShapesUpdatedWise();
+    this.uiOptions.removeHtmlSpreadInfoForNewChart();
+    this.newCells = null;
     this.cellProp.writeCellsToSheet(this.oldCells);
-
-    if (SheetProp.isSpread) {
-
-      let oldUnchangedCells = new Array<CellProperties>();
-      this.changedInputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
-
-      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'InputSpreadUpdate');
-
-      oldUnchangedCells.forEach((oldCell: CellProperties) => {
-        oldCell.isSpread = true;
-      })
-      this.cellOp.drawSpread(oldUnchangedCells, 'InputSpreadUpdate');
-
-
-      oldUnchangedCells = new Array<CellProperties>();
-      this.changedOutputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
-
-      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'OutputSpread');
-
-      oldUnchangedCells.forEach((oldCell: CellProperties) => {
-        oldCell.isSpread = true;
-      })
-      this.cellOp.drawSpread(oldUnchangedCells, 'OutputSpread');
-
-
-      oldUnchangedCells = [this.oldReferenceCell];
-
-      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'ReferenceSpread');
-
-      oldUnchangedCells.forEach((oldCell: CellProperties) => {
-        oldCell.isSpread = true;
-      })
-      this.cellOp.drawSpread(oldUnchangedCells, 'ReferenceSpread');
-
-    }
   }
 
   keepNewValues() {

@@ -118,13 +118,16 @@ class MainClass {
 
   public static whatIf() {
     MainClass.isWhatIfStarted = true;
-    MainClass.whatIfProp = new WhatIfProps(MainClass.sheetProp.getCells(), MainClass.sheetProp.getReferenceCell());
-    MainClass.whatIfProp.startWhatIf();
+    setTimeout(() => {
+      MainClass.whatIfProp = new WhatIfProps(MainClass.sheetProp.getCells(), MainClass.sheetProp.getReferenceCell());
+      MainClass.whatIfProp.startWhatIf();
+    }, 1000);
   }
 
   public static dismissNewValues() {
     MainClass.isWhatIfStarted = false;
     MainClass.whatIfProp.dismissNewValues();
+    MainClass.sheetProp.keepOldValues();
   }
 
   public static keepNewValues() {

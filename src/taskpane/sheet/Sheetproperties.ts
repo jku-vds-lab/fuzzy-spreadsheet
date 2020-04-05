@@ -48,10 +48,21 @@ export default class SheetProp {
     this.cellProp.getRelationshipOfCells(this.cells);
     this.addPropertiesToCells(this.referenceCell.address);
 
-    this.cellOp.removeAllShapes();
+    this.cellOp.removeShapesInfluenceWise('Input');
+    this.cellOp.removeShapesInfluenceWise('Output');
+
     this.cellOp.removeShapesReferenceCellWise();
 
-    setTimeout(() => this.displayOptions(), 1000);
+    this.displayOptions();
+  }
+
+  public async keepOldValues() {
+    this.cellOp.removeShapesInfluenceWise('Input');
+    this.cellOp.removeShapesInfluenceWise('Output');
+
+    this.cellOp.removeShapesReferenceCellWise();
+
+    this.displayOptions();
   }
 
 
