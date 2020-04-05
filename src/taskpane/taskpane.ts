@@ -5,7 +5,7 @@ import WhatIfProps from './sheet/whatifproperties';
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
-/* global document, Office */
+/* global setTimeout, document, Office */
 
 
 Office.initialize = () => {
@@ -40,8 +40,6 @@ class MainClass {
 
   public static markAsReferenceCell() {
     MainClass.sheetProp.markAsReferenceCell();
-
-    // eslint-disable-next-line no-undef
     setTimeout(() => MainClass.whatIfProp = new WhatIfProps(MainClass.sheetProp.getCells(), MainClass.sheetProp.getReferenceCell()), 1000);
   }
 
@@ -120,6 +118,7 @@ class MainClass {
 
   public static whatIf() {
     MainClass.isWhatIfStarted = true;
+    MainClass.whatIfProp = new WhatIfProps(MainClass.sheetProp.getCells(), MainClass.sheetProp.getReferenceCell());
     MainClass.whatIfProp.startWhatIf();
   }
 
@@ -131,7 +130,7 @@ class MainClass {
   public static keepNewValues() {
     MainClass.isWhatIfStarted = false;
     MainClass.whatIfProp.keepNewValues();
-    MainClass.sheetProp.processNewValues();
+    setTimeout(() => MainClass.sheetProp.processNewValues(), 1000);
   }
 }
 

@@ -49,12 +49,12 @@ export default class WhatIfProps extends SheetProp {
       let oldUnchangedCells = new Array<CellProperties>();
       this.changedInputCells.forEach((cell) => oldUnchangedCells.push(cell.oldCell));
 
-      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'InputSpread');
+      this.cellOp.removeSpreadCellWise(oldUnchangedCells, 'InputSpreadUpdate');
 
       oldUnchangedCells.forEach((oldCell: CellProperties) => {
         oldCell.isSpread = true;
       })
-      this.cellOp.drawSpread(oldUnchangedCells, 'InputSpread');
+      this.cellOp.drawSpread(oldUnchangedCells, 'InputSpreadUpdate');
 
 
       oldUnchangedCells = new Array<CellProperties>();
@@ -84,9 +84,8 @@ export default class WhatIfProps extends SheetProp {
     this.uiOptions.hideWhatIfOptions();
     this.removeHandler();
     this.cellOp.removeShapesUpdatedWise();
-    // copy new cells to old cells and redraw shapes?
-
-    return this.newCells;
+    this.uiOptions.removeHtmlSpreadInfoForNewChart();
+    this.newCells = null;
   }
 
   private removeHandler() {
@@ -176,6 +175,10 @@ export default class WhatIfProps extends SheetProp {
 
     try {
 
+      if (this.newCells == null) {
+        return;
+      }
+
       this.newCells.forEach((newCell: CellProperties) => {
 
 
@@ -197,7 +200,7 @@ export default class WhatIfProps extends SheetProp {
             if ((this.changedRefCell == null) || (this.changedInputCells == null) || (this.changedOutputCells == null)) {
               return;
             }
-
+            console.log('Still being called');
             if (this.checkIfCellBelongsToChangedCells(newCell)) {
               this.uiOptions.removeHtmlSpreadInfoForNewChart();
               this.uiOptions.addHtmlSpreadInfoForNewChart();

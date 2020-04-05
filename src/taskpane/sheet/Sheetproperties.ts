@@ -48,11 +48,10 @@ export default class SheetProp {
     this.cellProp.getRelationshipOfCells(this.cells);
     this.addPropertiesToCells(this.referenceCell.address);
 
-
-    console.log('Remove All shapes: ');
     this.cellOp.removeAllShapes();
-    console.log('Display options');
-    this.displayOptions();
+    this.cellOp.removeShapesReferenceCellWise();
+
+    setTimeout(() => this.displayOptions(), 1000);
   }
 
 
