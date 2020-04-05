@@ -3,6 +3,7 @@ import Spread from "../operations/spread";
 import SheetProp from "./sheetproperties";
 import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
+import { increment } from "src/functions/functions";
 
 // Protect the sheet
 /* global setTimeout, console, Excel */
@@ -84,8 +85,6 @@ export default class WhatIfProps extends SheetProp {
 
       this.registerCellSelectionChangedEvent();
 
-      console.log('Old Ref: ' + this.oldReferenceCell.value + 'New Ref: ' + this.newReferenceCell.value);
-
     } catch (error) {
       console.log(error);
     }
@@ -109,6 +108,7 @@ export default class WhatIfProps extends SheetProp {
 
       this.newCells.forEach((newCell: CellProperties) => {
 
+
         if (newCell.address.includes(event.address)) {
 
           this.uiOptions.removeImpactInfoInTaskpane('newImpactPercentage');
@@ -122,14 +122,24 @@ export default class WhatIfProps extends SheetProp {
             this.uiOptions.addLikelihoodPercentage(newCell, 'newLikelihoodPercentage');
           }
 
-          // if (newCell.isSpread) {
-          //   this.uiOptions.showSpreadInTaskPane(newCell);
-          //   this.uiOptions.showMeanAndStdDevValueInTaskpane(newCell);
-          // } else {
-          //   this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
-          //   this.uiOptions.removeHtmlSpreadInfoForNewChart();
+          if (newCell.isSpread) {
 
-          // }
+            if ((this.changedRefCell == null) || (this.changedInputCells == null) || (this.changedOutputCells == null)) {
+              return;
+            }
+
+            if (this.checkIfCellBelongsToChangedCells(newCell)) {
+              this.uiOptions.removeHtmlSpreadInfoForNewChart();
+              this.uiOptions.addHtmlSpreadInfoForNewChart();
+              this.uiOptions.showSpreadInTaskPane(newCell, '.what-if-chart', '#FFA500', true);
+              this.uiOptions.showNewMeanAndStdDevValueInTaskpane(newCell);
+            } else {
+              this.uiOptions.removeHtmlSpreadInfoForNewChart();
+            }
+          }
+          else {
+            this.uiOptions.removeHtmlSpreadInfoForNewChart();
+          }
           return;
         }
       })
@@ -137,6 +147,32 @@ export default class WhatIfProps extends SheetProp {
       console.log(error);
     }
   }
+
+  checkIfCellBelongsToChangedCells(cell: CellProperties) {
+
+    let isIncluded = false;
+
+    if (cell.address == this.changedRefCell.newCell.address) {
+      isIncluded = true;
+    }
+
+    this.changedInputCells.forEach((inCell) => {
+      if (cell.address == inCell.newCell.address) {
+        isIncluded = true;
+        return;
+      }
+    });
+
+    this.changedOutputCells.forEach((outCell) => {
+      if (cell.address == outCell.newCell.address) {
+        isIncluded = true;
+        return;
+      }
+    })
+
+    return isIncluded;
+  }
+
   setDegreeOfNeighbourhood(n: number) {
     this.cellOp.removeShapesNeighbourWise(n);
     this.displayOptions();

@@ -111,6 +111,12 @@ export default class UIOptions {
     }
   }
 
+  public addHtmlSpreadInfoForNewChart() {
+    document.getElementById("newDistribution").hidden = false;
+    document.getElementById("spaceHack").hidden = false;
+  }
+
+
   public addImpactPercentage(cell: CellProperties, id: string = 'impactPercentage') {
 
     var impactText = document.getElementById(id);
@@ -197,25 +203,15 @@ export default class UIOptions {
     document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
   }
 
-  public showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', idToBeRemoved: string = 'originalChart', color: string = '#399bfc', isLegendOrange: boolean = false) {
+  public showNewMeanAndStdDevValueInTaskpane(cell: CellProperties) {
+    document.getElementById("newMean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
+  }
+
+  public showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', color: string = '#399bfc', isLegendOrange: boolean = false) {
 
     try {
 
-      d3.select("#" + idToBeRemoved).select('svg').remove();
-      d3.select("#" + 'lines').select('svg').remove();
-      d3.select("#" + 'spreadLegend').select('svg').remove();
-      d3.select("#" + 'newLines').select('svg').remove();
-      d3.select("#" + 'newSpreadLegend').select('svg').remove();
-
-      // if (SheetProperties.newCells == null) {
-      //   d3.select('#whatIfChart').select('svg').remove();
-      // }
-
       let data = cell.samples;
-
-      if (data == null) {
-        return;
-      }
 
       var margin = { top: 10, right: 30, bottom: 20, left: 40 },
         width = 260 - margin.left - margin.right,
@@ -275,21 +271,23 @@ export default class UIOptions {
         .style("font-size", "10px")
         .text('Probability in %');
 
-      svg.append('text')
-        .attr("transform",
-          "translate(" + width / 2 + " ," +
-          (height + margin.bottom) + ")")
-        .style("text-anchor", "middle")
-        .style("font-size", "10px")
-        .text('Values in Mio.(€)');
+      // svg.append('text')
+      //   .attr("transform",
+      //     "translate(" + width / 2 + " ," +
+      //     (height + margin.bottom) + ")")
+      //   .style("text-anchor", "middle")
+      //   .style("font-size", "10px")
+      //   .text('Values in Mio.(€)');
 
 
-      this.drawLinesBeneathChart(cell);
-      this.drawLegend();
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
         this.drawLegend(isLegendOrange);
+      } else {
+        this.drawLinesBeneathChart(cell);
+        this.drawLegend();
+
       }
 
     } catch (error) {
@@ -301,17 +299,19 @@ export default class UIOptions {
 
     try {
 
-      var colors = cell.binBlueColors;
-
-      if (colors == undefined) {
-        return;
-      }
+      var colors;
 
       let div = '#lines';
 
       if (isLegendOrange) {
         div = '#newLines';
         colors = cell.binOrangeColors;
+      } else {
+        colors = cell.binBlueColors;
+      }
+
+      if (colors == undefined) {
+        return;
       }
 
       var legendSvg = d3.select(div)
