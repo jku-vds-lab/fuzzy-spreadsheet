@@ -176,7 +176,6 @@ export default class CellProperties {
   }
 
 
-
   errorHandlerFunction(callback: any) {
     try {
       callback();

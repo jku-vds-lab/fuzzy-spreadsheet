@@ -5,6 +5,7 @@ import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
+import { sum } from 'd3';
 
 export default class Spread {
 
@@ -312,6 +313,7 @@ export default class Spread {
       cell.inputCells.forEach((inCell: CellProperties) => {
         this.addSamplesToCell(inCell);
       })
+
 
       let index = 0;
 

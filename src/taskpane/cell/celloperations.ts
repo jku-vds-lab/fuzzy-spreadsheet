@@ -84,8 +84,8 @@ export default class CellOperations {
     this.likelihood.showOutputLikelihood(n, isDraw);
   }
 
-  showSpread(n: number, isInput: boolean, isOutput: boolean) {
-    this.spread.showSpread(n, isInput, isOutput);
+  showSpread(n: number, isInput: boolean, isOutput: boolean, isDraw: boolean = true) {
+    this.spread.showSpread(n, isInput, isOutput, isDraw);
   }
 
   drawSpread(cells: CellProperties[], name: string, color: string = 'blue', isUpperHalf: boolean = false, isLowerHalf: boolean = false) {
