@@ -54,6 +54,7 @@ export default class SheetProp {
     this.cellOp.removeShapesReferenceCellWise();
 
     this.displayOptions();
+    this.protectSheet();
   }
 
   public async keepOldValues() {
@@ -63,6 +64,7 @@ export default class SheetProp {
     this.cellOp.removeShapesReferenceCellWise();
 
     this.displayOptions();
+    this.protectSheet();
   }
 
 

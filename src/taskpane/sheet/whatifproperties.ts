@@ -263,7 +263,7 @@ export default class WhatIfProps extends SheetProp {
 
     if (SheetProp.isSpread) {
       this.cellOp.showSpread(SheetProp.degreeOfNeighbourhood, SheetProp.isInputRelationship, SheetProp.isOutputRelationship, false);
-
+      setTimeout(() => this.compareSpread(), 1000);
     } else {
       this.cellOp.removeShapesOptionWise('SpreadUpdate');
     }
