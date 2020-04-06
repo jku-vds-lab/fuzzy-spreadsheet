@@ -63,7 +63,7 @@ class MainClass {
     MainClass.sheetProp.setDegreeOfNeighbourhood(1);
 
     if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.setDegreeOfNeighbourhood(1);
+      setTimeout(() => MainClass.whatIfProp.setDegreeOfNeighbourhood(1), 1000);
     }
   }
 
@@ -71,7 +71,7 @@ class MainClass {
     MainClass.sheetProp.setDegreeOfNeighbourhood(2);
 
     if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.setDegreeOfNeighbourhood(2);
+      setTimeout(() => MainClass.whatIfProp.setDegreeOfNeighbourhood(2), 1000);
     }
   }
 
@@ -111,7 +111,7 @@ class MainClass {
     MainClass.sheetProp.spread();
 
     if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.spread();
+      setTimeout(() => MainClass.whatIfProp.spread(), 1000);
     }
   }
 
@@ -128,7 +128,7 @@ class MainClass {
   public static dismissNewValues() {
     MainClass.isWhatIfStarted = false;
     MainClass.whatIfProp.dismissNewValues();
-    MainClass.sheetProp.keepOldValues();
+    setTimeout(() => MainClass.sheetProp.keepOldValues(), 1000);
   }
 
   public static keepNewValues() {
