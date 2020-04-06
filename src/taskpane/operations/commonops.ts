@@ -1,7 +1,5 @@
 /* global setTimeout, console, Excel */
-import * as OfficeHelpers from '@microsoft/office-js-helpers';
 import CellProperties from "../cell/cellproperties";
-import { image } from 'd3';
 
 export default class CommonOperations {
   private referenceCell: CellProperties;
