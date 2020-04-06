@@ -1,95 +1,30 @@
-import CellProperties from "../cellproperties";
-import { timeTuesday } from "d3";
+import CellProperties from "../cell/cellproperties";
 
 /* global console, Excel */
 export default class Relationship {
 
   private referenceCell: CellProperties;
-  private cells: CellProperties[];
-  private degreeOfNeighbourhood: number;
-  private diamonds: Promise<void>[];
+  private inputCellsWithRelationship: { cell: CellProperties, color: string }[];
+  private outputCellsWithRelationship: { cell: CellProperties, color: string }[];
 
-  constructor(cells: CellProperties[], referenceCell: CellProperties) {
-    this.cells = cells;
+  constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
-    this.diamonds = new Array<Promise<void>>();
   }
 
   showInputRelationship(n: number) {
+
     let colors = new Array<string>('black', 'grey', 'lightgrey');
+    this.inputCellsWithRelationship = new Array<{ cell: CellProperties, color: string }>();
     this.addInputRelation(this.referenceCell, n, 0, colors);
+    this.drawInputRelation(this.inputCellsWithRelationship, 'InputRelationship');
   }
 
   showOutputRelationship(n: number) {
+
     let colors = new Array<string>('black', 'grey', 'lightgrey');
+    this.outputCellsWithRelationship = new Array<{ cell: CellProperties, color: string }>();
     this.addOutputRelation(this.referenceCell, n, 0, colors);
-  }
-
-  removeInputRelationship() {
-    this.deleteTriangles('Input');
-  }
-
-  removeOutputRelationship() {
-    this.deleteTriangles('Output');
-  }
-
-  private async deleteTriangles(type: string) {
-
-    try {
-
-      console.log('Delete type: ' + type);
-      this.cells.forEach((cell: CellProperties) => {
-        if (type == 'Input') {
-          cell.isInputRelationship = false;
-        }
-        if (type == 'Output') {
-          cell.isOutputRelationship = false;
-        }
-      })
-
-      await Excel.run(async (context) => {
-        const sheet = context.workbook.worksheets.getActiveWorksheet();
-        var shapes = sheet.shapes;
-        shapes.load("items/name");
-
-        return context.sync().then(function () {
-          shapes.items.forEach(function (shape) {
-            if (shape.name.includes('Relationship' + type)) {
-              shape.delete();
-            }
-          });
-          return context.sync();
-        });
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  private drawInputRelation(cell: CellProperties, color: string) {
-    try {
-
-      Excel.run(function (context) {
-
-        let type: Excel.GeometricShapeType;
-        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
-
-        type = Excel.GeometricShapeType.diamond;
-        let diamond = shapes.addGeometricShape(type);
-        diamond.name = "RelationshipInput"
-        diamond.left = cell.left;
-        diamond.top = cell.top + cell.height / 4;
-        diamond.height = 6;
-        diamond.width = 6;
-        diamond.lineFormat.weight = 0;
-        diamond.lineFormat.color = color;
-        diamond.fill.setSolidColor(color);
-
-        return context.sync(); //.then(() => { console.log('Success in drawing relationship') }).catch((reason: any) => console.log('Could not draw relationship: ' + reason));
-      })
-    } catch (error) {
-      console.log('Input Relationship Error: ', error);
-    }
+    this.drawOutputRelation(this.outputCellsWithRelationship, 'OutputRelationship');
   }
 
   private addInputRelation(cell: CellProperties, n: number, colorIndex: number, colors: string[]) {
@@ -97,8 +32,8 @@ export default class Relationship {
     cell.inputCells.forEach((inCell: CellProperties) => {
 
       if (!inCell.isInputRelationship) {
-        // eslint-disable-next-line no-undef
-        setTimeout(() => this.drawInputRelation(inCell, colors[colorIndex]), 100);
+
+        this.inputCellsWithRelationship.push({ cell: inCell, color: colors[colorIndex] });
         inCell.isInputRelationship = true;
       }
 
@@ -117,8 +52,8 @@ export default class Relationship {
     cell.outputCells.forEach((outCell: CellProperties) => {
 
       if (!outCell.isOutputRelationship) {
-        // eslint-disable-next-line no-undef
-        setTimeout(() => this.drawOutputRelation(outCell, colors[colorIndex]), 100);
+
+        this.outputCellsWithRelationship.push({ cell: outCell, color: colors[colorIndex] });
         outCell.isOutputRelationship = true;
       }
 
@@ -132,26 +67,60 @@ export default class Relationship {
     })
   }
 
-  private drawOutputRelation(cell: CellProperties, color: string) {
+  private drawInputRelation(cellsWithColors: { cell: CellProperties, color: string }[], name: string) {
+    try {
+
+      Excel.run((context) => {
+
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        let shapes = sheet.shapes;
+
+        cellsWithColors.forEach((element: { cell: CellProperties, color: string }) => {
+          let type = Excel.GeometricShapeType.diamond;
+          let diamond = shapes.addGeometricShape(type);
+          diamond.name = element.cell.address + name;
+          diamond.left = element.cell.left;
+          diamond.top = element.cell.top + element.cell.height / 4;
+          diamond.height = 6;
+          diamond.width = 6;
+          diamond.lineFormat.weight = 0;
+          diamond.lineFormat.color = element.color;
+          diamond.fill.setSolidColor(element.color);
+        })
+
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
+        return context.sync();
+      })
+    } catch (error) {
+      console.log('Input Relationship Error: ', error);
+    }
+  }
+
+  private drawOutputRelation(cellsWithColors: { cell: CellProperties, color: string }[], name: string) {
 
     try {
       Excel.run(async (context) => {
-        let type: Excel.GeometricShapeType;
-        var shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
 
-        type = Excel.GeometricShapeType.ellipse;
-        let circle = shapes.addGeometricShape(type);
-        circle.name = "RelationshipOutput"
-        circle.left = cell.left;
-        circle.top = cell.top + cell.height / 4;
-        circle.height = 6;
-        circle.width = 6;
-        circle.lineFormat.weight = 0;
-        circle.lineFormat.color = color;
-        circle.fill.setSolidColor(color);
-        await context.sync();
+        const sheet = context.workbook.worksheets.getActiveWorksheet();
+        var shapes = sheet.shapes;
+
+        cellsWithColors.forEach((element: { cell: CellProperties, color: string }) => {
+          let type = Excel.GeometricShapeType.ellipse;
+          let circle = shapes.addGeometricShape(type);
+          circle.name = element.cell.address + name
+          circle.left = element.cell.left;
+          circle.top = element.cell.top + element.cell.height / 4;
+          circle.height = 6;
+          circle.width = 6;
+          circle.lineFormat.weight = 0;
+          circle.lineFormat.color = element.color;
+          circle.fill.setSolidColor(element.color);
+        });
+        let range = sheet.getRange(this.referenceCell.address);
+        range.select();
+        return context.sync();
       })
-
     } catch (error) {
       console.log('Output relationship error: ', error);
     }

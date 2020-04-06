@@ -1,12 +1,5 @@
-import SheetProperties from "./sheetproperties";
-import WhatIf from "./operations/whatif";
-import Spread from "./operations/spread";
-import { values } from "d3";
-
 /* global console, Excel */
 
-// Find a way to figure out which cells are uncertain so that we dont have to use their column index anymore
-// maybe with the help of their formula?
 export default class CellProperties {
   public id: string;
   public address: string;
@@ -41,17 +34,19 @@ export default class CellProperties {
   public isImpact: boolean = false;
   public isLikelihood: boolean = false;
   public isSpread: boolean = false;
-  public whatIf: WhatIf;
   public binBlueColors: string[];
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private newCells: CellProperties[];
   private rowStart: number = 0;
   private rowEnd: number = 20;
 
   private colStart: number = 0;
   private colEnd: number = 18;
+
+  // what if info
+  public isTextbox: boolean = false;
+  public updatedValue: number = 0;
 
 
   CellProperties() {
@@ -68,7 +63,6 @@ export default class CellProperties {
     this.formula = "";
     this.spreadRange = null;
     this.isUncertain = false;
-    this.whatIf = new WhatIf();
   }
 
   async getCells() {
@@ -97,7 +91,6 @@ export default class CellProperties {
     return this.cells;
   }
 
-
   async getCellsFormulasValues() {
 
     let cellRanges = new Array<Excel.Range>();
@@ -115,8 +108,9 @@ export default class CellProperties {
             cellRanges.push(cell.load(['formulas', 'values']));
           }
         }
-        await context.sync().then;
+        await context.sync();
       });
+
       cellRanges.forEach((cellRange: Excel.Range) => {
         newValues.push(cellRange.values);
         newFormulas.push(cellRange.formulas);
@@ -163,67 +157,58 @@ export default class CellProperties {
     }
   }
 
-  updateNewValues(newValues: any[][], newFormulas: any[][]) {
+  public writeCellsToSheet(cells: CellProperties[]) {
 
-    console.log('Update Values');
-    try {
+    Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      let cellRanges = new Array<Excel.Range>();
+      let cellValues = new Array<number>();
+      let cellFormulas = new Array<any>();
 
-      this.newCells = new Array<CellProperties>();
+      cells.forEach((cell: CellProperties) => {
+        let range = sheet.getRange(cell.address);
+        cellRanges.push(range.load(['values', 'formulas']));
+        cellValues.push(cell.value);
 
-      // make a deep copy of the element
-      this.cells.forEach((cell: CellProperties) => {
-        let newCell = new CellProperties();
-        newCell = Object.assign(newCell, cell);
-        newCell.id = cell.id;
-        this.newCells.push(newCell);
-      });
-
-      this.newCells.forEach(function (newCell: CellProperties, index) {
-
-        let id = newCell.id;
-        id = id.replace('R', '');
-        let c = id.indexOf('C');
-        const rowIndex = id.substring(0, c);
-        const colIndex = id.substring(c + 1);
-
-        this[index].value = newValues[rowIndex][colIndex];
-        this[index].formula = newFormulas[rowIndex][colIndex];
-        this[index].isInputRelationship = false;
-        this[index].isOutputRelationship = false;
-        this[index].isImpact = false;
-        this[index].isLikelihood = false;
-        this[index].isSpread = false;
-        this[index].inputCells = new Array<CellProperties>();
-        this[index].outputCells = new Array<CellProperties>();
-        this[index].whatIf = new WhatIf();
-
-        if (this[index].formula == this[index].value) {
-          this[index].formula = "";
+        let formula = cell.formula;
+        if (formula == "") {
+          formula = cell.value.toString();
         }
-      }, this.newCells);
+        cellFormulas.push(formula);
+      })
 
-      this.getRelationshipOfCells(this.newCells);
+      await context.sync();
 
-      this.checkUncertainty(this.newCells);
+      let i = 0;
 
+      cellRanges.forEach((cellRange: Excel.Range) => {
+        cellRange.values = [[cellValues[i]]];
+        cellRange.formulas = [[cellFormulas[i]]];
+        i++;
+      })
+    });
+  }
+
+  public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
+
+    try {
+      for (let i = 0; i < this.cells.length; i++) {
+        cells[i].stdev = 0;
+        cells[i].likelihood = 1;
+
+        if (cells[i].isUncertain) {
+
+          cells[i].stdev = this.cells[i + 1].value;
+          cells[i].likelihood = this.cells[i + 2].value;
+        }
+      }
     } catch (error) {
-      console.log('Error: ' + error);
+      console.log(error);
     }
-
-    return this.newCells;
   }
 
-  private convertIdToIndices(id: string) {
 
-    id = id.replace('R', '');
-    let c = id.indexOf('C');
-    let rowIndex = id.substring(0, c);
-    let colIndex = id.substring(c + 1);
-
-    return { rowIndex: rowIndex, colIndex: colIndex };
-  }
-
-  errorHandlerFunction(callback) {
+  errorHandlerFunction(callback: any) {
     try {
       callback();
     } catch (error) {

@@ -1,182 +1,82 @@
 /* global console, Excel */
 import { abs, round } from 'mathjs';
-import CellProperties from '../cellproperties';
+import CellProperties from '../cell/cellproperties';
 import CommonOperations from './commonops';
-import SheetProperties from '../sheetproperties';
-import Likelihood from './likelihood';
 
 export default class Impact {
 
   private referenceCell: CellProperties;
-  private cells: CellProperties[];
   private commonOps: CommonOperations;
+  private inputCellsWithImpact: CellProperties[];
+  private outputCellsWithImpact: CellProperties[];
 
-  constructor(referenceCell: CellProperties, cells: CellProperties[]) {
+  constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
-    this.commonOps = new CommonOperations();
-    this.cells = cells;
+    this.commonOps = new CommonOperations(this.referenceCell);
   }
 
-  public showInputImpact(n: number) {
+  public showInputImpact(n: number, isDraw: boolean) {
 
     try {
       this.addImpactInfoInputCells(n);
+      this.inputCellsWithImpact = new Array<CellProperties>();
+      this.addInputImpact(this.referenceCell, n);
 
-      if (SheetProperties.isLikelihood) {
-        console.log('Removing likelihood inputs');
-        this.commonOps.deleteRectangles(this.cells, 'InputLikelihood')
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.inputCellsWithImpact, 'InputImpact');
       }
-
-      this.displayInputImpact(this.referenceCell, n);
-
     } catch (error) {
       console.log(error);
     }
   }
 
-  public showOutputImpact(n: number) {
+  public showOutputImpact(n: number, isDraw: boolean) {
 
     try {
       this.addImpactInfoOutputCells(this.referenceCell, n);
+      this.outputCellsWithImpact = new Array<CellProperties>();
+      this.addOutputImpact(this.referenceCell, n);
 
-      if (SheetProperties.isLikelihood) {
-        console.log('Removing likelihood outputs');
-        this.commonOps.deleteRectangles(this.cells, 'OutputLikelihood')
+      if (isDraw) {
+        this.commonOps.drawRectangle(this.outputCellsWithImpact, 'OutputImpact');
       }
-
-      this.displayOutputImpact(this.referenceCell, n);
-
     } catch (error) {
       console.log(error);
     }
   }
 
-  public removeInputImpact(n: number) {
-
-    try {
-      const type = 'InputImpact';
-      this.removeInputImpactInfo(this.referenceCell, n);
-      this.commonOps.deleteRectangles(this.cells, type);
-
-      if (SheetProperties.isLikelihood && SheetProperties.isInputRelationship) {
-        const likelihood = new Likelihood(this.cells, this.referenceCell);
-        likelihood.redrawInputLikelihood(n);
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  private removeInputImpactInfo(cell: CellProperties, n: number) {
-
-    cell.inputCells.forEach((inCell: CellProperties) => {
-
-      if (inCell.isImpact) {
-        inCell.isImpact = false;
-      }
-
-      if (n == 1) {
-        return;
-      }
-      this.removeInputImpactInfo(inCell, n - 1);
-    })
-  }
-
-
-  public removeOutputImpact(n: number) {
-
-    try {
-      const type = 'OutputImpact';
-      this.removeOutputImpactInfo(this.referenceCell, n);
-      this.commonOps.deleteRectangles(this.cells, type);
-
-      if (SheetProperties.isLikelihood && SheetProperties.isOutputRelationship) {
-        const likelihood = new Likelihood(this.cells, this.referenceCell);
-        console.log('Redrawing output likelihood');
-        likelihood.redrawOutputLikelihood(n);
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  private removeOutputImpactInfo(cell: CellProperties, n: number) {
-
-    cell.outputCells.forEach((outCell: CellProperties) => {
-
-      if (outCell.isImpact) {
-        outCell.isImpact = false;
-      }
-
-      if (n == 1) {
-        return;
-      }
-      this.removeOutputImpactInfo(outCell, n - 1);
-    })
-  }
-
-  private displayInputImpact(cell: CellProperties, i: number) {
+  private addInputImpact(cell: CellProperties, i: number) {
 
     cell.inputCells.forEach((inCell: CellProperties) => {
 
       if (!inCell.isImpact) {
-        // eslint-disable-next-line no-undef
-        setTimeout(() => this.commonOps.drawRectangle(inCell, 'InputImpact'), 100);
+
+        this.inputCellsWithImpact.push(inCell);
         inCell.isImpact = true;
       }
 
       if (i == 1) {
         return;
       }
-      this.displayInputImpact(inCell, i - 1);
+      this.addInputImpact(inCell, i - 1);
     })
   }
 
-  private displayOutputImpact(cell: CellProperties, i: number) {
+  private addOutputImpact(cell: CellProperties, i: number) {
 
     cell.outputCells.forEach((outCell: CellProperties) => {
 
       if (!outCell.isImpact) {
-        // eslint-disable-next-line no-undef
-        setTimeout(() => this.commonOps.drawRectangle(outCell, 'OutputImpact'), 100);
+
+        this.outputCellsWithImpact.push(outCell);
         outCell.isImpact = true;
       }
 
       if (i == 1) {
         return;
       }
-      this.displayOutputImpact(outCell, i - 1);
+      this.addOutputImpact(outCell, i - 1);
     })
-  }
-
-  public redrawInputImpact(n: number) {
-
-    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
-    this.removeInputImpactInfo(this.referenceCell, n);
-    this.addImpactInfoInputCells(n);
-    this.displayInputImpact(this.referenceCell, n);
-  }
-
-
-  public redrawOutputImpact(n: number) {
-
-    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
-    this.removeOutputImpactInfo(this.referenceCell, n);
-    this.addImpactInfoOutputCells(this.referenceCell, n);
-    this.displayOutputImpact(this.referenceCell, n);
-  }
-
-  public removeAllImpacts() {
-    this.cells.forEach((cell: CellProperties) => {
-      cell.isImpact = false;
-    })
-    console.log('Removing all impact inputs');
-    this.commonOps.deleteRectangles(this.cells, 'InputImpact');
-    console.log('Removing all impact outputs');
-    this.commonOps.deleteRectangles(this.cells, 'OutputImpact');
-
   }
 
   private addImpactInfoInputCells(n: number = 1) {
@@ -282,7 +182,7 @@ export default class Impact {
   }
 
   private getDivisor(cell: CellProperties) {
-    let divisor = 1;
+    let divisor = 0;
 
     cell.inputCells.forEach((c: CellProperties) => {
       divisor += c.value;

@@ -117,8 +117,13 @@
                         <font size="1" color="#333" text-align="center">+100%</font>
                     </td>
                     <td>
-                        <font size="2" color="#333" text-align="center">
+                        <font size="1" color="#333" text-align="center">
                             <p id="impactPercentage"></p>
+                        </font>
+                    </td>
+                    <td>
+                        <font size="1" color="#333" text-align="center">
+                            <p id="newImpactPercentage"></p>
                         </font>
                     </td>
 
@@ -146,19 +151,20 @@
                         <i class="fa fa-square" style="font-size:10px;color:#ccc;"></i>
                         <i class="fa fa-square" style="font-size:12px;color:#ccc;"></i>
                         <i class="fa fa-square" style="font-size:15px;color:#ccc;"></i>
-                        <!-- <img width="10" height="10" src="../../assets/impact.png" alt="influence"
-                            title="Influencing the reference cell" /> -->
-                        <!-- <br>
-                        <div class="slidecontainer">
-                            <input type="range" min="0" max="100" value="50" class="slider" id="likelihood_range">
-                          </div> -->
                     </td>
                     <td>
                         <font size="1" color="#333">100%</font>
 
                     </td>
                     <td>
-                        <p id="likelihoodPercentage"></p>
+                        <font size="1" color="#333" text-align="center">
+                            <p id="likelihoodPercentage"></p>
+                        </font>
+                    </td>
+                    <td>
+                        <font size="1" color="#333" text-align="center">
+                            <p id="newLikelihoodPercentage"></p>
+                        </font>
                     </td>
                 </tr>
             </table>
@@ -231,40 +237,6 @@
                     </td>
                 </tr>
             </table>
-
-            <!-- <table style="width: 100%;">
-                <col width="15" style="text-align: center;">
-                <col width="150" style="text-align: center;">
-                <col width="auto" style="text-align: center;">
-                <tr>
-                    <td><input type="checkbox" id="relationship"></td>
-                    <td>Relationship
-                        <br><small>First degree neighbor input the reference cell</small>
-                    </td>
-                    <td>
-                        <table style="width: 100%;">
-                            <col width="20" style="text-align: center;">
-                            <col width="20" style="text-align: center;">
-                            <col width="20" style="text-align: center;">
-                            <tr>
-                                <td><i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#333;"></i></td>
-                                <td><i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#848484;"></i></td>
-                                <td><i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#eaeaea;"></i></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fa fa-circle fa-rotate-45" style="font-size:10px;color:#333;"></i></td>
-                                <td><i class="fa fa-circle fa-rotate-45" style="font-size:10px;color:#848484;"></i></td>
-                                <td><i class="fa fa-circle fa-rotate-45" style="font-size:10px;color:#eaeaea;"></i></td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>2</td>
-                                <td>3</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table> -->
         </div>
 
         <!-- <hr> -->
@@ -278,11 +250,7 @@
                     <td><input type="checkbox" id="spread"></td>
                     <td>Distribution</td>
                     <td>
-                        <small><b>
-                                <div id="mean" style="text-align: center;"></div>
-                            </b>
-
-                        </small>
+                        <div id="mean" style="font-size: x-small;" style="text-align: center;"></div>
                     </td>
                 </tr>
                 <tr>
@@ -310,10 +278,8 @@
                     <td>New Distribution
                     </td>
                     <td>
-                        <small><b>
-                                <div id="newMean" style="text-align: center;"></div>
-                            </b>
-                        </small>
+                        <div id="newMean" style="font-size: x-small;" style="text-align: center;"></div>
+
                     </td>
                 </tr>
                 <tr>
