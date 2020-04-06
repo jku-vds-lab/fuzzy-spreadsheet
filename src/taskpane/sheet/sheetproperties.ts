@@ -65,7 +65,7 @@ export default class SheetProp {
     this.cellOp.removeShapesReferenceCellWise();
 
     setTimeout(() => this.displayOptions(), 1000);
-    this.protectSheet();
+    // this.protectSheet();
   }
 
 

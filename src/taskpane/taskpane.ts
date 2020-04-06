@@ -79,7 +79,7 @@ class MainClass {
     MainClass.sheetProp.setDegreeOfNeighbourhood(3);
 
     if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.setDegreeOfNeighbourhood(3);
+      setTimeout(() => MainClass.whatIfProp.setDegreeOfNeighbourhood(3), 1000);
     }
   }
 

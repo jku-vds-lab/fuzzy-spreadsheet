@@ -3,7 +3,6 @@ import Spread from "../operations/spread";
 import SheetProp from "./sheetproperties";
 import CellOperations from "../cell/celloperations";
 import UIOptions from "../ui/uioptions";
-import { increment } from "src/functions/functions";
 
 // Protect the sheet
 /* global setTimeout, console, Excel */
@@ -192,10 +191,24 @@ export default class WhatIfProps extends SheetProp {
 
     let isIncluded = false;
 
+    let isRef = this.checkIfCellBelongsToReferenceChangedCells(cell);
+    let isInput = this.checkIfCellBelongsToInputChangedCells(cell);
+    let isOutput = this.checkIfCellBelongsToOutputChangedCells(cell);
+    isIncluded = isRef || isInput || isOutput;
+    return isIncluded;
+  }
+
+  checkIfCellBelongsToReferenceChangedCells(cell: CellProperties) {
+    let isIncluded = false;
+
     if (cell.address == this.changedRefCell.newCell.address) {
       isIncluded = true;
     }
+    return isIncluded;
+  }
 
+  checkIfCellBelongsToInputChangedCells(cell: CellProperties) {
+    let isIncluded = false;
     this.changedInputCells.forEach((inCell) => {
       if (cell.address == inCell.newCell.address) {
         isIncluded = true;
@@ -203,6 +216,12 @@ export default class WhatIfProps extends SheetProp {
       }
     });
 
+    return isIncluded;
+
+  }
+
+  checkIfCellBelongsToOutputChangedCells(cell: CellProperties) {
+    let isIncluded = false;
     this.changedOutputCells.forEach((outCell) => {
       if (cell.address == outCell.newCell.address) {
         isIncluded = true;
@@ -223,7 +242,6 @@ export default class WhatIfProps extends SheetProp {
     this.likelihood();
     this.spread();
     this.showTextBoxInCells();
-    setTimeout(() => this.compareSpread(), 1000);
   }
 
   impact() {
@@ -261,11 +279,15 @@ export default class WhatIfProps extends SheetProp {
 
   spread() {
 
-    if (SheetProp.isSpread) {
-      this.cellOp.showSpread(SheetProp.degreeOfNeighbourhood, SheetProp.isInputRelationship, SheetProp.isOutputRelationship, false);
-      setTimeout(() => this.compareSpread(), 1000);
-    } else {
-      this.cellOp.removeShapesOptionWise('SpreadUpdate');
+    try {
+      if (SheetProp.isSpread) {
+        this.cellOp.showSpread(SheetProp.degreeOfNeighbourhood, SheetProp.isInputRelationship, SheetProp.isOutputRelationship, false);
+        setTimeout(() => this.compareSpread(), 1000);
+      } else {
+        this.cellOp.removeShapesOptionWise('SpreadUpdate');
+      }
+    } catch (error) {
+      console.log('Error in what-if spread: ', error);
     }
   }
 
@@ -308,8 +330,10 @@ export default class WhatIfProps extends SheetProp {
 
     try {
 
+      this.changedInputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+      this.changedOutputCells = new Array<{ oldCell: CellProperties, newCell: CellProperties }>();
+
       let n = SheetProp.degreeOfNeighbourhood;
-      console.log('DON: ' + n);
 
       this.changedRefCell = this.getChangedCell(this.oldReferenceCell, this.newReferenceCell);
 
@@ -357,7 +381,9 @@ export default class WhatIfProps extends SheetProp {
 
   redrawSpread(oldCells: CellProperties[], newCells: CellProperties[], name: string) {
     try {
+
       this.cellOp.removeSpreadCellWise(oldCells, name);
+
       oldCells.forEach((oldCell: CellProperties) => {
         oldCell.isSpread = true;
       })
@@ -366,6 +392,7 @@ export default class WhatIfProps extends SheetProp {
         newCell.isSpread = true;
       })
       this.cellOp.drawSpread(newCells, name + 'Update', 'orange', false, true);
+
     } catch (error) {
       console.log(error);
     }
@@ -385,7 +412,8 @@ export default class WhatIfProps extends SheetProp {
             if (changedCell == null) {
               return;
             }
-            if (!this.changedInputCells.includes(changedCell)) {
+
+            if (!this.checkIfCellBelongsToInputChangedCells(changedCell.newCell)) {
               this.changedInputCells.push(changedCell);
             }
 
@@ -418,10 +446,10 @@ export default class WhatIfProps extends SheetProp {
             if (changedCell == null) {
               return;
             }
-            if (!this.changedOutputCells.includes(changedCell)) {
+
+            if (!this.checkIfCellBelongsToOutputChangedCells(changedCell.newCell)) {
               this.changedOutputCells.push(changedCell);
             }
-
 
             if (n == 1) {
               return;
@@ -578,7 +606,7 @@ export default class WhatIfProps extends SheetProp {
         textbox.top = cell.top + 2;
         textbox.height = cell.height + 4;
         textbox.width = cell.width - 5;
-        textbox.setZOrder(Excel.ShapeZOrder.sendToBack);
+        // textbox.setZOrder(Excel.ShapeZOrder.sendToBack);
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
