@@ -31,9 +31,12 @@ export default class WhatIfProps extends SheetProp {
     this.newReferenceCell = new CellProperties();
   }
 
+  showUIOptionsForWhatIf() {
+    this.uiOptions.showWhatIfOptions();
+  }
+
   startWhatIf() {
     this.unprotectSheet();
-    this.uiOptions.showWhatIfOptions();
     this.registerSheetCalculatedEvent();
   }
 
