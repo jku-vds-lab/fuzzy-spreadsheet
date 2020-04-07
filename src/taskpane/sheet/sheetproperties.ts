@@ -466,7 +466,6 @@ export default class SheetProp {
           if (cell.isSpread) {
             this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
             this.uiOptions.showSpreadInTaskPane(cell);
-            this.uiOptions.showMeanAndStdDevValueInTaskpane(cell);
           } else {
             this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
             // this.uiOptions.removeHtmlSpreadInfoForNewChart();

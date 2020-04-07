@@ -197,21 +197,15 @@ export default class UIOptions {
     }
   }
 
-  public showMeanAndStdDevValueInTaskpane(cell: CellProperties) {
-    document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
-  }
-
-  public showNewMeanAndStdDevValueInTaskpane(cell: CellProperties) {
-    document.getElementById("newMean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
-  }
-
   public showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', color: string = '#399bfc', isLegendOrange: boolean = false) {
 
     try {
 
       let data = cell.samples;
+      let computedMean = cell.computedMean
+      let computedStdDev = cell.computedStdDev;
 
-      var margin = { top: 10, right: 30, bottom: 20, left: 40 },
+      var margin = { top: 10, right: 30, bottom: 30, left: 40 },
         width = 260 - margin.left - margin.right,
         height = 160 - margin.top - margin.bottom;
 
@@ -260,6 +254,139 @@ export default class UIOptions {
         .attr("height", function (d) { return height - y(d.length); })
         .style("fill", color);
 
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 130)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 0)
+        .style("stroke", "black")
+        .style("stroke-dasharray", "4,4")
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 0)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('M= ' + computedMean.toFixed(2));
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 20)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 10)
+        .style("stroke", "grey")
+
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 10)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('-S');
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 20)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 10)
+        .style("stroke", "grey")
+
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 10)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('+S');
+
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 15)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 15)
+        .style("stroke", "grey");
+
       svg.append('text')
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left)
@@ -269,15 +396,22 @@ export default class UIOptions {
         .style("font-size", "10px")
         .text('Probability in %');
 
-      // svg.append('text')
-      //   .attr("transform",
-      //     "translate(" + width / 2 + " ," +
-      //     (height + margin.bottom) + ")")
-      //   .style("text-anchor", "middle")
-      //   .style("font-size", "10px")
-      //   .text('Values in Mio.(€)');
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width + " ," +
+          (height / 2) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style('fill', color)
+        .text('S=' + computedStdDev.toFixed(2));
 
-
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width / 2 + " ," +
+          (height + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text('Values in Mio.(€)');
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
@@ -443,3 +577,22 @@ export default class UIOptions {
   }
 
 }
+
+
+// public static findPercentile(samples: number[], value: number = 11.1) {
+//   return ((MainClass.cutoff(samples, value) / samples.length) * 100).toFixed(2);
+// }
+
+// public static cutoff(sortedValues, value, start = 0, end = sortedValues.length) {
+//   if (sortedValues[end - 1] <= value) { return -1 }
+
+//   while (start !== end - 1) {
+//     const index = Math.floor((end + start) / 2)
+//     if (sortedValues[index] <= value) {
+//       start = index
+//     } else {
+//       end = index
+//     }
+//   }
+//   return end
+// }

@@ -174,7 +174,6 @@ export default class WhatIfProps extends SheetProp {
               this.uiOptions.removeHtmlSpreadInfoForNewChart();
               this.uiOptions.addHtmlSpreadInfoForNewChart();
               this.uiOptions.showSpreadInTaskPane(newCell, '.what-if-chart', '#FFA500', true);
-              this.uiOptions.showNewMeanAndStdDevValueInTaskpane(newCell);
             } else {
               this.uiOptions.removeHtmlSpreadInfoForNewChart();
             }
