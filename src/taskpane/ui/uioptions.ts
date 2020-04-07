@@ -141,19 +141,19 @@ export default class UIOptions {
 
   public addLikelihoodPercentage(cell: CellProperties, id: string = 'likelihoodPercentage') {
 
-    var likelihoodText = document.getElementById(id);
-    likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
-    likelihoodText.style.position = 'relative';
-    likelihoodText.style.left = 5 + 'px';
+    // var likelihoodText = document.getElementById(id);
+    // likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
+    // likelihoodText.style.position = 'relative';
+    // likelihoodText.style.left = 5 + 'px';
 
   }
 
   public addNewLikelihoodPercentage(cell: CellProperties, id: string = 'newLikelihoodPercentage') {
 
-    var newLikelihoodText = document.getElementById(id);
-    newLikelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
-    newLikelihoodText.style.position = 'relative';
-    newLikelihoodText.style.left = 5 + 'px';
+    // var newLikelihoodText = document.getElementById(id);
+    // newLikelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
+    // newLikelihoodText.style.position = 'relative';
+    // newLikelihoodText.style.left = 5 + 'px';
 
   }
 
@@ -523,7 +523,7 @@ export default class UIOptions {
       // .attr("cx", function (d, i) { return d; })
       // .attr("cy", function (d, i) { return 100-d; })
       // .attr("cx", function (d, i) { return (i) * (i-1) * 5})
-      .attr("x", function (d, i) { return (i) * (i-1) * sizeArray.length})
+      .attr("x", function (d, i) { return (i) * (i+1) * (sizeArray.length-2.5)})
       .attr("y", function (d, i) {
         return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
       })
@@ -569,15 +569,13 @@ export default class UIOptions {
           }
           return "14px";
       })
-      .attr("x", function (d, i) { return ((i) * (i-1) * sizeArrayText.length)/sizeArrayText.length})
+      .attr("x", function (d, i) { return (d/9) * (i)})
       .attr("y", function (d, i) {
         // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
-        return d -5;
-        // return 5;
+        // return d -5;
+        return 100/3-d/sizeArrayText.length-2*i;
       });
   }
-
-
 
   public showWhatIfOptions() {
     document.getElementById('useNewValues').hidden = false;
