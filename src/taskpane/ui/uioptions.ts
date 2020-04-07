@@ -404,11 +404,11 @@ export default class UIOptions {
       .style("alignment-baseline", "middle")
       .style("font-size", "12px");
   }
-  
+
 
 
   public drawImpactLegend(impact: number = 0, newImpact: number = 0, color: string = 'green') {
-  // public drawImpactLegend(impact: number = 0, color: string = 'green') {
+    // public drawImpactLegend(impact: number = 0, color: string = 'green') {
 
 
     d3.select("#impactLegend").select('svg').remove();
@@ -450,7 +450,7 @@ export default class UIOptions {
       })
       .attr("height", function (d, i) {
         if (i == impactTemp || i == newImpact) {
-            return 15;
+          return 15;
         }
         return 5;
       }
@@ -459,15 +459,15 @@ export default class UIOptions {
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
-        } if (i == newImpact){
+        } if (i == newImpact) {
           return "orange";
         }
         return d;
       }
       );
 
-      // add legend for impact
-      Svg.selectAll("text")
+    // add legend for impact
+    Svg.selectAll("text")
       .data(colors)
       .enter()
       .append("text")
@@ -475,23 +475,23 @@ export default class UIOptions {
         if (i == impactTemp) {
           return impact + ' %';
         } if (i == newImpact) {
-              return newImpact + ' %';
-          }
+          return newImpact + ' %';
+        }
         return " ";
       })
-      .style("fill", function(d, i) {
+      .style("fill", function (d, i) {
         if (i == impactTemp) {
-              return "blue";
-          } if (i == newImpact){
-            return "orange";
-          }
-          return " ";
+          return "blue";
+        } if (i == newImpact) {
+          return "orange";
+        }
+        return " ";
       })
-      .style("font-size", function(d, i) {
+      .style("font-size", function (d, i) {
         if (i == impactTemp || i == newImpact) {
-              return "10px";
-          }
-          return "14px";
+          return "10px";
+        }
+        return "14px";
       })
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
@@ -503,35 +503,33 @@ export default class UIOptions {
   }
 
 
-  public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = 0) {  
-  
-      d3.select("#likelihoodLegend").select('svg').remove();
-      // let likelihoodTemp = Math.ceil(likelihood * 0.5);
+  public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = 0) {
 
-      let sizeArray = [0, 20, 40, 60, 80, 100];
-      let sizeArrayText = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    d3.select("#likelihoodLegend").select('svg').remove();
 
+    let sizeArray = [0, 20, 40, 60, 80, 100];
+    let sizeArrayText = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
-      var Svg = d3.select('#likelihoodLegend').append("svg")
+    likelihood = likelihood * 100;
+
+    var Svg = d3.select('#likelihoodLegend').append("svg")
       .attr("width", "auto")
       .attr("height", "auto");
 
+    // add indicators for likelihood of occurrence (sqaures in grey)
     Svg.selectAll("mySquares")
       .data(sizeArray)
       .enter()
       .append("rect")
-      // .attr("cx", function (d, i) { return d; })
-      // .attr("cy", function (d, i) { return 100-d; })
-      // .attr("cx", function (d, i) { return (i) * (i-1) * 5})
-      .attr("x", function (d, i) { return (i) * (i+1) * (sizeArray.length-2.5)})
+      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
       .attr("y", function (d, i) {
-        return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length;
       })
       .attr("width", function (d, i) {
-        return d/3;
+        return d / 3;
       })
       .attr("height", function (d, i) {
-        return d/3;
+        return d / 3;
       }
       )
       // .style("fill", (d) => { return d });
@@ -539,11 +537,40 @@ export default class UIOptions {
         return "grey";
       }
       );
-      
-      likelihood = likelihood*100;
 
-      // add legend for impact
-      Svg.selectAll("text")
+      Svg.selectAll("mySquaresIndicators")
+      .data(sizeArray)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
+      .attr("y", function (d, i) {
+        // return Math.max.apply(null, sizeArrayText) / 3 - d / 4;
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length - 3;
+
+      })
+      .attr("width", function (d, i) {
+        // if (d == likelihood || d == newLikelihood) {
+        //   return 2;
+        // }
+        return d / 3;
+      })
+      .attr("height", function (d, i) {
+        if (d == likelihood || d == newLikelihood) {
+             return 2;
+           }
+        return d / 3;
+      }
+      )
+      .style("fill", function (d, i) {
+        if (d == likelihood) {
+          return "blue";
+        }
+        return "rgba(0,0,0,0)";
+      }
+      );
+
+    // add legend for impact
+    Svg.selectAll("text")
       .data(sizeArrayText)
       .enter()
       .append("text")
@@ -551,29 +578,29 @@ export default class UIOptions {
         if (d == likelihood) {
           return likelihood + ' %';
         } if (d == newLikelihood) {
-              return newLikelihood + ' %';
-          }
+          return newLikelihood + ' %';
+        }
         return " ";
       })
-      .style("fill", function(d, i) {
+      .style("fill", function (d, i) {
         if (d == likelihood) {
-              return "blue";
-          } if (d == newLikelihood){
-            return "orange";
-          }
-          return " ";
+          return "blue";
+        } if (d == newLikelihood) {
+          return "orange";
+        }
+        return " ";
       })
-      .style("font-size", function(d, i) {
+      .style("font-size", function (d, i) {
         if (d == likelihood || d == newLikelihood) {
-              return "10px";
-          }
-          return "14px";
+          return "10px";
+        }
+        return "14px";
       })
-      .attr("x", function (d, i) { return (d/9) * (i)})
+      .attr("x", function (d, i) { return (d / 9) * (i) })
       .attr("y", function (d, i) {
         // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
         // return d -5;
-        return 100/3-d/sizeArrayText.length-2*i;
+        return 100 / 3 - d / sizeArrayText.length - 2 * i;
       });
   }
 
