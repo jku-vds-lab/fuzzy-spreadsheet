@@ -21,6 +21,28 @@ export default class UIOptions {
     document.getElementById('dismissValues').hidden = true;
   }
 
+  public deSelectAllOoptions() {
+    document.getElementById('referenceCell').hidden = true;
+    document.getElementById('relationshipDiv').hidden = true;
+    document.getElementById('neighborhoodDiv').hidden = true;
+    document.getElementById('impactDiv').hidden = true;
+    document.getElementById('likelihoodDiv').hidden = true;
+    document.getElementById('spreadDiv').hidden = true;
+    document.getElementById('relationshipInfoDiv').hidden = true;
+    document.getElementById('startWhatIf').hidden = true;
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    (<HTMLInputElement>document.getElementById('impact')).checked = false;
+    (<HTMLInputElement>document.getElementById('likelihood')).checked = false;
+    (<HTMLInputElement>document.getElementById('relationship')).checked = false;
+    (<HTMLInputElement>document.getElementById('spread')).checked = false;
+    (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
+    (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
+    this.removeHtmlSpreadInfoForNewChart();
+    this.removeHtmlSpreadInfoForOriginalChart();
+    this.removeRelationshipInfoInTaskpane();
+  }
+
   public showReferenceCellOption() {
     document.getElementById('referenceCell').hidden = false;
   }

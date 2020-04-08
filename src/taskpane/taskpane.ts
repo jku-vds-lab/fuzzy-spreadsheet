@@ -5,7 +5,7 @@ import WhatIfProps from './sheet/whatifproperties';
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
-/* global setTimeout, document, Office */
+/* global setTimeout, document, Excel,console, Office */
 
 
 Office.initialize = () => {
@@ -26,6 +26,12 @@ Office.initialize = () => {
   document.getElementById("startWhatIf").onclick = MainClass.whatIf;
   document.getElementById("useNewValues").onclick = MainClass.keepNewValues;
   document.getElementById("dismissValues").onclick = MainClass.dismissNewValues;
+
+  Excel.run(async (context) => {
+    context.workbook.worksheets.onActivated.add(() => MainClass.resetApp());
+    await context.sync();
+    console.log("Sheet activated.");
+  }).catch((reason: any) => { console.log(reason) });
 }
 
 class MainClass {
@@ -34,7 +40,15 @@ class MainClass {
   public static whatIfProp: WhatIfProps;
   public static isWhatIfStarted: boolean = false;
 
+  public static async resetApp() {
+    console.log('Reset App');
+    MainClass.sheetProp.resetApp();
+    await MainClass.whatIfProp.removeHandler();
+  }
+
   public static parseSheet() {
+    MainClass.sheetProp = new SheetProp();
+    MainClass.isWhatIfStarted = false;
     MainClass.sheetProp.parseSheet();
   }
 

@@ -18,7 +18,7 @@ export default class SheetProp {
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
   protected cells: CellProperties[];
-  protected referenceCell: CellProperties = null;
+  protected referenceCell: CellProperties;
   protected uiOptions: UIOptions;
 
   private originalTopBorder: Excel.RangeBorder;
@@ -32,6 +32,8 @@ export default class SheetProp {
     this.cellProp = new CellProperties();
     this.cells = new Array<CellProperties>();
     this.cellOp = new CellOperations(null, null, null);
+    this.referenceCell = null;
+
 
   }
 
@@ -41,6 +43,19 @@ export default class SheetProp {
 
   public getReferenceCell() {
     return this.referenceCell;
+  }
+
+
+  public resetApp() {
+    SheetProp.isInputRelationship = false;
+    SheetProp.isOutputRelationship = false;
+    SheetProp.isRelationshipIcons = false;
+    SheetProp.isImpact = false;
+    SheetProp.isLikelihood = false;
+    SheetProp.isSpread = false;
+    SheetProp.isReferenceCell = false;
+    SheetProp.degreeOfNeighbourhood = 1;
+    this.uiOptions.deSelectAllOoptions();
   }
 
   public async processNewValues() {

@@ -57,7 +57,7 @@ export default class WhatIfProps extends SheetProp {
     this.newCells = null;
   }
 
-  private removeHandler() {
+  public removeHandler() {
     return Excel.run(this.sheetEventResult.context, (context) => {
       this.sheetEventResult.remove();
       this.cellSelectionEvent.remove();
