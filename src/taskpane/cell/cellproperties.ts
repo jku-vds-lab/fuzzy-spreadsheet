@@ -38,11 +38,11 @@ export default class CellProperties {
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private rowStart: number = 0;
-  private rowEnd: number = 20;
+  private rowStart: number = 8;
+  private rowEnd: number = 23;
 
-  private colStart: number = 0;
-  private colEnd: number = 18;
+  private colStart: number = 2;
+  private colEnd: number = 19;
 
   // what if info
   public isTextbox: boolean = false;
