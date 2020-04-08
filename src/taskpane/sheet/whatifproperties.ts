@@ -157,7 +157,7 @@ export default class WhatIfProps extends SheetProp {
 
 
           if (newCell.isImpact) {
-            this.uiOptions.addImpactPercentage(newCell, 'newImpactPercentage');
+            // this.uiOptions.addImpactPercentage(newCell, 'newImpactPercentage');
           }
 
           if (newCell.isLikelihood) {
@@ -244,6 +244,7 @@ export default class WhatIfProps extends SheetProp {
     this.likelihood();
     this.spread();
     this.showTextBoxInCells();
+    SheetProp.newCells = this.newCells;
   }
 
   impact() {

@@ -14,6 +14,7 @@ export default class SheetProp {
   protected static isSpread: boolean = false;
   protected static isReferenceCell: boolean = false;
   protected static degreeOfNeighbourhood: number = 1;
+  protected static newCells: CellProperties[] = null;
 
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
@@ -453,7 +454,7 @@ export default class SheetProp {
 
     try {
 
-      this.cells.forEach((cell: CellProperties) => {
+      this.cells.forEach((cell: CellProperties, index: number) => {
 
         if (cell.address.includes(event.address)) {
 
@@ -461,14 +462,18 @@ export default class SheetProp {
           this.uiOptions.removeRelationshipInfoInTaskpane();
 
           if (cell.isImpact) {
+            if (SheetProp.newCells != null) {
+              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.rectColor);
+            } else {
+              this.uiOptions.addImpactPercentage(cell);
+              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.rectColor);
+            }
 
-            this.uiOptions.addImpactPercentage(cell);
-            this.uiOptions.drawImpactLegend(cell.impact, 20, cell.rectColor);
           }
 
           if (cell.isLikelihood) {
             this.uiOptions.addLikelihoodPercentage(cell);
-            this.uiOptions.drawLikelihoodLegend(cell.likelihood, 20);
+            this.uiOptions.drawLikelihoodLegend(cell.likelihood, -1);
           }
 
           if (cell.isInputRelationship) {

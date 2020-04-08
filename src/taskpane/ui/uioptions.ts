@@ -2,8 +2,6 @@
 import * as d3 from 'd3';
 import Bins from '../operations/bins';
 import CellProperties from '../cell/cellproperties';
-// import legend from 'd3-svg-legend';
-// import { legendColor } from 'd3-svg-legend';
 import { legendSize } from 'd3-svg-legend';
 import { max } from 'd3';
 export default class UIOptions {
@@ -562,17 +560,31 @@ export default class UIOptions {
 
 
 
-  public drawImpactLegend(impact: number = 0, newImpact: number = 0, color: string = 'green') {
-    // public drawImpactLegend(impact: number = 0, color: string = 'green') {
+  public drawImpactLegend(impact: number = -1, newImpact: number = -1, color: string = 'green') {
 
 
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
+    let newImpactTemp = Math.ceil(newImpact * 0.5);
+
+    console.log('Impact temp: ' + impactTemp);
+    console.log('newImpactTemp: ' + newImpactTemp);
 
     if (color == 'green') {
       impactTemp = impactTemp + 50;
+      newImpactTemp = newImpactTemp + 50;
     } else {
       impactTemp = 50 - impactTemp;
+      newImpactTemp = 50 - newImpactTemp;
+    }
+
+
+    if (impact == -1) {
+      impactTemp = -1;
+    }
+
+    if (newImpact == -1) {
+      newImpactTemp = -1;
     }
 
     const minDomain = -5;
@@ -592,29 +604,28 @@ export default class UIOptions {
       .append("rect")
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 15;
         }
         return 20;
       })
       .attr("width", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 2;
         }
         return 1;
       })
       .attr("height", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 15;
         }
         return 5;
       }
       )
-      // .style("fill", (d) => { return d });
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return "orange";
         }
         return d;
@@ -629,7 +640,7 @@ export default class UIOptions {
       .text(function (d, i) {
         if (i == impactTemp) {
           return impact + ' %';
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return newImpact + ' %';
         }
         return " ";
@@ -637,20 +648,23 @@ export default class UIOptions {
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return "orange";
         }
         return " ";
       })
       .style("font-size", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return "10px";
         }
         return "14px";
       })
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp) {
+          return 10;
+        }
+        if (i == newImpactTemp) {
           return 10;
         }
         return 15;
@@ -693,7 +707,7 @@ export default class UIOptions {
       }
       );
 
-      Svg.selectAll("mySquaresIndicators")
+    Svg.selectAll("mySquaresIndicators")
       .data(sizeArray)
       .enter()
       .append("rect")
@@ -711,8 +725,8 @@ export default class UIOptions {
       })
       .attr("height", function (d, i) {
         if (d == likelihood || d == newLikelihood) {
-             return 2;
-           }
+          return 2;
+        }
         return d / 3;
       }
       )
