@@ -2,6 +2,10 @@
 import * as d3 from 'd3';
 import Bins from '../operations/bins';
 import CellProperties from '../cell/cellproperties';
+// import legend from 'd3-svg-legend';
+// import { legendColor } from 'd3-svg-legend';
+import { legendSize } from 'd3-svg-legend';
+import { max } from 'd3';
 export default class UIOptions {
   constructor() {
   }
@@ -54,6 +58,7 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = false;
     this.drawImpactLegend(-200);
     document.getElementById('likelihoodDiv').hidden = false;
+    this.drawLikelihoodLegend(-200);
     document.getElementById('spreadDiv').hidden = false;
     document.getElementById('relationshipInfoDiv').hidden = false;
     document.getElementById('startWhatIf').hidden = false;
@@ -91,7 +96,7 @@ export default class UIOptions {
     return false;
   }
   public removeImpactInfoInTaskpane(id: string = 'impactPercentage') {
-    document.getElementById(id).innerHTML = '';
+    // document.getElementById(id).innerHTML = '';
   }
 
   public removeRelationshipInfoInTaskpane() {
@@ -137,19 +142,38 @@ export default class UIOptions {
 
   public addImpactPercentage(cell: CellProperties, id: string = 'impactPercentage') {
 
-    var impactText = document.getElementById(id);
-    impactText.innerHTML = cell.impact + '%';
-    impactText.style.position = 'relative';
-    impactText.style.left = 5 + 'px';
+    // var impactText = document.getElementById(id);
+    // // impactText.innerHTML = cell.impact + '%';
+    // impactText.innerHTML = (Math.round(cell.impact * 100)/100).toFixed(2)  + '%';
+    // impactText.style.position = 'relative';
+    // impactText.style.left = 5 + 'px';
+
+  }
+
+  public addNewImpactPercentage(cell: CellProperties, id: string = 'newImpactPercentage') {
+
+    // var newimpactText = document.getElementById(id);
+    // newimpactText.innerHTML = (Math.round(cell.impact * 100)/100).toFixed(2)  + '%';
+    // newimpactText.style.position = 'relative';
+    // newimpactText.style.left = 5 + 'px';
 
   }
 
   public addLikelihoodPercentage(cell: CellProperties, id: string = 'likelihoodPercentage') {
 
-    var likelihoodText = document.getElementById(id);
-    likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
-    likelihoodText.style.position = 'relative';
-    likelihoodText.style.left = 5 + 'px';
+    // var likelihoodText = document.getElementById(id);
+    // likelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
+    // likelihoodText.style.position = 'relative';
+    // likelihoodText.style.left = 5 + 'px';
+
+  }
+
+  public addNewLikelihoodPercentage(cell: CellProperties, id: string = 'newLikelihoodPercentage') {
+
+    // var newLikelihoodText = document.getElementById(id);
+    // newLikelihoodText.innerHTML = (cell.likelihood * 100).toFixed(2) + '%';
+    // newLikelihoodText.style.position = 'relative';
+    // newLikelihoodText.style.left = 5 + 'px';
 
   }
 
@@ -537,28 +561,30 @@ export default class UIOptions {
   }
 
 
-  public drawImpactLegend(impact: number = 0, color: string = 'green') {
+
+  public drawImpactLegend(impact: number = 0, newImpact: number = 0, color: string = 'green') {
+    // public drawImpactLegend(impact: number = 0, color: string = 'green') {
 
 
     d3.select("#impactLegend").select('svg').remove();
-    impact = Math.ceil(impact * 0.5);
+    let impactTemp = Math.ceil(impact * 0.5);
 
     if (color == 'green') {
-      impact = impact + 50;
+      impactTemp = impactTemp + 50;
     } else {
-      impact = 50 - impact;
+      impactTemp = 50 - impactTemp;
     }
 
     const minDomain = -5;
     const maxDomain = 40;
-    const binWidth = 3;
+    const binWidth = 1;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateRedGreenColors();
 
     var Svg = d3.select('#impactLegend').append("svg")
-      .attr("width", 200)
-      .attr("height", 20);
+      .attr("width", "auto")
+      .attr("height", 30);
 
     Svg.selectAll("mydots")
       .data(colors)
@@ -566,25 +592,171 @@ export default class UIOptions {
       .append("rect")
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
-        if (i == impact) {
-          return 5;
+        if (i == impactTemp || i == newImpact) {
+          return 15;
         }
-        return 10;
+        return 20;
       })
       .attr("width", function (d, i) {
-        if (i == impact) {
-          return 8;
+        if (i == impactTemp || i == newImpact) {
+          return 2;
         }
-        return 2;
+        return 1;
       })
       .attr("height", function (d, i) {
-        if (i == impact) {
+        if (i == impactTemp || i == newImpact) {
           return 15;
         }
         return 5;
       }
       )
-      .style("fill", (d) => { return d });
+      // .style("fill", (d) => { return d });
+      .style("fill", function (d, i) {
+        if (i == impactTemp) {
+          return "blue";
+        } if (i == newImpact) {
+          return "orange";
+        }
+        return d;
+      }
+      );
+
+    // add legend for impact
+    Svg.selectAll("text")
+      .data(colors)
+      .enter()
+      .append("text")
+      .text(function (d, i) {
+        if (i == impactTemp) {
+          return impact + ' %';
+        } if (i == newImpact) {
+          return newImpact + ' %';
+        }
+        return " ";
+      })
+      .style("fill", function (d, i) {
+        if (i == impactTemp) {
+          return "blue";
+        } if (i == newImpact) {
+          return "orange";
+        }
+        return " ";
+      })
+      .style("font-size", function (d, i) {
+        if (i == impactTemp || i == newImpact) {
+          return "10px";
+        }
+        return "14px";
+      })
+      .attr("x", function (d, i) { return (i) * 2 })
+      .attr("y", function (d, i) {
+        if (i == impactTemp || i == newImpact) {
+          return 10;
+        }
+        return 15;
+      });
+  }
+
+
+  public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = 0) {
+
+    d3.select("#likelihoodLegend").select('svg').remove();
+
+    let sizeArray = [0, 20, 40, 60, 80, 100];
+    let sizeArrayText = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+    likelihood = likelihood * 100;
+
+    var Svg = d3.select('#likelihoodLegend').append("svg")
+      .attr("width", "auto")
+      .attr("height", 60);
+
+    // add indicators for likelihood of occurrence (sqaures in grey)
+    Svg.selectAll("mySquares")
+      .data(sizeArray)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
+      .attr("y", function (d, i) {
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+      })
+      .attr("width", function (d, i) {
+        return d / 3;
+      })
+      .attr("height", function (d, i) {
+        return d / 3;
+      }
+      )
+      // .style("fill", (d) => { return d });
+      .style("fill", function (d, i) {
+        return "grey";
+      }
+      );
+
+      Svg.selectAll("mySquaresIndicators")
+      .data(sizeArray)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
+      .attr("y", function (d, i) {
+        // return Math.max.apply(null, sizeArrayText) / 3 - d / 4;
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 17;
+
+      })
+      .attr("width", function (d, i) {
+        // if (d == likelihood || d == newLikelihood) {
+        //   return 2;
+        // }
+        return d / 3;
+      })
+      .attr("height", function (d, i) {
+        if (d == likelihood || d == newLikelihood) {
+             return 2;
+           }
+        return d / 3;
+      }
+      )
+      .style("fill", function (d, i) {
+        if (d == likelihood) {
+          return "blue";
+        }
+        return "rgba(0,0,0,0)";
+      }
+      );
+
+    // add legend for impact
+    Svg.selectAll("text")
+      .data(sizeArrayText)
+      .enter()
+      .append("text")
+      .text(function (d, i) {
+        if (d == likelihood) {
+          return likelihood + ' %';
+        } if (d == newLikelihood) {
+          return newLikelihood + ' %';
+        }
+        return " ";
+      })
+      .style("fill", function (d, i) {
+        if (d == likelihood) {
+          return "blue";
+        } if (d == newLikelihood) {
+          return "orange";
+        }
+        return " ";
+      })
+      .style("font-size", function (d, i) {
+        if (d == likelihood || d == newLikelihood) {
+          return "10px";
+        }
+        return "14px";
+      })
+      .attr("x", function (d, i) { return (d / 9) * (i) })
+      .attr("y", function (d, i) {
+        // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
+        // return d -5;
+        return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
+      });
   }
 
   public showWhatIfOptions() {

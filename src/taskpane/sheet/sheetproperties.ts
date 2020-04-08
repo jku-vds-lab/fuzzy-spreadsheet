@@ -463,11 +463,12 @@ export default class SheetProp {
           if (cell.isImpact) {
 
             this.uiOptions.addImpactPercentage(cell);
-            this.uiOptions.drawImpactLegend(cell.impact, cell.rectColor);
+            this.uiOptions.drawImpactLegend(cell.impact, 20, cell.rectColor);
           }
 
           if (cell.isLikelihood) {
             this.uiOptions.addLikelihoodPercentage(cell);
+            this.uiOptions.drawLikelihoodLegend(cell.likelihood, 20);
           }
 
           if (cell.isInputRelationship) {
