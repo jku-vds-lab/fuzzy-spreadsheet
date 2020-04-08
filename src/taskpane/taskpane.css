@@ -360,12 +360,19 @@
      padding: 2px;
  }
  
- svg {
+ svg.mydots {
      position: absolute;
      padding-top: 0.4em;
      height: 40;
      margin-top: 0.3em;
  }
+
+ svg.mySquares {
+    position: absolute;
+    padding-top: 0.4em;
+    height: 40;
+    margin-top: 0.3em;
+}
 
  /* #impactLegend{
     position: absolute;

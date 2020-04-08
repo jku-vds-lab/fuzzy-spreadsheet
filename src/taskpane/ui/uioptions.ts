@@ -429,7 +429,7 @@ export default class UIOptions {
 
     var Svg = d3.select('#impactLegend').append("svg")
       .attr("width", "auto")
-      .attr("height", 20);
+      .attr("height", 30);
 
     Svg.selectAll("mydots")
       .data(colors)
@@ -438,9 +438,9 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
         if (i == impactTemp || i == newImpact) {
-          return 5;
+          return 15;
         }
-        return 10;
+        return 20;
       })
       .attr("width", function (d, i) {
         if (i == impactTemp || i == newImpact) {
@@ -496,9 +496,9 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
         if (i == impactTemp || i == newImpact) {
-          return 1;
+          return 10;
         }
-        return 10;
+        return 15;
       });
   }
 
@@ -514,7 +514,7 @@ export default class UIOptions {
 
     var Svg = d3.select('#likelihoodLegend').append("svg")
       .attr("width", "auto")
-      .attr("height", "auto");
+      .attr("height", 60);
 
     // add indicators for likelihood of occurrence (sqaures in grey)
     Svg.selectAll("mySquares")
@@ -523,7 +523,7 @@ export default class UIOptions {
       .append("rect")
       .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
       .attr("y", function (d, i) {
-        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length;
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
       })
       .attr("width", function (d, i) {
         return d / 3;
@@ -545,7 +545,7 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
       .attr("y", function (d, i) {
         // return Math.max.apply(null, sizeArrayText) / 3 - d / 4;
-        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length - 3;
+        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 17;
 
       })
       .attr("width", function (d, i) {
@@ -600,7 +600,7 @@ export default class UIOptions {
       .attr("y", function (d, i) {
         // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
         // return d -5;
-        return 100 / 3 - d / sizeArrayText.length - 2 * i;
+        return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
       });
   }
 
