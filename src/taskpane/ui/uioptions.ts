@@ -91,7 +91,6 @@ export default class UIOptions {
       d3.select("#" + 'originalChart').select('svg').remove();
       d3.select("#" + 'lines').select('svg').remove();
       d3.select("#" + 'spreadLegend').select('svg').remove();
-      document.getElementById("mean").innerHTML = "";
     } catch (error) {
       console.log(error);
     }
@@ -102,7 +101,6 @@ export default class UIOptions {
       d3.select("#" + 'whatIfChart').select('svg').remove();
       d3.select("#" + 'newLines').select('svg').remove();
       d3.select("#" + 'newSpreadLegend').select('svg').remove();
-      document.getElementById("newMean").innerHTML = "";
       document.getElementById("newDistribution").hidden = true;
       document.getElementById("spaceHack").hidden = true;
     } catch (error) {
@@ -202,6 +200,7 @@ export default class UIOptions {
     try {
 
       let data = cell.samples;
+
       let computedMean = cell.computedMean
       let computedStdDev = cell.computedStdDev;
 
