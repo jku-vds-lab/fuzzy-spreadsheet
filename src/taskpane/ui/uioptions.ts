@@ -595,7 +595,7 @@ export default class UIOptions {
     var colors = binsObj.generateRedGreenColors();
 
     var Svg = d3.select('#impactLegend').append("svg")
-      .attr("width", "auto")
+      .attr("width", 200)
       .attr("height", 30);
 
     Svg.selectAll("mydots")
