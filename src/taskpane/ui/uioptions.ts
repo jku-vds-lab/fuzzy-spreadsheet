@@ -40,6 +40,9 @@ export default class UIOptions {
     (<HTMLInputElement>document.getElementById('spread')).checked = false;
     (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
     (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
+    (<HTMLInputElement>document.getElementById('first')).checked = true;
+    (<HTMLInputElement>document.getElementById('second')).checked = false;
+    (<HTMLInputElement>document.getElementById('third')).checked = false;
     this.removeHtmlSpreadInfoForNewChart();
     this.removeHtmlSpreadInfoForOriginalChart();
     this.removeRelationshipInfoInTaskpane();
