@@ -163,7 +163,7 @@ export default class CommonOperations {
       this.setOutputPropertiesToFalse(cell);
     });
     if (this.isDelete) {
-      this.deleteShapes('');
+      this.deleteShapes('Task');
     }
   }
 
