@@ -14,11 +14,12 @@ export default class SheetProp {
   protected static isSpread: boolean = false;
   protected static isReferenceCell: boolean = false;
   protected static degreeOfNeighbourhood: number = 1;
+  protected static newCells: CellProperties[] = null;
 
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
   protected cells: CellProperties[];
-  protected referenceCell: CellProperties = null;
+  protected referenceCell: CellProperties;
   protected uiOptions: UIOptions;
 
   private originalTopBorder: Excel.RangeBorder;
@@ -32,6 +33,8 @@ export default class SheetProp {
     this.cellProp = new CellProperties();
     this.cells = new Array<CellProperties>();
     this.cellOp = new CellOperations(null, null, null);
+    this.referenceCell = null;
+
 
   }
 
@@ -41,6 +44,19 @@ export default class SheetProp {
 
   public getReferenceCell() {
     return this.referenceCell;
+  }
+
+
+  public resetApp() {
+    SheetProp.isInputRelationship = false;
+    SheetProp.isOutputRelationship = false;
+    SheetProp.isRelationshipIcons = false;
+    SheetProp.isImpact = false;
+    SheetProp.isLikelihood = false;
+    SheetProp.isSpread = false;
+    SheetProp.isReferenceCell = false;
+    SheetProp.degreeOfNeighbourhood = 1;
+    this.uiOptions.deSelectAllOoptions();
   }
 
   public async processNewValues() {
@@ -438,7 +454,7 @@ export default class SheetProp {
 
     try {
 
-      this.cells.forEach((cell: CellProperties) => {
+      this.cells.forEach((cell: CellProperties, index: number) => {
 
         if (cell.address.includes(event.address)) {
 
@@ -446,14 +462,18 @@ export default class SheetProp {
           this.uiOptions.removeRelationshipInfoInTaskpane();
 
           if (cell.isImpact) {
+            if (SheetProp.newCells != null) {
+              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.rectColor);
+            } else {
+              this.uiOptions.addImpactPercentage(cell);
+              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.rectColor);
+            }
 
-            this.uiOptions.addImpactPercentage(cell);
-            this.uiOptions.drawImpactLegend(cell.impact, 20, cell.rectColor);
           }
 
           if (cell.isLikelihood) {
             this.uiOptions.addLikelihoodPercentage(cell);
-            this.uiOptions.drawLikelihoodLegend(cell.likelihood, 20);
+            this.uiOptions.drawLikelihoodLegend(cell.likelihood, -1);
           }
 
           if (cell.isInputRelationship) {
@@ -467,7 +487,6 @@ export default class SheetProp {
           if (cell.isSpread) {
             this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
             this.uiOptions.showSpreadInTaskPane(cell);
-            this.uiOptions.showMeanAndStdDevValueInTaskpane(cell);
           } else {
             this.uiOptions.removeHtmlSpreadInfoForOriginalChart();
             // this.uiOptions.removeHtmlSpreadInfoForNewChart();

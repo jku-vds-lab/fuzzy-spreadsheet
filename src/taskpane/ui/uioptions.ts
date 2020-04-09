@@ -2,8 +2,6 @@
 import * as d3 from 'd3';
 import Bins from '../operations/bins';
 import CellProperties from '../cell/cellproperties';
-// import legend from 'd3-svg-legend';
-// import { legendColor } from 'd3-svg-legend';
 import { legendSize } from 'd3-svg-legend';
 import { max } from 'd3';
 export default class UIOptions {
@@ -23,6 +21,28 @@ export default class UIOptions {
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
+  }
+
+  public deSelectAllOoptions() {
+    document.getElementById('referenceCell').hidden = true;
+    document.getElementById('relationshipDiv').hidden = true;
+    document.getElementById('neighborhoodDiv').hidden = true;
+    document.getElementById('impactDiv').hidden = true;
+    document.getElementById('likelihoodDiv').hidden = true;
+    document.getElementById('spreadDiv').hidden = true;
+    document.getElementById('relationshipInfoDiv').hidden = true;
+    document.getElementById('startWhatIf').hidden = true;
+    document.getElementById('useNewValues').hidden = true;
+    document.getElementById('dismissValues').hidden = true;
+    (<HTMLInputElement>document.getElementById('impact')).checked = false;
+    (<HTMLInputElement>document.getElementById('likelihood')).checked = false;
+    (<HTMLInputElement>document.getElementById('relationship')).checked = false;
+    (<HTMLInputElement>document.getElementById('spread')).checked = false;
+    (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
+    (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
+    this.removeHtmlSpreadInfoForNewChart();
+    this.removeHtmlSpreadInfoForOriginalChart();
+    this.removeRelationshipInfoInTaskpane();
   }
 
   public showReferenceCellOption() {
@@ -96,7 +116,6 @@ export default class UIOptions {
       d3.select("#" + 'originalChart').select('svg').remove();
       d3.select("#" + 'lines').select('svg').remove();
       d3.select("#" + 'spreadLegend').select('svg').remove();
-      document.getElementById("mean").innerHTML = "";
     } catch (error) {
       console.log(error);
     }
@@ -107,7 +126,6 @@ export default class UIOptions {
       d3.select("#" + 'whatIfChart').select('svg').remove();
       d3.select("#" + 'newLines').select('svg').remove();
       d3.select("#" + 'newSpreadLegend').select('svg').remove();
-      document.getElementById("newMean").innerHTML = "";
       document.getElementById("newDistribution").hidden = true;
       document.getElementById("spaceHack").hidden = true;
     } catch (error) {
@@ -221,21 +239,16 @@ export default class UIOptions {
     }
   }
 
-  public showMeanAndStdDevValueInTaskpane(cell: CellProperties) {
-    document.getElementById("mean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
-  }
-
-  public showNewMeanAndStdDevValueInTaskpane(cell: CellProperties) {
-    document.getElementById("newMean").innerHTML = "Mean: " + cell.computedMean.toFixed(2) + " & Std Dev: " + cell.computedStdDev.toFixed(2);
-  }
-
   public showSpreadInTaskPane(cell: CellProperties, divClass: string = '.g-chart', color: string = '#399bfc', isLegendOrange: boolean = false) {
 
     try {
 
       let data = cell.samples;
 
-      var margin = { top: 10, right: 30, bottom: 20, left: 40 },
+      let computedMean = cell.computedMean
+      let computedStdDev = cell.computedStdDev;
+
+      var margin = { top: 10, right: 30, bottom: 30, left: 40 },
         width = 260 - margin.left - margin.right,
         height = 160 - margin.top - margin.bottom;
 
@@ -284,6 +297,139 @@ export default class UIOptions {
         .attr("height", function (d) { return height - y(d.length); })
         .style("fill", color);
 
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 130)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 0)
+        .style("stroke", "black")
+        .style("stroke-dasharray", "4,4")
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 0)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('M= ' + computedMean.toFixed(2));
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 20)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 10)
+        .style("stroke", "grey")
+
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 10)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('-S');
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 20)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 10)
+        .style("stroke", "grey")
+
+
+      svg.append("text")
+        .data(bins)
+        .attr("x",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y", 10)
+        .style("font-size", "10px")
+        .style("fill", color)
+        .text('+S');
+
+
+      svg.append("line")
+        .data(bins)
+        .attr("x1",
+          function (d) {
+            if (x(d.x0) == x(d.x1)) {
+              return 1;
+            }
+            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+            return x1;
+          })
+        .attr("y1", 15)
+        .attr("x2", function (d) {
+          if (x(d.x0) == x(d.x1)) {
+            return 1;
+          }
+          let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
+          return x1;
+        })
+        .attr("y2", 15)
+        .style("stroke", "grey");
+
       svg.append('text')
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left)
@@ -293,15 +439,22 @@ export default class UIOptions {
         .style("font-size", "10px")
         .text('Probability in %');
 
-      // svg.append('text')
-      //   .attr("transform",
-      //     "translate(" + width / 2 + " ," +
-      //     (height + margin.bottom) + ")")
-      //   .style("text-anchor", "middle")
-      //   .style("font-size", "10px")
-      //   .text('Values in Mio.(€)');
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width + " ," +
+          (height / 2) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style('fill', color)
+        .text('S=' + computedStdDev.toFixed(2));
 
-
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width / 2 + " ," +
+          (height + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text('Values in Mio.(€)');
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
@@ -407,17 +560,31 @@ export default class UIOptions {
 
 
 
-  public drawImpactLegend(impact: number = 0, newImpact: number = 0, color: string = 'green') {
-    // public drawImpactLegend(impact: number = 0, color: string = 'green') {
+  public drawImpactLegend(impact: number = -1, newImpact: number = -1, color: string = 'green') {
 
 
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
+    let newImpactTemp = Math.ceil(newImpact * 0.5);
+
+    console.log('Impact temp: ' + impactTemp);
+    console.log('newImpactTemp: ' + newImpactTemp);
 
     if (color == 'green') {
       impactTemp = impactTemp + 50;
+      newImpactTemp = newImpactTemp + 50;
     } else {
       impactTemp = 50 - impactTemp;
+      newImpactTemp = 50 - newImpactTemp;
+    }
+
+
+    if (impact == -1) {
+      impactTemp = -1;
+    }
+
+    if (newImpact == -1) {
+      newImpactTemp = -1;
     }
 
     const minDomain = -5;
@@ -437,29 +604,28 @@ export default class UIOptions {
       .append("rect")
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 15;
         }
         return 20;
       })
       .attr("width", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 2;
         }
         return 1;
       })
       .attr("height", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return 15;
         }
         return 5;
       }
       )
-      // .style("fill", (d) => { return d });
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return "orange";
         }
         return d;
@@ -474,7 +640,7 @@ export default class UIOptions {
       .text(function (d, i) {
         if (i == impactTemp) {
           return impact + ' %';
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return newImpact + ' %';
         }
         return " ";
@@ -482,20 +648,23 @@ export default class UIOptions {
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
-        } if (i == newImpact) {
+        } if (i == newImpactTemp) {
           return "orange";
         }
         return " ";
       })
       .style("font-size", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp || i == newImpactTemp) {
           return "10px";
         }
         return "14px";
       })
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
-        if (i == impactTemp || i == newImpact) {
+        if (i == impactTemp) {
+          return 10;
+        }
+        if (i == newImpactTemp) {
           return 10;
         }
         return 15;
@@ -538,7 +707,7 @@ export default class UIOptions {
       }
       );
 
-      Svg.selectAll("mySquaresIndicators")
+    Svg.selectAll("mySquaresIndicators")
       .data(sizeArray)
       .enter()
       .append("rect")
@@ -556,8 +725,8 @@ export default class UIOptions {
       })
       .attr("height", function (d, i) {
         if (d == likelihood || d == newLikelihood) {
-             return 2;
-           }
+          return 2;
+        }
         return d / 3;
       }
       )
@@ -615,3 +784,22 @@ export default class UIOptions {
   }
 
 }
+
+
+// public static findPercentile(samples: number[], value: number = 11.1) {
+//   return ((MainClass.cutoff(samples, value) / samples.length) * 100).toFixed(2);
+// }
+
+// public static cutoff(sortedValues, value, start = 0, end = sortedValues.length) {
+//   if (sortedValues[end - 1] <= value) { return -1 }
+
+//   while (start !== end - 1) {
+//     const index = Math.floor((end + start) / 2)
+//     if (sortedValues[index] <= value) {
+//       start = index
+//     } else {
+//       end = index
+//     }
+//   }
+//   return end
+// }

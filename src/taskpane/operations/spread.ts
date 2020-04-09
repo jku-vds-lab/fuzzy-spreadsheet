@@ -254,7 +254,7 @@ export default class Spread {
       if (cell.formula == "") {
         if (stdev == 0 && likelihood == 1) {
           let i = 0;
-          while (i < 95) {
+          while (i < 100) {
             cell.samples.push(mean);
             i++;
           }
