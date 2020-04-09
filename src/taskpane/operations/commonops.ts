@@ -1,5 +1,7 @@
 /* global setTimeout, console, Excel */
 import CellProperties from "../cell/cellproperties";
+import Impact from "./impact";
+import Likelihood from "./likelihood";
 
 export default class CommonOperations {
   private referenceCell: CellProperties;
@@ -38,7 +40,7 @@ export default class CommonOperations {
           cell.rect = sheet.shapes.addGeometricShape("Rectangle");
           cell.rect.name = cell.address + name;
           cell.rect.left = cell.left + MARGIN;
-          cell.rect.top = cell.top + cell.height / 4;
+          cell.rect.top = cell.top + cell.height / 2.5;
 
           let color = 'gray';
           let borderColor = 'gray';
@@ -57,6 +59,19 @@ export default class CommonOperations {
           if (cell.isLikelihood) {
             height = cell.likelihood * 10;
             width = cell.likelihood * 10;
+
+            if (cell.likelihood >= 0.8){
+              cell.rect.top = cell.top + cell.height / 5;
+            } 
+            if (cell.likelihood < 0.8){
+              cell.rect.top = cell.top + cell.height / 3.5;
+            }
+            if (cell.likelihood <= 0.5){
+              cell.rect.top = cell.top + cell.height / 2;
+            }
+            if (cell.likelihood <= 0.2){
+              cell.rect.top = cell.top + cell.height / 1.8;
+            }
           }
 
           cell.rect.height = height;

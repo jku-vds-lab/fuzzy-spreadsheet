@@ -80,7 +80,7 @@ export default class Relationship {
           let diamond = shapes.addGeometricShape(type);
           diamond.name = element.cell.address + name;
           diamond.left = element.cell.left;
-          diamond.top = element.cell.top + element.cell.height / 4;
+          diamond.top = element.cell.top + element.cell.height / 3;
           diamond.height = 6;
           diamond.width = 6;
           diamond.lineFormat.weight = 0;
@@ -110,7 +110,7 @@ export default class Relationship {
           let circle = shapes.addGeometricShape(type);
           circle.name = element.cell.address + name
           circle.left = element.cell.left;
-          circle.top = element.cell.top + element.cell.height / 4;
+          circle.top = element.cell.top + element.cell.height / 3;
           circle.height = 6;
           circle.width = 6;
           circle.lineFormat.weight = 0;

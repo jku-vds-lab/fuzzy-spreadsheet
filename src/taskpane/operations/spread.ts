@@ -5,7 +5,7 @@ import { range, dotMultiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
-import { sum } from 'd3';
+import { sum, contours } from 'd3';
 
 export default class Spread {
 
@@ -150,7 +150,7 @@ export default class Spread {
 
           let height = cell.height;
           let top = cell.top;
-          let left = cell.left + 20;
+          let left = cell.left + 30;
 
           if (isUpperHalf) {
             height = height / 2;
@@ -185,8 +185,8 @@ export default class Spread {
             let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
             rect.name = cell.address + name;
             rect.top = top;
-            rect.left = left + el.value;
-            rect.width = 1.2;
+            rect.left = left + el.value * 0.8 - 2;
+            rect.width = .2;
             rect.height = height;
             rect.fill.setSolidColor(el.color);
             rect.fill.transparency = 0.5;
