@@ -682,7 +682,7 @@ export default class UIOptions {
     likelihood = likelihood * 100;
 
     var Svg = d3.select('#likelihoodLegend').append("svg")
-      .attr("width", "auto")
+      .attr("width", 200)
       .attr("height", 60);
 
     // add indicators for likelihood of occurrence (sqaures in grey)
