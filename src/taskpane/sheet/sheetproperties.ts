@@ -56,6 +56,7 @@ export default class SheetProp {
     SheetProp.isSpread = false;
     SheetProp.isReferenceCell = false;
     SheetProp.degreeOfNeighbourhood = 1;
+    SheetProp.newCells = null;
     this.uiOptions.deSelectAllOoptions();
   }
 

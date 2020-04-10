@@ -675,7 +675,7 @@ export default class UIOptions {
   }
 
 
-  public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = 0) {
+  public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = -1) {
 
     d3.select("#likelihoodLegend").select('svg').remove();
 
