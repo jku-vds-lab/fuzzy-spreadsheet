@@ -286,6 +286,41 @@ export default class UIOptions {
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5));
 
+
+      let toolTip = d3.select(divClass)
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px");
+
+      let mouseOver = function (d) {
+        toolTip
+          .style("opacity", 1)
+        d3.select(this)
+          .style("stroke", "black")
+          .style("opacity", 1)
+      }
+
+      let mouseMove = function (d) {
+        toolTip
+          .html("P(" + d.x0 + " ≤ x < " + d.x1 + ") = " + (height - y(d.length)).toFixed(2) + "%")
+          // .style("left", (d3.mouse(this)[0] + 70) + "px")
+          .style("top", (d3.mouse(this)[1]) + "px")
+      }
+
+      let mouseLeave = function (d) {
+        toolTip
+          .style("opacity", 0)
+        d3.select(this)
+          .style("stroke", "none")
+          .style("opacity", 0)
+      }
+
+
       svg.selectAll("rect")
         .data(bins)
         .enter()
@@ -298,7 +333,13 @@ export default class UIOptions {
           return x(d.x1) - x(d.x0) - 1;
         })
         .attr("height", function (d) { return height - y(d.length); })
-        .style("fill", color);
+        .style("fill", color)
+        .on('mouseover', mouseOver)
+        .on("mousemove", mouseMove)
+        .on("mouseleave", mouseLeave)
+
+
+
 
       svg.append("line")
         .data(bins)
@@ -372,7 +413,7 @@ export default class UIOptions {
         .attr("y", 10)
         .style("font-size", "10px")
         .style("fill", color)
-        .text('-S');
+        .text('-SD');
 
       svg.append("line")
         .data(bins)
@@ -409,7 +450,7 @@ export default class UIOptions {
         .attr("y", 10)
         .style("font-size", "10px")
         .style("fill", color)
-        .text('+S');
+        .text('+SD');
 
 
       svg.append("line")
@@ -449,7 +490,7 @@ export default class UIOptions {
         .style("text-anchor", "middle")
         .style("font-size", "10px")
         .style('fill', color)
-        .text('S=' + computedStdDev.toFixed(2));
+        .text('SD=' + computedStdDev.toFixed(2));
 
       svg.append('text')
         .attr("transform",
