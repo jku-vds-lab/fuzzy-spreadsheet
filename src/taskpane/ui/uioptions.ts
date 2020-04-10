@@ -246,6 +246,16 @@ export default class UIOptions {
 
     try {
 
+
+      let tooltipInfo = document.getElementById(divClass + "tooltip");
+
+      if (tooltipInfo == null) {
+        console.log('Null atm');
+      } else {
+        console.log('Deleting atm');
+        document.getElementById(divClass + "tooltip").remove();
+      }
+
       let data = cell.samples;
 
       let computedMean = cell.computedMean
@@ -286,16 +296,10 @@ export default class UIOptions {
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5));
 
-
       let toolTip = d3.select(divClass)
         .append("div")
-        .style("opacity", 0)
         .attr("class", "tooltip")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "2px")
-        .style("border-radius", "5px")
-        .style("padding", "5px");
+        .attr("id", divClass + "tooltip");
 
       let mouseOver = function (d) {
         toolTip
@@ -307,9 +311,9 @@ export default class UIOptions {
 
       let mouseMove = function (d) {
         toolTip
-          .html("P(" + d.x0 + " ≤ x < " + d.x1 + ") = " + (height - y(d.length)).toFixed(2) + "%")
-          // .style("left", (d3.mouse(this)[0] + 70) + "px")
-          .style("top", (d3.mouse(this)[1]) + "px")
+          .html("P(" + d.x0 + " ≤ x < " + d.x1 + ") = " + d.length.toFixed(2) + "%")
+        // .style("left", (d3.mouse(this)[0] + 70) + "px")
+        // .style("top", (d3.mouse(this)[1]) + "px")
       }
 
       let mouseLeave = function (d) {
@@ -317,7 +321,7 @@ export default class UIOptions {
           .style("opacity", 0)
         d3.select(this)
           .style("stroke", "none")
-          .style("opacity", 0)
+          .style("opacity", 1)
       }
 
 

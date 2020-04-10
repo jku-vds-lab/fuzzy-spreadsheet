@@ -3,378 +3,385 @@
  * See LICENSE in the project root for license information.
  */
 
- html,
- body {
-     width: 100%;
-     height: 100%;
-     margin: 0;
-     padding: 0;
- }
- 
- ul {
-     margin: 0;
-     padding: 0;
- }
- 
- .ms-welcome__header {
-     padding: 10px;
-     padding-bottom: 10px;
-     padding-top: 10px;
-     display: -webkit-flex;
-     display: flex;
-     -webkit-flex-direction: column;
-     flex-direction: column;
-     align-items: left;
- }
- 
- .ms-welcome__main {
-     display: -webkit-flex;
-     display: flex;
-     -webkit-flex-direction: column;
-     flex-direction: column;
-     -webkit-flex-wrap: nowrap;
-     flex-wrap: nowrap;
-     -webkit-align-items: left;
-     align-items: left;
-     -webkit-flex: 1 0 0;
-     flex: 1 0 0;
-     padding: 10px 20px;
- }
- 
- .ms-welcome__main>h2 {
-     width: 100%;
-     text-align: center;
- }
- 
- .ms-welcome__features {
-     list-style-type: none;
-     margin-top: 20px;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem {
-     padding-bottom: 10px;
-     display: -webkit-flex;
-     display: flex;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem>.ms-Icon {
-     margin-right: 10px;
- }
- 
- .ms-welcome__action.ms-Button--hero {
-     margin-top: 10px;
- }
- 
- .ms-Button.ms-Button--hero .ms-Button-label {
-     color: #333;
- }
- 
- .ms-Button.ms-Button--hero:hover .ms-Button-label,
- .ms-Button.ms-Button--hero:focus .ms-Button-label {
-     color: #333;
-     cursor: pointer;
- }
- 
- b {
-     font-weight: bold;
- }
- 
- /* table css in html */
- .highlight {
-     background: #ddd;
- }
- 
- table tr td {
-     /* border-right: thick solid #FFF; */
-     /* border-bottom: solid thin #f4f4f4; */
-     font-size: 14px;
-     color: #333;
-     text-align: left;
- }
- 
- /* center image in table */
- td img {
-     display: block;
-     margin-left: auto;
-     margin-right: auto;
- 
- }
- 
- th {
-     text-align: left;
- }
- 
- .loader {
-     border: 8px solid #f3f3f3;
-     border-radius: 50%;
-     border-top: 8px solid #3498db;
-     width: 25px;
-     height: 25px;
-     -webkit-animation: spin 2s linear infinite;
-     /* Safari */
-     animation: spin 2s linear infinite;
- }
- 
- 
- table.table2 {
-     /* border-right: thick solid #FFF; */
-     /* border-bottom: solid thin #f4f4f4; */
-     font-size: 1px;
-     color: #333;
-     text-align: left;
- }
- table.table2 tr td {
-     /* border-right: thick solid #FFF; */
-     /* border-bottom: solid thin #f4f4f4; */
-     font-size: 1px;
-     color: #333;
-     text-align: left;
- }
- 
- @keyframes spin {
-     0% {
-         transform: rotate(0deg);
-     }
- 
-     100% {
-         transform: rotate(360deg);
-     }
- }
- 
- .btn {
-     background-color: white;
-     border: none;
-     color: #333;
-     padding: 12px 16px;
-     font-size: 14px;
-     cursor: pointer;
- }
- 
- /* Darker background on mouse-over */
- .btn:hover {
-     background-color: #ededed;
-     font-weight: bold;
- }
- 
- hr {
-     border: 0;
-     clear: both;
-     display: block;
-     width: 96%;
-     background-color: #ccc;
-     height: 1px;
-     margin-top: 1em;
-     /* margin-bottom: 1em; */
- }
- 
- /* #relationship img {
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+.ms-welcome__header {
+    padding: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    align-items: left;
+}
+
+.ms-welcome__main {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-align-items: left;
+    align-items: left;
+    -webkit-flex: 1 0 0;
+    flex: 1 0 0;
+    padding: 10px 20px;
+}
+
+.ms-welcome__main>h2 {
+    width: 100%;
+    text-align: center;
+}
+
+.ms-welcome__features {
+    list-style-type: none;
+    margin-top: 20px;
+}
+
+.ms-welcome__features.ms-List .ms-ListItem {
+    padding-bottom: 10px;
+    display: -webkit-flex;
+    display: flex;
+}
+
+.ms-welcome__features.ms-List .ms-ListItem>.ms-Icon {
+    margin-right: 10px;
+}
+
+.ms-welcome__action.ms-Button--hero {
+    margin-top: 10px;
+}
+
+.ms-Button.ms-Button--hero .ms-Button-label {
+    color: #333;
+}
+
+.ms-Button.ms-Button--hero:hover .ms-Button-label,
+.ms-Button.ms-Button--hero:focus .ms-Button-label {
+    color: #333;
+    cursor: pointer;
+}
+
+b {
+    font-weight: bold;
+}
+
+/* table css in html */
+.highlight {
+    background: #ddd;
+}
+
+table tr td {
+    /* border-right: thick solid #FFF; */
+    /* border-bottom: solid thin #f4f4f4; */
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+}
+
+/* center image in table */
+td img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+th {
+    text-align: left;
+}
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 25px;
+    height: 25px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+
+table.table2 {
+    /* border-right: thick solid #FFF; */
+    /* border-bottom: solid thin #f4f4f4; */
+    font-size: 1px;
+    color: #333;
+    text-align: left;
+}
+
+table.table2 tr td {
+    /* border-right: thick solid #FFF; */
+    /* border-bottom: solid thin #f4f4f4; */
+    font-size: 1px;
+    color: #333;
+    text-align: left;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.btn {
+    background-color: white;
+    border: none;
+    color: #333;
+    padding: 12px 16px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+    background-color: #ededed;
+    font-weight: bold;
+}
+
+hr {
+    border: 0;
+    clear: both;
+    display: block;
+    width: 96%;
+    background-color: #ccc;
+    height: 1px;
+    margin-top: 1em;
+    /* margin-bottom: 1em; */
+}
+
+/* #relationship img {
      float: right;
      } */
- 
- .fa-rotate-45 {
-     -webkit-transform: rotate(45deg);
-     -moz-transform: rotate(45deg);
-     -ms-transform: rotate(45deg);
-     -o-transform: rotate(45deg);
-     transform: rotate(45deg);
- }
- 
- /* .fa-times:hover{
+
+.fa-rotate-45 {
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+/* .fa-times:hover{
          color: red !important;
      }
      .fa-check:hover{
          color: green;
      } */
- 
- .slidecontainer {
-     width: 100%;
-     /* Width of the outside container */
- }
- 
- /* The slider itself */
- .slider {
-     -webkit-appearance: none;
-     /* Override default CSS styles */
-     appearance: none;
-     width: 100%;
-     /* Full-width */
-     height: 3px;
-     /* Specified height */
-     background: #d3d3d3;
-     /* Grey background */
-     outline: none;
-     /* Remove outline */
-     opacity: 0.7;
-     /* Set transparency (for mouse-over effects on hover) */
-     -webkit-transition: .2s;
-     /* 0.2 seconds transition on hover */
-     transition: opacity .2s;
- }
- 
- /* Mouse-over effects */
- .slider:hover {
-     opacity: 1;
-     /* Fully shown on mouse-over */
- }
- 
- /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
- .slider::-webkit-slider-thumb {
-     -webkit-appearance: none;
-     /* Override default look */
-     appearance: none;
-     width: 25px;
-     /* Set a specific slider handle width */
-     height: 25px;
-     /* Slider handle height */
-     background: #333;
-     /* Green background */
-     cursor: pointer;
-     /* Cursor on hover */
- }
- 
- .slider::-moz-range-thumb {
-     width: 25px;
-     /* Set a specific slider handle width */
-     height: 25px;
-     /* Slider handle height */
-     background: #333;
-     /* Green background */
-     cursor: pointer;
-     /* Cursor on hover */
- }
- 
- /* .triangle-up {
+
+.slidecontainer {
+    width: 100%;
+    /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+    -webkit-appearance: none;
+    /* Override default CSS styles */
+    appearance: none;
+    width: 100%;
+    /* Full-width */
+    height: 3px;
+    /* Specified height */
+    background: #d3d3d3;
+    /* Grey background */
+    outline: none;
+    /* Remove outline */
+    opacity: 0.7;
+    /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s;
+    /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+    opacity: 1;
+    /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    /* Override default look */
+    appearance: none;
+    width: 25px;
+    /* Set a specific slider handle width */
+    height: 25px;
+    /* Slider handle height */
+    background: #333;
+    /* Green background */
+    cursor: pointer;
+    /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    /* Set a specific slider handle width */
+    height: 25px;
+    /* Slider handle height */
+    background: #333;
+    /* Green background */
+    cursor: pointer;
+    /* Cursor on hover */
+}
+
+/* .triangle-up {
          width: 0;
          height: 0;
          border-left: 25px solid transparent;
          border-right: 25px solid transparent;
          border-bottom: 50px solid #555;
      } */
- 
- 
- /* chart styles */
- body {
-     font-family: sans-serif;
-     margin: 0;
-     align: left;
- }
- 
- .y.axis line {
-     fill: none;
-     stroke: #002999;
-     shape-rendering: crispEdges;
-     stroke-width: 1px;
- }
- 
- .x.axis line {
-     display: none;
- }
- 
- .tick.g-baseline line {
-     stroke: #002499;
-     stroke-dasharray: 0;
-     stroke-width: 2px;
- }
- 
- .axis text {
-     font-family: sans-serif;
-     font-size: 12px;
-     pointer-events: none;
-     fill: #a6a6a6;
- }
- 
- .y.axis text {
-     text-anchor: start !important;
-     font-size: 12px;
-     fill: #e6e6e6;
- }
- 
- .domain {
-     display: none;
- }
- 
- .line {
-     stroke: #2e0cc5d3;
-     stroke-width: 2px;
-     fill: none;
- }
- 
- .area {
-     fill: #f2f2f2;
-     opacity: 0.4;
- }
- 
- .g-label-text {
-     font-family: sans-serif;
-     font-size: 14px;
- }
- 
- .g-label-circle {
-     fill: #4bc6df;
- }
- 
- .micro-content {
-     padding: 15px;
- }
- 
- .mc-kicker {
-     color: #1115e9;
-     text-transform: uppercase;
-     font-size: 12px;
-     margin: 0;
- }
- 
- .bolded {
-     font-weight: 500;
-     color: #1613cf;
- }
- 
- .mc-head {
-     color: #1e3dec;
-     font-size: 24px;
-     font-weight: 300;
-     margin: 0 0 10px 0;
- }
- 
- div.tooltip {
-     position: absolute;
-     text-align: left;
-     font-family: sans-serif;
-     font-size: 14px;
-     pointer-events: none;
-     color: #a6a6a6;
- }
- 
- .dotted {
-     border-style: dashed;
-     border-color: blue;
-     border-width: 2px;
-     text-align: center;
-     padding: 2px;
- }
- 
- .none {
-     border-style: none;
-     border-width: 2px;
-     text-align: center;
-     padding: 2px;
- }
- 
- svg.mydots {
-     position: absolute;
-     padding-top: 0.4em;
-     height: 40;
-     margin-top: 0.3em;
- }
 
- svg.mySquares {
+
+/* chart styles */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    align: left;
+}
+
+.y.axis line {
+    fill: none;
+    stroke: #002999;
+    shape-rendering: crispEdges;
+    stroke-width: 1px;
+}
+
+.x.axis line {
+    display: none;
+}
+
+.tick.g-baseline line {
+    stroke: #002499;
+    stroke-dasharray: 0;
+    stroke-width: 2px;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 12px;
+    pointer-events: none;
+    fill: #a6a6a6;
+}
+
+.y.axis text {
+    text-anchor: start !important;
+    font-size: 12px;
+    fill: #e6e6e6;
+}
+
+.domain {
+    display: none;
+}
+
+.line {
+    stroke: #2e0cc5d3;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.area {
+    fill: #f2f2f2;
+    opacity: 0.4;
+}
+
+.g-label-text {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+.g-label-circle {
+    fill: #4bc6df;
+}
+
+.micro-content {
+    padding: 15px;
+}
+
+.mc-kicker {
+    color: #1115e9;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin: 0;
+}
+
+.bolded {
+    font-weight: 500;
+    color: #1613cf;
+}
+
+.mc-head {
+    color: #1e3dec;
+    font-size: 24px;
+    font-weight: 300;
+    margin: 0 0 10px 0;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: left;
+    font-family: sans-serif;
+    font-size: 14px;
+    pointer-events: none;
+    color: #333;
+    background-color: white;
+    border: solid;
+    border-radius: 5px;
+    border-width: 2px;
+    padding: 5px;
+    opacity: 1;
+}
+
+.dotted {
+    border-style: dashed;
+    border-color: blue;
+    border-width: 2px;
+    text-align: center;
+    padding: 2px;
+}
+
+.none {
+    border-style: none;
+    border-width: 2px;
+    text-align: center;
+    padding: 2px;
+}
+
+svg.mydots {
     position: absolute;
     padding-top: 0.4em;
     height: 40;
     margin-top: 0.3em;
 }
 
- /* #impactLegend{
+svg.mySquares {
+    position: absolute;
+    padding-top: 0.4em;
+    height: 40;
+    margin-top: 0.3em;
+}
+
+/* #impactLegend{
     position: absolute;
 
  } */
