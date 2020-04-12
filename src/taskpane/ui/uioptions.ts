@@ -177,24 +177,18 @@ export default class UIOptions {
       return;
     }
 
-    if (cell.degreeToFocus == 1) {
+    if (cell.degreeOfRelationship == 1) {
       document.getElementById('diamond1').className = 'dotted';
     }
 
-    if (n == 2) {
-      if (cell.degreeToFocus > 1) {
-        document.getElementById('diamond2').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 2) {
+      document.getElementById('diamond2').className = 'dotted';
     }
 
-    if (n == 3) {
 
-      console.log('Degree to focus: ' + cell.degreeToFocus);
-      if (cell.degreeToFocus == 2) {
-        document.getElementById('diamond2').className = 'dotted';
-      } else if (cell.degreeToFocus > 2) {
-        document.getElementById('diamond3').className = 'dotted';
-      }
+    if (cell.degreeOfRelationship == 3) {
+      document.getElementById('diamond3').className = 'dotted';
     }
   }
 
@@ -206,22 +200,18 @@ export default class UIOptions {
       return;
     }
 
-    if (cell.degreeToFocus == 1) {
+    if (cell.degreeOfRelationship == 1) {
       document.getElementById('circle1').className = 'dotted';
     }
 
-    if (n == 2) {
-      if (cell.degreeToFocus > 1) {
-        document.getElementById('circle2').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 2) {
+      document.getElementById('circle2').className = 'dotted';
     }
 
-    if (n == 3) {
-      if (cell.degreeToFocus == 2) {
-        document.getElementById('circle2').className = 'dotted';
-      } else {
-        document.getElementById('circle3').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 3) {
+      document.getElementById('circle3').className = 'dotted';
     }
   }
 

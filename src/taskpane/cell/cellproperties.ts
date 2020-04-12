@@ -29,6 +29,8 @@ export default class CellProperties {
   public rectColor: string;
   public rectTransparency: number;
 
+  public degreeOfRelationship: number; // workaround for degreeToFocus
+
   public isInputRelationship: boolean = false;
   public isOutputRelationship: boolean = false;
   public isImpact: boolean = false;
