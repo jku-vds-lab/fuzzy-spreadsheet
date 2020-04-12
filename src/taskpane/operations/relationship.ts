@@ -35,6 +35,7 @@ export default class Relationship {
 
         this.inputCellsWithRelationship.push({ cell: inCell, color: colors[colorIndex] });
         inCell.isInputRelationship = true;
+        inCell.degreeOfRelationship = colorIndex + 1;
       }
 
       if (n == 1) {
@@ -55,6 +56,7 @@ export default class Relationship {
 
         this.outputCellsWithRelationship.push({ cell: outCell, color: colors[colorIndex] });
         outCell.isOutputRelationship = true;
+        outCell.degreeOfRelationship = colorIndex + 1;
       }
 
       if (n == 1) {

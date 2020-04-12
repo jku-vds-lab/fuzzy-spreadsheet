@@ -294,22 +294,6 @@ export default class WhatIfProps extends SheetProp {
     }
   }
 
-  relationshipIcons() {
-
-    if (SheetProp.isRelationshipIcons) {
-
-      if (SheetProp.isInputRelationship) {
-        this.cellOp.showInputRelationship(SheetProp.degreeOfNeighbourhood);
-      }
-
-      if (SheetProp.isOutputRelationship) {
-        this.cellOp.showOutputRelationship(SheetProp.degreeOfNeighbourhood);
-      }
-
-    } else {
-      this.cellOp.removeShapesOptionWise('RelationshipUpdate');
-    }
-  }
 
   inputRelationship() {
 

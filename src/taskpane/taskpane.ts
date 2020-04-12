@@ -16,13 +16,13 @@ Office.initialize = () => {
   document.getElementById("referenceCell").onclick = MainClass.markAsReferenceCell;
   document.getElementById("inputRelationship").onclick = MainClass.inputRelationship;
   document.getElementById("outputRelationship").onclick = MainClass.outputRelationship;
+  document.getElementById("zero").onchange = MainClass.zero;
   document.getElementById("first").onchange = MainClass.first;
   document.getElementById("second").onchange = MainClass.second;
   document.getElementById("third").onchange = MainClass.third;
   document.getElementById("impact").onclick = MainClass.impact;
   document.getElementById("likelihood").onclick = MainClass.likelihood;
   document.getElementById("spread").onclick = MainClass.spread;
-  document.getElementById("relationship").onclick = MainClass.relationshipIcons;
   document.getElementById("startWhatIf").onclick = MainClass.whatIf;
   document.getElementById("useNewValues").onclick = MainClass.keepNewValues;
   document.getElementById("dismissValues").onclick = MainClass.dismissNewValues;
@@ -73,6 +73,14 @@ class MainClass {
     }
   }
 
+  public static zero() {
+    MainClass.sheetProp.setDegreeOfNeighbourhood(0);
+
+    if (MainClass.isWhatIfStarted) {
+      setTimeout(() => MainClass.whatIfProp.setDegreeOfNeighbourhood(0), 1000);
+    }
+  }
+
   public static first() {
     MainClass.sheetProp.setDegreeOfNeighbourhood(1);
 
@@ -113,13 +121,6 @@ class MainClass {
     }
   }
 
-  public static relationshipIcons() {
-    MainClass.sheetProp.relationshipIcons();
-
-    if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.relationshipIcons();
-    }
-  }
 
   public static spread() {
     MainClass.sheetProp.spread();

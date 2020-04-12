@@ -10,7 +10,7 @@ export default class CellOperations {
 
   private cells: CellProperties[];
   private referenceCell: CellProperties;
-  private degreeOfNeighbourhood: number = 1;
+  private degreeOfNeighbourhood: number = 0;
   private impact: Impact;
   private likelihood: Likelihood;
   private spread: Spread;
@@ -41,8 +41,8 @@ export default class CellOperations {
     this.cells = cells;
     this.commonOps.setCells(this.cells);
   }
-  setOptions(isImpact: boolean, isLikelihood: boolean, isRelationshipIcons: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
-    this.commonOps.setOptions(isImpact, isLikelihood, isRelationshipIcons, isSpread, isInputRelationship, isOutputRelationship);
+  setOptions(isImpact: boolean, isLikelihood: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
+    this.commonOps.setOptions(isImpact, isLikelihood, isSpread, isInputRelationship, isOutputRelationship);
   }
 
   removeShapesReferenceCellWise() {

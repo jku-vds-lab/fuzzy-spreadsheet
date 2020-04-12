@@ -17,7 +17,6 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = true;
     document.getElementById('likelihoodDiv').hidden = true;
     document.getElementById('spreadDiv').hidden = true;
-    document.getElementById('relationshipInfoDiv').hidden = true;
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
@@ -30,7 +29,6 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = true;
     document.getElementById('likelihoodDiv').hidden = true;
     document.getElementById('spreadDiv').hidden = true;
-    document.getElementById('relationshipInfoDiv').hidden = true;
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
@@ -40,7 +38,8 @@ export default class UIOptions {
     (<HTMLInputElement>document.getElementById('spread')).checked = false;
     (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
     (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
-    (<HTMLInputElement>document.getElementById('first')).checked = true;
+    (<HTMLInputElement>document.getElementById('zero')).checked = true;
+    (<HTMLInputElement>document.getElementById('first')).checked = false;
     (<HTMLInputElement>document.getElementById('second')).checked = false;
     (<HTMLInputElement>document.getElementById('third')).checked = false;
     this.removeHtmlSpreadInfoForNewChart();
@@ -61,12 +60,10 @@ export default class UIOptions {
     document.getElementById('likelihoodDiv').hidden = false;
     this.drawLikelihoodLegend(-200);
     document.getElementById('spreadDiv').hidden = false;
-    document.getElementById('relationshipInfoDiv').hidden = false;
     document.getElementById('startWhatIf').hidden = false;
     (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("impactDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = true;
-    (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
   }
@@ -78,14 +75,12 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = false;
     document.getElementById('likelihoodDiv').hidden = false;
     document.getElementById('spreadDiv').hidden = false;
-    document.getElementById('relationshipInfoDiv').hidden = false;
     document.getElementById('startWhatIf').hidden = false;
     (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("impactDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
-    (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
   }
 
   public isElementChecked(elementName: string) {
@@ -101,9 +96,6 @@ export default class UIOptions {
   }
 
   public removeRelationshipInfoInTaskpane() {
-    document.getElementById('number1').className = 'none';
-    document.getElementById('number2').className = 'none';
-    document.getElementById('number3').className = 'none';
 
     document.getElementById('diamond1').className = 'none';
     document.getElementById('diamond2').className = 'none';
@@ -186,28 +178,18 @@ export default class UIOptions {
       return;
     }
 
-    if (cell.degreeToFocus == 1) {
+    if (cell.degreeOfRelationship == 1) {
       document.getElementById('diamond1').className = 'dotted';
-      document.getElementById('number1').className = 'dotted';
     }
 
-    if (n == 2) {
-      if (cell.degreeToFocus > 1) {
-        document.getElementById('diamond2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 2) {
+      document.getElementById('diamond2').className = 'dotted';
     }
 
-    if (n == 3) {
 
-      console.log('Degree to focus: ' + cell.degreeToFocus);
-      if (cell.degreeToFocus == 2) {
-        document.getElementById('diamond2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
-      } else if (cell.degreeToFocus > 2) {
-        document.getElementById('diamond3').className = 'dotted';
-        document.getElementById('number3').className = 'dotted';
-      }
+    if (cell.degreeOfRelationship == 3) {
+      document.getElementById('diamond3').className = 'dotted';
     }
   }
 
@@ -219,26 +201,18 @@ export default class UIOptions {
       return;
     }
 
-    if (cell.degreeToFocus == 1) {
+    if (cell.degreeOfRelationship == 1) {
       document.getElementById('circle1').className = 'dotted';
-      document.getElementById('number1').className = 'dotted';
     }
 
-    if (n == 2) {
-      if (cell.degreeToFocus > 1) {
-        document.getElementById('circle2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 2) {
+      document.getElementById('circle2').className = 'dotted';
     }
 
-    if (n == 3) {
-      if (cell.degreeToFocus == 2) {
-        document.getElementById('circle2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
-      } else {
-        document.getElementById('circle3').className = 'dotted';
-        document.getElementById('number3').className = 'dotted';
-      }
+
+    if (cell.degreeOfRelationship == 3) {
+      document.getElementById('circle3').className = 'dotted';
     }
   }
 
@@ -614,9 +588,6 @@ export default class UIOptions {
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
     let newImpactTemp = Math.ceil(newImpact * 0.5);
-
-    console.log('Impact temp: ' + impactTemp);
-    console.log('newImpactTemp: ' + newImpactTemp);
 
     if (color == 'green') {
       impactTemp = impactTemp + 50;
