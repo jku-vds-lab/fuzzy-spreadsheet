@@ -353,9 +353,9 @@ div.tooltip {
 }
 
 .dotted {
-    border-style: dashed;
+    border-style: solid;
     border-color: blue;
-    border-width: 2px;
+    border-width: 1px;
     text-align: center;
     padding: 2px;
 }
