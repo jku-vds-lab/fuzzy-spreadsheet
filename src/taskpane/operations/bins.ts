@@ -1,4 +1,4 @@
-import { hsl } from "d3";
+import { hsl, rgb } from "d3";
 /* global console */
 
 export default class Bins {
@@ -60,15 +60,14 @@ export default class Bins {
 
     let blueColors = [];
     let i = 0;
-    let color = hsl(200, 0, 0.85);
+    let color = rgb(217, 217, 217)
     blueColors.push(color.hex());
     while (i < this.nrOfBins) {
-      let color = hsl(210, 1, (0.9 * (1 - i / 15)));
+      let color = rgb(229 - 12.5 * i, 245 - 10.26 * i, 224 - 13.53 * i);
       blueColors.push(color.hex());
 
       i++;
     }
-
     return blueColors;
   }
 
@@ -76,10 +75,10 @@ export default class Bins {
 
     let orangeColors = [];
     let i = 0;
-    let color = hsl(30, 0, 0.85);
+    let color = rgb(217, 217, 217);
     orangeColors.push(color.hex());
     while (i < this.nrOfBins) {
-      let color = hsl(30, 1, 0.9 * (1 - i / 15));
+      let color = rgb(231, 225 - 13.3 * i, 239 - 8 * i);
       orangeColors.push(color.hex());
       i++;
     }

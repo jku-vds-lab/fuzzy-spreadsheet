@@ -232,6 +232,14 @@ export default class UIOptions {
 
       let data = cell.samples;
 
+      let color = '#366523';
+      let colors = cell.binBlueColors;
+
+      if (isLegendOrange) {
+        colors = cell.binOrangeColors;
+        color = '#dd1c77';
+      }
+
       let computedMean = cell.computedMean
       let computedStdDev = cell.computedStdDev;
 
@@ -273,7 +281,9 @@ export default class UIOptions {
       let toolTip = d3.select(divClass)
         .append("div")
         .attr("class", "tooltip")
-        .attr("id", divClass + "tooltip");
+        .attr("id", divClass + "tooltip")
+      toolTip
+        .style("opacity", 0)
 
       let mouseOver = function (d) {
         toolTip
@@ -286,8 +296,8 @@ export default class UIOptions {
       let mouseMove = function (d) {
         toolTip
           .html("P(" + d.x0 + " ≤ x < " + d.x1 + ") = " + d.length.toFixed(2) + "%")
-        // .style("left", (d3.mouse(this)[0] + 70) + "px")
-        // .style("top", (d3.mouse(this)[1]) + "px")
+          .style("left", (d3.mouse(this)[0]) + "px")
+          .style("top", (d3.mouse(this)[1] - height) + "px")
       }
 
       let mouseLeave = function (d) {
@@ -311,7 +321,7 @@ export default class UIOptions {
           return x(d.x1) - x(d.x0) - 1;
         })
         .attr("height", function (d) { return height - y(d.length); })
-        .style("fill", color)
+        .style("fill", (d, i) => colors[i])
         .on('mouseover', mouseOver)
         .on("mousemove", mouseMove)
         .on("mouseleave", mouseLeave)
@@ -338,23 +348,9 @@ export default class UIOptions {
           return x1;
         })
         .attr("y2", 0)
-        .style("stroke", "black")
-        .style("stroke-dasharray", "4,4")
+        .style("stroke", color)
+        .style("stroke-width", 0.5)
 
-      svg.append("text")
-        .data(bins)
-        .attr("x",
-          function (d) {
-            if (x(d.x0) == x(d.x1)) {
-              return 1;
-            }
-            let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
-            return x1;
-          })
-        .attr("y", 0)
-        .style("font-size", "10px")
-        .style("fill", color)
-        .text('M= ' + computedMean.toFixed(2));
 
       svg.append("line")
         .data(bins)
@@ -366,7 +362,7 @@ export default class UIOptions {
             let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
             return x1;
           })
-        .attr("y1", 20)
+        .attr("y1", 130)
         .attr("x2", function (d) {
           if (x(d.x0) == x(d.x1)) {
             return 1;
@@ -374,24 +370,10 @@ export default class UIOptions {
           let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
           return x1;
         })
-        .attr("y2", 10)
-        .style("stroke", "grey")
-
-
-      svg.append("text")
-        .data(bins)
-        .attr("x",
-          function (d) {
-            if (x(d.x0) == x(d.x1)) {
-              return 1;
-            }
-            let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
-            return x1;
-          })
-        .attr("y", 10)
-        .style("font-size", "10px")
-        .style("fill", color)
-        .text('-SD');
+        .attr("y2", 0)
+        .style("stroke", color)
+        .style("stroke-width", 0.5)
+        .style("stroke-dasharray", "4,4")
 
       svg.append("line")
         .data(bins)
@@ -403,7 +385,7 @@ export default class UIOptions {
             let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
             return x1;
           })
-        .attr("y1", 20)
+        .attr("y1", 130)
         .attr("x2", function (d) {
           if (x(d.x0) == x(d.x1)) {
             return 1;
@@ -411,46 +393,11 @@ export default class UIOptions {
           let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
           return x1;
         })
-        .attr("y2", 10)
-        .style("stroke", "grey")
+        .attr("y2", 0)
+        .style("stroke", color)
+        .style("stroke-width", 0.5)
+        .style("stroke-dasharray", "4,4")
 
-
-      svg.append("text")
-        .data(bins)
-        .attr("x",
-          function (d) {
-            if (x(d.x0) == x(d.x1)) {
-              return 1;
-            }
-            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
-            return x1;
-          })
-        .attr("y", 10)
-        .style("font-size", "10px")
-        .style("fill", color)
-        .text('+SD');
-
-
-      svg.append("line")
-        .data(bins)
-        .attr("x1",
-          function (d) {
-            if (x(d.x0) == x(d.x1)) {
-              return 1;
-            }
-            let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
-            return x1;
-          })
-        .attr("y1", 15)
-        .attr("x2", function (d) {
-          if (x(d.x0) == x(d.x1)) {
-            return 1;
-          }
-          let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
-          return x1;
-        })
-        .attr("y2", 15)
-        .style("stroke", "grey");
 
       svg.append('text')
         .attr("transform", "rotate(-90)")
@@ -464,25 +411,36 @@ export default class UIOptions {
       svg.append('text')
         .attr("transform",
           "translate(" + width + " ," +
-          (height / 2) + ")")
+          (0) + ")")
         .style("text-anchor", "middle")
         .style("font-size", "10px")
         .style('fill', color)
-        .text('SD=' + computedStdDev.toFixed(2));
+        .attr("dy", "0em")
+        .text('Mean: ' + computedMean.toFixed(2))
 
       svg.append('text')
         .attr("transform",
-          "translate(" + width / 2 + " ," +
+          "translate(" + width + " ," +
+          (0) + ")")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style('fill', color)
+        .attr("dy", "2em") // you can vary how far apart it shows up
+        .text('Std. Dev: ' + computedStdDev.toFixed(2))   // "line 2" or whatever value you want to add here.
+
+      svg.append('text')
+        .attr("transform",
+          "translate(" + width + " ," +
           (height + margin.bottom) + ")")
         .style("text-anchor", "middle")
         .style("font-size", "10px")
-        .text('Values in Mio.(€)');
+        .text('Mio.(€)');
 
       if (isLegendOrange) {
-        this.drawLinesBeneathChart(cell, isLegendOrange);
+        // this.drawLinesBeneathChart(cell, isLegendOrange);
         this.drawLegend(isLegendOrange);
       } else {
-        this.drawLinesBeneathChart(cell);
+        // this.drawLinesBeneathChart(cell);
         this.drawLegend();
 
       }
