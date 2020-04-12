@@ -190,6 +190,12 @@ export default class CommonOperations {
   // To remove shapes based of degree of neighbourhood
   removeShapesNeighbourWise(n: number) {
 
+
+    if (n == 0) {
+      this.removeShapesInfluenceWise('Input');
+      this.removeShapesInfluenceWise('Output');
+    }
+
     if (n == 1) {
       this.removeThirdDegreeInputNeighbours();
       setTimeout(() => this.removeSecondDegreeInputNeighbours(), 1000);

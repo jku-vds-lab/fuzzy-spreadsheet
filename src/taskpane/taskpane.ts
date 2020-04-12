@@ -16,6 +16,7 @@ Office.initialize = () => {
   document.getElementById("referenceCell").onclick = MainClass.markAsReferenceCell;
   document.getElementById("inputRelationship").onclick = MainClass.inputRelationship;
   document.getElementById("outputRelationship").onclick = MainClass.outputRelationship;
+  document.getElementById("zero").onchange = MainClass.zero;
   document.getElementById("first").onchange = MainClass.first;
   document.getElementById("second").onchange = MainClass.second;
   document.getElementById("third").onchange = MainClass.third;
@@ -69,6 +70,14 @@ class MainClass {
 
     if (MainClass.isWhatIfStarted) {
       MainClass.whatIfProp.outputRelationship();
+    }
+  }
+
+  public static zero() {
+    MainClass.sheetProp.setDegreeOfNeighbourhood(0);
+
+    if (MainClass.isWhatIfStarted) {
+      setTimeout(() => MainClass.whatIfProp.setDegreeOfNeighbourhood(0), 1000);
     }
   }
 

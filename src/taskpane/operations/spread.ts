@@ -37,7 +37,7 @@ export default class Spread {
 
       this.showReferenceCellSpread();
 
-      if (isInput) {
+      if (isInput && n > 0) {
         this.inputCellsWithSpread = new Array<CellProperties>();
         this.showInputSpread(this.referenceCell.inputCells, n);
         if (isDraw) {
@@ -45,7 +45,7 @@ export default class Spread {
         }
       }
 
-      if (isOutput) {
+      if (isOutput && n > 0) {
         this.outputCellsWithSpread = new Array<CellProperties>();
         this.showOutputSpread(this.referenceCell.outputCells, n);
         if (isDraw) {

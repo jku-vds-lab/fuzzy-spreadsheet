@@ -38,7 +38,8 @@ export default class UIOptions {
     (<HTMLInputElement>document.getElementById('spread')).checked = false;
     (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
     (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
-    (<HTMLInputElement>document.getElementById('first')).checked = true;
+    (<HTMLInputElement>document.getElementById('zero')).checked = true;
+    (<HTMLInputElement>document.getElementById('first')).checked = false;
     (<HTMLInputElement>document.getElementById('second')).checked = false;
     (<HTMLInputElement>document.getElementById('third')).checked = false;
     this.removeHtmlSpreadInfoForNewChart();
@@ -587,9 +588,6 @@ export default class UIOptions {
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
     let newImpactTemp = Math.ceil(newImpact * 0.5);
-
-    console.log('Impact temp: ' + impactTemp);
-    console.log('newImpactTemp: ' + newImpactTemp);
 
     if (color == 'green') {
       impactTemp = impactTemp + 50;

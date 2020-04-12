@@ -10,7 +10,7 @@ export default class CellOperations {
 
   private cells: CellProperties[];
   private referenceCell: CellProperties;
-  private degreeOfNeighbourhood: number = 1;
+  private degreeOfNeighbourhood: number = 0;
   private impact: Impact;
   private likelihood: Likelihood;
   private spread: Spread;

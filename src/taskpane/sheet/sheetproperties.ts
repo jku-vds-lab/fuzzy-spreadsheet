@@ -12,7 +12,7 @@ export default class SheetProp {
   protected static isLikelihood: boolean = false;
   protected static isSpread: boolean = false;
   protected static isReferenceCell: boolean = false;
-  protected static degreeOfNeighbourhood: number = 1;
+  protected static degreeOfNeighbourhood: number = 0;
   protected static newCells: CellProperties[] = null;
 
   protected cellOp: CellOperations;
@@ -33,8 +33,6 @@ export default class SheetProp {
     this.cells = new Array<CellProperties>();
     this.cellOp = new CellOperations(null, null, null);
     this.referenceCell = null;
-
-
   }
 
   public getCells() {
@@ -53,7 +51,7 @@ export default class SheetProp {
     SheetProp.isLikelihood = false;
     SheetProp.isSpread = false;
     SheetProp.isReferenceCell = false;
-    SheetProp.degreeOfNeighbourhood = 1;
+    SheetProp.degreeOfNeighbourhood = 0;
     SheetProp.newCells = null;
     this.uiOptions.deSelectAllOoptions();
   }
@@ -145,7 +143,7 @@ export default class SheetProp {
     this.referenceCell = this.cellProp.getReferenceAndNeighbouringCells(address);
     this.cellProp.checkUncertainty(this.cells);
     this.cellProp.addVarianceAndLikelihoodInfo(this.cells);
-    this.cellOp = new CellOperations(this.cells, this.referenceCell, 1);
+    this.cellOp = new CellOperations(this.cells, this.referenceCell, 0);
     SheetProp.isReferenceCell = true;
     this.cellOp.setCells(this.cells);
   }
@@ -223,6 +221,13 @@ export default class SheetProp {
     try {
 
       this.cellOp.setOptions(SheetProp.isImpact, SheetProp.isLikelihood, SheetProp.isSpread, SheetProp.isInputRelationship, SheetProp.isOutputRelationship);
+
+      if (SheetProp.degreeOfNeighbourhood == 0) {
+        if (SheetProp.isSpread) {
+          this.spread();
+        }
+        return;
+      }
 
       this.handleImpactLikelihood();
 
@@ -307,6 +312,7 @@ export default class SheetProp {
 
   public setDegreeOfNeighbourhood(n: number) {
     SheetProp.degreeOfNeighbourhood = n;
+    console.log('DON: ' + n);
     this.cellOp.setOptions(SheetProp.isImpact, SheetProp.isLikelihood, SheetProp.isSpread, SheetProp.isInputRelationship, SheetProp.isOutputRelationship);
     this.cellOp.removeShapesNeighbourWise(n);
     setTimeout(() => this.displayOptions(), 1000);
