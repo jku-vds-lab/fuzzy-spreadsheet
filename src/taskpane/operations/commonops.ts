@@ -60,16 +60,16 @@ export default class CommonOperations {
             height = cell.likelihood * 10;
             width = cell.likelihood * 10;
 
-            if (cell.likelihood >= 0.8){
+            if (cell.likelihood >= 0.8) {
               cell.rect.top = cell.top + cell.height / 5;
-            } 
-            if (cell.likelihood < 0.8){
+            }
+            if (cell.likelihood < 0.8) {
               cell.rect.top = cell.top + cell.height / 3.5;
             }
-            if (cell.likelihood <= 0.5){
+            if (cell.likelihood <= 0.5) {
               cell.rect.top = cell.top + cell.height / 2;
             }
-            if (cell.likelihood <= 0.2){
+            if (cell.likelihood <= 0.2) {
               cell.rect.top = cell.top + cell.height / 1.8;
             }
           }
@@ -97,10 +97,9 @@ export default class CommonOperations {
     this.cells = cells;
   }
 
-  setOptions(isImpact: boolean, isLikelihood: boolean, isRelationshipIcons: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
+  setOptions(isImpact: boolean, isLikelihood: boolean, isSpread: boolean, isInputRelationship: boolean, isOutputRelationship: boolean) {
     this.isImpact = isImpact;
     this.isLikelihood = isLikelihood;
-    this.isRelationshipIcons = isRelationshipIcons;
     this.isSpread = isSpread;
     this.isInputRelationship = isInputRelationship;
     this.isOutputRelationship = isOutputRelationship;
@@ -131,16 +130,11 @@ export default class CommonOperations {
         cell.isSpread = false;
       }
 
-      if (!this.isRelationshipIcons) {
-        cell.isInputRelationship = false;
-        cell.isOutputRelationship = false;
-      }
-
-      if (!(this.isInputRelationship || this.isRelationshipIcons)) {
+      if (!this.isInputRelationship) {
         cell.isInputRelationship = false;
       }
 
-      if (!(this.isOutputRelationship || this.isRelationshipIcons)) {
+      if (!this.isOutputRelationship) {
         cell.isOutputRelationship = false;
       }
     })

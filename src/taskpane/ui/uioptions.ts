@@ -17,7 +17,6 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = true;
     document.getElementById('likelihoodDiv').hidden = true;
     document.getElementById('spreadDiv').hidden = true;
-    document.getElementById('relationshipInfoDiv').hidden = true;
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
@@ -30,7 +29,6 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = true;
     document.getElementById('likelihoodDiv').hidden = true;
     document.getElementById('spreadDiv').hidden = true;
-    document.getElementById('relationshipInfoDiv').hidden = true;
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
@@ -61,12 +59,10 @@ export default class UIOptions {
     document.getElementById('likelihoodDiv').hidden = false;
     this.drawLikelihoodLegend(-200);
     document.getElementById('spreadDiv').hidden = false;
-    document.getElementById('relationshipInfoDiv').hidden = false;
     document.getElementById('startWhatIf').hidden = false;
     (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("impactDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = true;
-    (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = true;
     (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
   }
@@ -78,14 +74,12 @@ export default class UIOptions {
     document.getElementById('impactDiv').hidden = false;
     document.getElementById('likelihoodDiv').hidden = false;
     document.getElementById('spreadDiv').hidden = false;
-    document.getElementById('relationshipInfoDiv').hidden = false;
     document.getElementById('startWhatIf').hidden = false;
     (<HTMLInputElement>document.getElementById("neighborhoodDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("impactDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("likelihoodDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("spreadDiv")).disabled = false;
     (<HTMLInputElement>document.getElementById("startWhatIf")).disabled = false;
-    (<HTMLInputElement>document.getElementById("relationshipInfoDiv")).disabled = false;
   }
 
   public isElementChecked(elementName: string) {
@@ -101,9 +95,6 @@ export default class UIOptions {
   }
 
   public removeRelationshipInfoInTaskpane() {
-    document.getElementById('number1').className = 'none';
-    document.getElementById('number2').className = 'none';
-    document.getElementById('number3').className = 'none';
 
     document.getElementById('diamond1').className = 'none';
     document.getElementById('diamond2').className = 'none';
@@ -188,13 +179,11 @@ export default class UIOptions {
 
     if (cell.degreeToFocus == 1) {
       document.getElementById('diamond1').className = 'dotted';
-      document.getElementById('number1').className = 'dotted';
     }
 
     if (n == 2) {
       if (cell.degreeToFocus > 1) {
         document.getElementById('diamond2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
       }
     }
 
@@ -203,10 +192,8 @@ export default class UIOptions {
       console.log('Degree to focus: ' + cell.degreeToFocus);
       if (cell.degreeToFocus == 2) {
         document.getElementById('diamond2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
       } else if (cell.degreeToFocus > 2) {
         document.getElementById('diamond3').className = 'dotted';
-        document.getElementById('number3').className = 'dotted';
       }
     }
   }
@@ -221,23 +208,19 @@ export default class UIOptions {
 
     if (cell.degreeToFocus == 1) {
       document.getElementById('circle1').className = 'dotted';
-      document.getElementById('number1').className = 'dotted';
     }
 
     if (n == 2) {
       if (cell.degreeToFocus > 1) {
         document.getElementById('circle2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
       }
     }
 
     if (n == 3) {
       if (cell.degreeToFocus == 2) {
         document.getElementById('circle2').className = 'dotted';
-        document.getElementById('number2').className = 'dotted';
       } else {
         document.getElementById('circle3').className = 'dotted';
-        document.getElementById('number3').className = 'dotted';
       }
     }
   }

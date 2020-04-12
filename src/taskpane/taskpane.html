@@ -67,16 +67,41 @@
                 <tr>
                     <td><input type="checkbox" id="inputRelationship"></td>
                     <td><b>influencing</b> the reference cell</td>
-                    <td>
-                        <i class="fa fa-square fa-rotate-45" style="font-size:10px;color:#333;"></i>
-                    <td>
+                    <td height="20">
+                        <p class="none" id="diamond1"><i class="fa fa-square fa-rotate-45"
+                                style="font-size:10px;color:#333;"></i>
+                        </p>
+                    </td>
+                    <td height="20">
+                        <p class="none" id="diamond2"><i class="fa fa-square fa-rotate-45"
+                                style="font-size:10px;color:#848484;"></i>
+                        </p>
+                    </td>
+                    <td height="20">
+                        <p class="none" id="diamond3"><i class="fa fa-square fa-rotate-45"
+                                style="font-size:10px;color:#eaeaea;"></i>
+                        </p>
+                    </td>
                 </tr>
 
                 <tr>
                     <td><input type="checkbox" id="outputRelationship"></td>
                     <td><b>influenced by</b> the reference cell</td>
-                    <td><img width="10" height="10" src="../../assets/circle.png" alt="influencedBy"
-                            title="Influenced by the reference cell" /></td>
+                    <td height="20">
+                        <p class="none" id="circle1"><i class="fa fa-circle fa-rotate-45"
+                                style="font-size:10px;color:#333;"></i>
+                        </p>
+                    </td>
+                    <td height="20">
+                        <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
+                                style="font-size:10px;color:#848484;"></i>
+                        </p>
+                    </td>
+                    <td height="20">
+                        <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
+                                style="font-size:10px;color:#eaeaea;"></i>
+                        </p>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -107,9 +132,10 @@
                     <td valign="middle"><input type="checkbox" id="impact"></td>
                     <td valign="middle">Impact</td>
                     <td valign="middle" style="text-align:center">
-                        <font size="1" color="#333" >-100%<font>
+                        <font size="1" color="#333">-100%<font>
                     </td>
-                    <td valign="top"><div id='impactLegend'></div>
+                    <td valign="top">
+                        <div id='impactLegend'></div>
                     </td>
                     <td valign="middle" style="text-align:center">
                         <font size="1" color="#333">+100%</font>
@@ -136,10 +162,10 @@
                         <font size="1" color="#333">0%<font>
                     </td>
                     <td valign="top" style="padding-left: 5%;">
-                        <div id='likelihoodLegend'></div>                    
+                        <div id='likelihoodLegend'></div>
                     </td>
                     <td valign="bottom" style="text-align:center">
-                        <font size="1" color="#333" >100%<font>
+                        <font size="1" color="#333">100%<font>
                     </td>
                     <!-- <td valign="middle">
                         <font size="1" color="#333" text-align="center">
@@ -154,79 +180,7 @@
                 </tr>
             </table>
         </div>
-
         <!-- <hr> -->
-
-        <div class="relationship" id="relationshipInfoDiv" hidden="true">
-            <table style="width: 100%; height: 130px;">
-                <col width="15" style="text-align: center;">
-                <col width="150" style="text-align: center;">
-                <col width="auto" style="text-align: center;">
-                <tr>
-                    <td><input type="checkbox" id="relationship"></td>
-                    <td>Relationship
-                    </td>
-                    <td>
-                        <table class="table2">
-                            <col width="20" style="text-align: center;">
-                            <col width="20" style="text-align: center;">
-                            <col width="20" style="text-align: center;">
-                            <tr>
-                                <td height="20">
-                                    <p class="none" id="diamond1"><i class="fa fa-square fa-rotate-45"
-                                            style="font-size:10px;color:#333;"></i>
-                                    </p>
-                                </td>
-                                <td height="20">
-                                    <p class="none" id="diamond2"><i class="fa fa-square fa-rotate-45"
-                                            style="font-size:10px;color:#848484;"></i>
-                                    </p>
-                                </td>
-                                <td height="20">
-                                    <p class="none" id="diamond3"><i class="fa fa-square fa-rotate-45"
-                                            style="font-size:10px;color:#eaeaea;"></i>
-                                    </p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="20">
-                                    <p class="none" id="circle1"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#333;"></i>
-                                    </p>
-                                </td>
-                                <td height="20">
-                                    <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#848484;"></i>
-                                    </p>
-                                </td>
-                                <td height="20">
-                                    <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#eaeaea;"></i>
-                                    </p>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td valign="middle" style="text-align:center" height="20">
-                                    <font size="1" class="none" id="number1">1</font>
-                                    <!-- <p class="none" id="number1" style="font-size:10px">1</p> -->
-                                </td>
-                                <td valign="middle" style="text-align:center" height="20">
-                                    <font size="1" class="none" id="number2">2</font>
-                                    <!-- <p class="none" id="number2" style="font-size:10px">2</p> -->
-                                </td>
-                                <td valign="middle" style="text-align:center" height="20">
-                                    <font size="1" class="none" id="number3">3</font>
-                                    <!-- <p class="none" id="number3" style="font-size:10px">3</p> -->
-                                </td>
-                            </tr>
-
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
         <!-- <hr> -->
 
         <div class="distribution" id="spreadDiv" hidden="true">

@@ -22,7 +22,6 @@ Office.initialize = () => {
   document.getElementById("impact").onclick = MainClass.impact;
   document.getElementById("likelihood").onclick = MainClass.likelihood;
   document.getElementById("spread").onclick = MainClass.spread;
-  document.getElementById("relationship").onclick = MainClass.relationshipIcons;
   document.getElementById("startWhatIf").onclick = MainClass.whatIf;
   document.getElementById("useNewValues").onclick = MainClass.keepNewValues;
   document.getElementById("dismissValues").onclick = MainClass.dismissNewValues;
@@ -113,13 +112,6 @@ class MainClass {
     }
   }
 
-  public static relationshipIcons() {
-    MainClass.sheetProp.relationshipIcons();
-
-    if (MainClass.isWhatIfStarted) {
-      MainClass.whatIfProp.relationshipIcons();
-    }
-  }
 
   public static spread() {
     MainClass.sheetProp.spread();
