@@ -169,7 +169,6 @@ export default class WhatIfProps extends SheetProp {
             if ((this.changedRefCell == null) || (this.changedInputCells == null) || (this.changedOutputCells == null)) {
               return;
             }
-            console.log('Still being called');
             if (this.checkIfCellBelongsToChangedCells(newCell)) {
               this.uiOptions.removeHtmlSpreadInfoForNewChart();
               this.uiOptions.addHtmlSpreadInfoForNewChart();
