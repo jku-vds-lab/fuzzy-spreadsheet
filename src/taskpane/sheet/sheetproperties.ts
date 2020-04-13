@@ -473,10 +473,10 @@ export default class SheetProp {
 
           if (cell.isImpact) {
             if (SheetProp.newCells != null) {
-              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.rectColor);
+              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.isImpactPositive);
             } else {
               this.uiOptions.addImpactPercentage(cell);
-              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.rectColor);
+              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.isImpactPositive);
             }
 
           }

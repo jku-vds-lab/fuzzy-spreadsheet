@@ -2,6 +2,7 @@
 import { abs, round } from 'mathjs';
 import CellProperties from '../cell/cellproperties';
 import CommonOperations from './commonops';
+import Bins from './bins';
 
 export default class Impact {
 
@@ -9,10 +10,14 @@ export default class Impact {
   private commonOps: CommonOperations;
   private inputCellsWithImpact: CellProperties[];
   private outputCellsWithImpact: CellProperties[];
+  private redColors: string[];
+  private blueColors: string[];
 
   constructor(referenceCell: CellProperties) {
     this.referenceCell = referenceCell;
     this.commonOps = new CommonOperations(this.referenceCell);
+    this.redColors = Bins.getRedColorsForImpact();
+    this.blueColors = Bins.getBlueColorsForImpact();
   }
 
   public showInputImpact(n: number, isDraw: boolean) {
@@ -87,29 +92,33 @@ export default class Impact {
 
 
     if (isreferenceCellDiff) {
-      let formula: string = this.referenceCell.formula;
+      let formula = this.referenceCell.formula;
       let idx = formula.indexOf('-');
       subtrahend = formula.substring(idx + 1, formula.length);
     }
-    let color = 'green';
+    let isImpactPositive = true;
     const inputCells = this.referenceCell.inputCells;
 
-
-    this.addInputImpactInfoRecursively(inputCells, n, color, divisor, subtrahend);
+    this.addInputImpactInfoRecursively(inputCells, n, isImpactPositive, divisor, subtrahend);
   }
 
-  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, color: string, divisor: number, subtrahend: string = null) {
+  private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, isImpactPositive: boolean, divisor: number, subtrahend: string = null) {
 
     inputCells.forEach((inCell: CellProperties) => {
 
-      inCell.rectColor = color;
-
       if (inCell.address.includes(subtrahend)) {
-        inCell.rectColor = 'red';
+        isImpactPositive = false;
       }
+
       const impact = inCell.value / divisor;
       inCell.impact = round(impact * 100, 2);
-      inCell.rectTransparency = abs(1 - impact);
+      inCell.isImpactPositive = isImpactPositive;
+
+      if (inCell.isImpactPositive) {
+        inCell.rectColor = this.blueColors[Math.ceil(inCell.impact)];
+      } else {
+        inCell.rectColor = this.redColors[Math.ceil(inCell.impact)];
+      }
     })
 
     if (n == 1) {
@@ -119,7 +128,7 @@ export default class Impact {
     n = n - 1;
 
     inputCells.forEach((inCell: CellProperties) => {
-      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.rectColor, divisor);
+      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.isImpactPositive, divisor);
     })
   }
 
@@ -135,23 +144,29 @@ export default class Impact {
         const subtrahend = formula.substring(idx + 1, formula.length);
 
         const impact = this.referenceCell.value / divisor;
-        outCell.rectColor = this.checkIfCellHasSubtrahend(cell, subtrahend);
-        outCell.rectTransparency = abs(1 - impact);
+
+        let isImpactPositive = this.checkIfCellHasSubtrahend(cell, subtrahend);
+
         outCell.impact = round(impact * 100, 2);
+        outCell.isImpactPositive = isImpactPositive;
 
-
+        if (isImpactPositive) {
+          outCell.rectColor = this.blueColors[Math.ceil(outCell.impact)];
+        } else {
+          outCell.rectColor = this.redColors[Math.ceil(outCell.impact)];
+        }
       } else if (outCell.formula.includes('AVERAGE')) {
         const divisor = this.getDivisor(outCell);
         const impact = this.referenceCell.value / divisor;
 
-        outCell.rectTransparency = abs(1 - impact);
-        outCell.rectColor = 'green';
         outCell.impact = round(impact * 100, 2);
+        outCell.rectColor = this.blueColors[Math.ceil(outCell.impact)];
+        outCell.isImpactPositive = true;
       } else {
         const impact = this.referenceCell.value / outCell.value;
         outCell.impact = round(impact * 100, 2);
-        outCell.rectTransparency = abs(1 - impact);
-        outCell.rectColor = 'green';
+        outCell.rectColor = this.blueColors[Math.ceil(outCell.impact)];
+        outCell.isImpactPositive = true;
       }
     })
 
@@ -167,18 +182,19 @@ export default class Impact {
   }
 
   private checkIfCellHasSubtrahend(cell: CellProperties, subtrahend: string) {
-    let color = 'green';
+    let isSubtrahend = false;
 
     if (cell.address.includes(subtrahend)) {
-      color = 'red';
-      return color;
+      isSubtrahend = true;
     }
 
     cell.outputCells.forEach((outCell: CellProperties) => {
       this.checkIfCellHasSubtrahend(outCell, subtrahend);
     })
 
-    return color;
+    let isImpactPositive = !isSubtrahend; // if it contains subtrahend, then the impact is negative
+
+    return isImpactPositive;
   }
 
   private getDivisor(cell: CellProperties) {

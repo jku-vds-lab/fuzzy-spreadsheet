@@ -554,14 +554,14 @@ export default class UIOptions {
 
 
 
-  public drawImpactLegend(impact: number = -1, newImpact: number = -1, color: string = 'green') {
+  public drawImpactLegend(impact: number = -1, newImpact: number = -1, isImpactPositive: boolean = false) {
 
 
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
     let newImpactTemp = Math.ceil(newImpact * 0.5);
 
-    if (color == 'green') {
+    if (isImpactPositive) {
       impactTemp = impactTemp + 50;
       newImpactTemp = newImpactTemp + 50;
     } else {
@@ -583,7 +583,7 @@ export default class UIOptions {
     const binWidth = 1;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
-    var colors = binsObj.generateRedGreenColors();
+    var colors = binsObj.generateRedBlueColors();
 
     var Svg = d3.select('#impactLegend').append("svg")
       .attr("width", 200)
@@ -600,19 +600,8 @@ export default class UIOptions {
         }
         return 20;
       })
-      .attr("width", function (d, i) {
-        if (i == impactTemp || i == newImpactTemp) {
-          return 2;
-        }
-        return 1;
-      })
-      .attr("height", function (d, i) {
-        if (i == impactTemp || i == newImpactTemp) {
-          return 15;
-        }
-        return 5;
-      }
-      )
+      .attr("width", 2)
+      .attr("height", 10)
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";
