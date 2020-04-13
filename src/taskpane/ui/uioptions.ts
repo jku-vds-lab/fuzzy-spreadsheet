@@ -781,9 +781,8 @@ export default class UIOptions {
         }
         return "normal";
       })
-      .attr("x", function (d, i) { return (i) * (i + 1) - d/2; })
+      .attr("x", function (d, i) { return (d / 12) / (i) + d/2; })
       .attr("y", function (d, i) {
-        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
         return 30 - d/6 - 5;       
       });
       // .attr("x", function (d, i) { return (d / 12) * (i) })
