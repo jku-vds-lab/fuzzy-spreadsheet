@@ -343,9 +343,6 @@ export default class UIOptions {
         .on("mousemove", mouseMove)
         .on("mouseleave", mouseLeave)
 
-
-
-
       svg.append("line")
         .data(bins)
         .attr("x1",

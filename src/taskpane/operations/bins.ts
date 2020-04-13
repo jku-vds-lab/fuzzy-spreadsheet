@@ -62,12 +62,14 @@ export default class Bins {
     let i = 0;
     let color = rgb(217, 217, 217)
     blueColors.push(color.hex());
-    while (i < this.nrOfBins) {
-      let color = rgb(229 - 12.5 * i, 245 - 10.26 * i, 224 - 13.53 * i);
+    while (i < this.nrOfBins) { // from range: RGB(199,233,192) to RGB(0,68,27)
+      color = rgb(199 - 14.21 * i, 233 - 11.78 * i, 192 - 11.78 * i); // in steps of 14
       blueColors.push(color.hex());
 
       i++;
     }
+
+    console.log('Final color: ' + color);
     return blueColors;
   }
 
