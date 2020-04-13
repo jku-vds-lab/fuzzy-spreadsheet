@@ -24,28 +24,33 @@ export default class UIOptions {
   }
 
   public deSelectAllOoptions() {
-    document.getElementById('referenceCell').hidden = true;
-    document.getElementById('relationshipDiv').hidden = true;
-    document.getElementById('neighborhoodDiv').hidden = true;
-    document.getElementById('impactDiv').hidden = true;
-    document.getElementById('likelihoodDiv').hidden = true;
-    document.getElementById('spreadDiv').hidden = true;
-    document.getElementById('startWhatIf').hidden = true;
-    document.getElementById('useNewValues').hidden = true;
-    document.getElementById('dismissValues').hidden = true;
-    (<HTMLInputElement>document.getElementById('impact')).checked = false;
-    (<HTMLInputElement>document.getElementById('likelihood')).checked = false;
-    (<HTMLInputElement>document.getElementById('relationship')).checked = false;
-    (<HTMLInputElement>document.getElementById('spread')).checked = false;
-    (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
-    (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
-    (<HTMLInputElement>document.getElementById('zero')).checked = true;
-    (<HTMLInputElement>document.getElementById('first')).checked = false;
-    (<HTMLInputElement>document.getElementById('second')).checked = false;
-    (<HTMLInputElement>document.getElementById('third')).checked = false;
-    this.removeHtmlSpreadInfoForNewChart();
-    this.removeHtmlSpreadInfoForOriginalChart();
-    this.removeRelationshipInfoInTaskpane();
+    try {
+      (<HTMLInputElement>document.getElementById('impact')).checked = false;
+      (<HTMLInputElement>document.getElementById('likelihood')).checked = false;
+      (<HTMLInputElement>document.getElementById('spread')).checked = false;
+      (<HTMLInputElement>document.getElementById('inputRelationship')).checked = false;
+      (<HTMLInputElement>document.getElementById('outputRelationship')).checked = false;
+      (<HTMLInputElement>document.getElementById('zero')).checked = true;
+      (<HTMLInputElement>document.getElementById('first')).checked = false;
+      (<HTMLInputElement>document.getElementById('second')).checked = false;
+      (<HTMLInputElement>document.getElementById('third')).checked = false;
+      this.removeHtmlSpreadInfoForNewChart();
+      this.removeHtmlSpreadInfoForOriginalChart();
+      this.removeRelationshipInfoInTaskpane();
+      document.getElementById('referenceCell').hidden = true;
+      document.getElementById('refCell').hidden = true;
+      document.getElementById('selCell').hidden = true;
+      document.getElementById('relationshipDiv').hidden = true;
+      document.getElementById('neighborhoodDiv').hidden = true;
+      document.getElementById('impactDiv').hidden = true;
+      document.getElementById('likelihoodDiv').hidden = true;
+      document.getElementById('spreadDiv').hidden = true;
+      document.getElementById('startWhatIf').hidden = true;
+      document.getElementById('useNewValues').hidden = true;
+      document.getElementById('dismissValues').hidden = true;
+    } catch (error) {
+      console.log('Error on deselection', error);
+    }
   }
 
   public showReferenceCellOption() {
@@ -126,7 +131,7 @@ export default class UIOptions {
   public removeHtmlSpreadInfoForOriginalChart() {
     try {
       d3.select("#" + 'originalChart').select('svg').remove();
-      d3.select("#" + 'lines').select('svg').remove();
+      // d3.select("#" + 'lines').select('svg').remove();
       d3.select("#" + 'spreadLegend').select('svg').remove();
     } catch (error) {
       console.log(error);
@@ -136,7 +141,7 @@ export default class UIOptions {
   public removeHtmlSpreadInfoForNewChart() {
     try {
       d3.select("#" + 'whatIfChart').select('svg').remove();
-      d3.select("#" + 'newLines').select('svg').remove();
+      // d3.select("#" + 'newLines').select('svg').remove();
       d3.select("#" + 'newSpreadLegend').select('svg').remove();
       document.getElementById("newDistribution").hidden = true;
       document.getElementById("spaceHack").hidden = true;
@@ -554,14 +559,14 @@ export default class UIOptions {
 
 
 
-  public drawImpactLegend(impact: number = -1, newImpact: number = -1, color: string = 'green') {
+  public drawImpactLegend(impact: number = -1, newImpact: number = -1, isImpactPositive: boolean = false) {
 
 
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
     let newImpactTemp = Math.ceil(newImpact * 0.5);
 
-    if (color == 'green') {
+    if (isImpactPositive) {
       impactTemp = impactTemp + 50;
       newImpactTemp = newImpactTemp + 50;
     } else {
@@ -583,7 +588,7 @@ export default class UIOptions {
     const binWidth = 1;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
-    var colors = binsObj.generateRedGreenColors();
+    var colors = binsObj.generateRedBlueColors();
 
     var Svg = d3.select('#impactLegend').append("svg")
       .attr("width", 200)
@@ -600,19 +605,8 @@ export default class UIOptions {
         }
         return 20;
       })
-      .attr("width", function (d, i) {
-        if (i == impactTemp || i == newImpactTemp) {
-          return 2;
-        }
-        return 1;
-      })
-      .attr("height", function (d, i) {
-        if (i == impactTemp || i == newImpactTemp) {
-          return 15;
-        }
-        return 5;
-      }
-      )
+      .attr("width", 2)
+      .attr("height", 10)
       .style("fill", function (d, i) {
         if (i == impactTemp) {
           return "blue";

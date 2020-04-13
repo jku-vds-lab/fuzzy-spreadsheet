@@ -88,30 +88,57 @@ export default class Bins {
     return orangeColors;
   }
 
-  generateRedGreenColors() {
+  generateRedBlueColors() {
 
-    let redGreenColors = [];
+    let redBlueColors = [];
     let redColors = [];
-    let greenColors = [];
+    let blueColors = [];
     let i = 0;
 
     while (i < 50) {
-      let color = hsl(0, 1, 0.5 + 0.01 * i);
+      let color = rgb(178 + 0.69 * 2 * i, 24 + 2.23 * 2 * i, 43 + 2.04 * 2 * i);
       redColors.push(color.hex());
       i++;
     }
 
     i = 0;
-    while (i < 50) {
-      let color = hsl(120, 1, 1 - 0.015 * i);
-      greenColors.push(color.hex());
+    while (i <= 50) {
+      let color = rgb(247 - 2.14 * 2 * i, 247 - 1.45 * 2 * i, 247 - 0.75 * 2 * i);
+      blueColors.push(color.hex());
       i++;
     }
 
-    redGreenColors.push(...redColors);
-    redGreenColors.push(...greenColors);
-    return redGreenColors;
+    redBlueColors.push(...redColors);
+    redBlueColors.push(...blueColors);
+    return redBlueColors;
   }
+
+
+  static getRedColorsForImpact() {
+    let redColors = [];
+    let i = 0;
+
+    while (i <= 100) {
+      let color = rgb(247 - 0.69 * i, 247 - 2.23 * i, 247 - 2.04 * i);
+      redColors.push(color.hex());
+      i++;
+    }
+    return redColors;
+  }
+
+  static getBlueColorsForImpact() {
+    let blueColors = [];
+    let i = 0;
+
+    while (i <= 100) {
+      let color = rgb(247 - 2.14 * 2 * i, 247 - 1.45 * 2 * i, 247 - 0.75 * 2 * i);
+      blueColors.push(color.hex());
+      i++;
+    }
+    return blueColors;
+  }
+
+
 }
 
 interface Bin {

@@ -48,11 +48,11 @@ export default class CommonOperations {
 
           if (cell.isImpact) {
             color = cell.rectColor;
-            transparency = cell.rectTransparency;
-            borderColor = 'green';
 
-            if (color == 'red') {
-              borderColor = 'red';
+            if (cell.isImpactPositive) {
+              borderColor = '#2166ac';
+            } else {
+              borderColor = '#b2182b';
             }
           }
 
