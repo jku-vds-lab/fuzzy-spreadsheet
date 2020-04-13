@@ -673,23 +673,24 @@ export default class UIOptions {
     likelihood = likelihood * 100;
 
     var Svg = d3.select('#likelihoodLegend').append("svg")
-      .attr("width", 200)
-      .attr("height", 60);
+      .attr("width", 100)
+      .attr("height", 50);
 
     // add indicators for likelihood of occurrence (sqaures in grey)
     Svg.selectAll("mySquares")
       .data(sizeArray)
       .enter()
       .append("rect")
-      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
+      .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
       .attr("y", function (d, i) {
-        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+        return 30 - d / 6;       
       })
       .attr("width", function (d, i) {
-        return d / 3;
+        return d / 6;
       })
       .attr("height", function (d, i) {
-        return d / 3;
+        return d / 6;
       }
       )
       // .style("fill", (d) => { return d });
@@ -702,28 +703,38 @@ export default class UIOptions {
       .data(sizeArray)
       .enter()
       .append("rect")
-      .attr("x", function (d, i) { return (i) * (i + 1) * (sizeArray.length - 2.5) })
+      .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
       .attr("y", function (d, i) {
-        // return Math.max.apply(null, sizeArrayText) / 3 - d / 4;
-        return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 17;
-
+        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+        return 30 - d/6;       
       })
       .attr("width", function (d, i) {
-        // if (d == likelihood || d == newLikelihood) {
-        //   return 2;
-        // }
-        return d / 3;
+        return d / 6;
       })
       .attr("height", function (d, i) {
         if (d == likelihood || d == newLikelihood) {
-          return 2;
-        }
-        return d / 3;
+          return d / 6;
+        } 
+        return d / 6;
       }
       )
       .style("fill", function (d, i) {
+        // if (d == likelihood) {
+        //   return "orange";
+        // }
+        return "rgba(0,0,0,0)";
+      }
+      )
+      .style("stroke-width", function (d, i) {
         if (d == likelihood) {
-          return "blue";
+          return "2px";
+        }
+        return "0px";
+      }
+      )
+      .style("stroke", function (d, i) {
+        if (d == likelihood) {
+          return "orange";
         }
         return "rgba(0,0,0,0)";
       }
@@ -744,9 +755,9 @@ export default class UIOptions {
       })
       .style("fill", function (d, i) {
         if (d == likelihood) {
-          return "blue";
-        } if (d == newLikelihood) {
           return "orange";
+        } if (d == newLikelihood) {
+          return "green";
         }
         return " ";
       })
@@ -756,12 +767,17 @@ export default class UIOptions {
         }
         return "14px";
       })
-      .attr("x", function (d, i) { return (d / 9) * (i) })
+      .attr("x", function (d, i) { return (i) * (i + 1) - d/2; })
       .attr("y", function (d, i) {
-        // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
-        // return d -5;
-        return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
+        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+        return 30 - d/6 - 5;       
       });
+      // .attr("x", function (d, i) { return (d / 12) * (i) })
+      // .attr("y", function (d, i) {
+      //   // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
+      //   // return d -5;
+      //   return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
+      // });
   }
 
   public showWhatIfOptions() {
