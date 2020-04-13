@@ -75,6 +75,22 @@ ul {
     cursor: pointer;
 }
 
+.refCell {
+    border-style: solid;
+    border-width: 2px;
+    text-align: center;
+    padding: 2px;
+    border-color: orange;
+}
+
+.selCell {
+    border-style: solid;
+    border-width: 2px;
+    text-align: center;
+    padding: 2px;
+    border-color: green;
+}
+
 b {
     font-weight: bold;
 }

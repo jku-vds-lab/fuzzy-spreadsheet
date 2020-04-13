@@ -4,6 +4,7 @@ import Bins from '../operations/bins';
 import CellProperties from '../cell/cellproperties';
 import { legendSize } from 'd3-svg-legend';
 import { max } from 'd3';
+import { add } from 'src/functions/functions';
 export default class UIOptions {
   constructor() {
   }
@@ -49,6 +50,22 @@ export default class UIOptions {
 
   public showReferenceCellOption() {
     document.getElementById('referenceCell').hidden = false;
+  }
+
+  public addRefCellAddressInTaskpane(address: string = '') {
+    document.getElementById('refCell').hidden = true;
+    if (address.length > 0) {
+      document.getElementById('refCell').hidden = false;
+      document.getElementById('refCell').innerHTML = address;
+    }
+  }
+
+  public addSelCellAddressInTaskpane(address: string = '') {
+    document.getElementById('selCell').hidden = true;
+    if (address.length > 0) {
+      document.getElementById('selCell').hidden = false;
+      document.getElementById('selCell').innerHTML = address;
+    }
   }
 
   public showVisualizationOption() {
