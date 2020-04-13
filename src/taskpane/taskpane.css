@@ -81,8 +81,10 @@ ul {
     text-align: center;
     padding: 2px;
     border-color: orange;
-    width: 30px;
-    margin: 1em;
+    width: 35px;
+    margin-left: .5em;
+    margin-right: 1em;
+
 }
 
 .selCell {
@@ -91,9 +93,8 @@ ul {
     text-align: center;
     padding: 2px;
     border-color: green;
-    width: 30px;
-    margin: 1em;
-
+    width: 35px;
+    margin-left: .5em;
 }
 
 b {
@@ -163,17 +164,19 @@ table.table2 tr td {
     }
 }
 
-.btn {
+.btn, .btnfloat {
     background-color: white;
     border: none;
     color: #333;
     padding: 12px 16px;
     font-size: 14px;
     cursor: pointer;
+    text-align: left;
 }
 
+
 /* Darker background on mouse-over */
-.btn:hover {
+.btn:hover, .btnfloat:hover {
     background-color: #ededed;
     font-weight: bold;
 }

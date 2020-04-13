@@ -601,17 +601,22 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
         if (i == impactTemp || i == newImpactTemp) {
-          return 15;
+          return 11;
         }
-        return 20;
+        return 15;
       })
       .attr("width", 2)
-      .attr("height", 10)
+      .attr("height", function (d, i) {
+        if (i == impactTemp || i == newImpactTemp) {
+          return 16;
+        }
+        return 8;
+      })
       .style("fill", function (d, i) {
         if (i == impactTemp) {
-          return "blue";
+          return "green";
         } if (i == newImpactTemp) {
-          return "orange";
+          return "#DD1C77";
         }
         return d;
       }
@@ -632,9 +637,9 @@ export default class UIOptions {
       })
       .style("fill", function (d, i) {
         if (i == impactTemp) {
-          return "blue";
+          return "green";
         } if (i == newImpactTemp) {
-          return "orange";
+          return "#DD1C77";
         }
         return " ";
       })
@@ -644,13 +649,19 @@ export default class UIOptions {
         }
         return "14px";
       })
+      .style("font-weight", function (d, i) {
+        if (i == impactTemp || i == newImpactTemp) {
+          return "bold";
+        }
+        return "normal";
+      })
       .attr("x", function (d, i) { return (i) * 2 })
       .attr("y", function (d, i) {
         if (i == impactTemp) {
-          return 10;
+          return 7;
         }
         if (i == newImpactTemp) {
-          return 10;
+          return 7;
         }
         return 15;
       });
@@ -689,7 +700,7 @@ export default class UIOptions {
       )
       // .style("fill", (d) => { return d });
       .style("fill", function (d, i) {
-        return "grey";
+        return "#d9d9d9";
       }
       );
 
@@ -721,14 +732,17 @@ export default class UIOptions {
       )
       .style("stroke-width", function (d, i) {
         if (d == likelihood) {
-          return "2px";
+          return "1px";
         }
         return "0px";
       }
       )
       .style("stroke", function (d, i) {
         if (d == likelihood) {
-          return "orange";
+          return "green";
+        }
+        if (d == newLikelihood) {
+          return "#DD1C77";
         }
         return "rgba(0,0,0,0)";
       }
@@ -749,9 +763,9 @@ export default class UIOptions {
       })
       .style("fill", function (d, i) {
         if (d == likelihood) {
-          return "orange";
-        } if (d == newLikelihood) {
           return "green";
+        } if (d == newLikelihood) {
+          return "#DD1C77";
         }
         return " ";
       })
@@ -760,6 +774,12 @@ export default class UIOptions {
           return "10px";
         }
         return "14px";
+      })
+      .style("font-weight", function (d, i) {
+        if (d == likelihood || d == newLikelihood) {
+          return "bold";
+        }
+        return "normal";
       })
       .attr("x", function (d, i) { return (i) * (i + 1) - d/2; })
       .attr("y", function (d, i) {

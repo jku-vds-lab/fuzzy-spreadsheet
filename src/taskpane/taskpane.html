@@ -52,8 +52,10 @@
 
         <button class="btn" id="referenceCell" hidden="true"><img width="20" height="20"
                 src="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as
-            Reference Cell <span class="refCell" id="refCell" hidden="true"></span></button>
-        <p style="margin-left:3em">Selected Cell <span class="selCell" id="selCell" hidden="true"></span></p>
+            Reference Cell <span class="refCell" id="refCell" hidden="true"></span> <font size="1" color="green">Selected</font>
+            <span class="selCell" id="selCell" hidden="true"></span></button>
+
+        <!-- <p style="margin-left:3em" class="selCell" id="selCell" hidden="true"></span></p> -->
 
         <!-- <hr> -->
 
@@ -127,7 +129,8 @@
                 </tr>
 
                 <tr>
-                    <td colspan="2" class="neighborhood" id="neighborhoodDiv" hidden="true" style="font-size: 14px;" valign="middle">with degree of neighborhood</td>
+                    <td colspan="2" class="neighborhood" id="neighborhoodDiv" hidden="true" style="font-size: 14px;"
+                        valign="middle">with degree of neighborhood</td>
                     <td text-align: center>
                         <table>
                             <col width="19" style="text-align: center;">
@@ -157,74 +160,8 @@
                         </table>
                     </td>
                 </tr>
-
             </table>
-
-
-            <!-- <table style="width: 100%;">
-                <col width="15" style="text-align: center;">
-                <col width="210">
-                <col width="auto">
-                <tr>
-                    <td><input type="checkbox" id="inputRelationship"></td>
-                    <td><b>influencing</b> the reference cell</td>
-                    <td height="20">
-                        <p class="none" id="diamond1"><i class="fa fa-square fa-rotate-45"
-                                style="font-size:10px;color:#333;"></i>
-                        </p>
-                    </td>
-                    <td height="20">
-                        <p class="none" id="diamond2"><i class="fa fa-square fa-rotate-45"
-                                style="font-size:10px;color:#848484;"></i>
-                        </p>
-                    </td>
-                    <td height="20">
-                        <p class="none" id="diamond3"><i class="fa fa-square fa-rotate-45"
-                                style="font-size:10px;color:#eaeaea;"></i>
-                        </p>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td><input type="checkbox" id="outputRelationship"></td>
-                    <td><b>influenced by</b> the reference cell</td>
-                    <td height="20">
-                        <p class="none" id="circle1"><i class="fa fa-circle fa-rotate-45"
-                                style="font-size:10px;color:#333;"></i>
-                        </p>
-                    </td>
-                    <td height="20">
-                        <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
-                                style="font-size:10px;color:#848484;"></i>
-                        </p>
-                    </td>
-                    <td height="20">
-                        <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
-                                style="font-size:10px;color:#eaeaea;"></i>
-                        </p>
-                    </td>
-                </tr>
-            </table> -->
         </div>
-
-        <!-- <div class="neighborhood" id="neighborhoodDiv" hidden="true"> -->
-        <!-- <p>with degree of neighborhood</p> -->
-        <!-- <form id="list">
-    
-                    <input type="radio" id="zero" name="group1" value="1" checked>
-                    <label for="zero"> 0</label>
-                    <input type="radio" id="first" name="group1" value="1">
-                    <label for="first"> 1</label>
-                    <input type="radio" id="second" name="group1" value="2">
-                    <label for="second"> 2</label>
-                    <input type="radio" id="third" name="group1" value="3">
-                    <label for="third"> 3</label>
-                </form>
-            </div> -->
-
-
-        <!-- <hr> -->
-
 
         <div class="impact" id="impactDiv" hidden="true" style="margin-top:20px;">
             <table style="width: 100%;">
@@ -257,28 +194,6 @@
                     </table>
                 </tr>
             </table>
-
-
-            <!-- <table style="width: 100%; height: 45px">
-                <col width="15" style="text-align: center;">
-                <col width="150" style="text-align: center;">
-                <col width="30" style="text-align: center;">
-                <col width="200" style="text-align: center;">
-                <col width="30" style="text-align: center;">
-                <tr>
-                    <td valign="middle"><input type="checkbox" id="impact"></td>
-                    <td valign="middle" style="font-size: 14px;">Impact</td>
-                    <td valign="middle" style="text-align:center">
-                        <font size="1" color="#333">-100%<font>
-                    </td>
-                    <td valign="top">
-                        <div id='impactLegend'></div>
-                    </td>
-                    <td valign="middle" style="text-align:center">
-                        <font size="1" color="#333">+100%</font>
-                    </td>
-                </tr>
-            </table> -->
 
         </div>
 
@@ -318,39 +233,15 @@
             </table>
         </div>
 
-
-        <!-- <div class="likelihood" id="likelihoodDiv" hidden="true">
-            <table style="width: 100%; height: 45px">
-                <col width="15" style="text-align: center;">
-                <col width="150" style="text-align: center;">
-                <col width="30" style="text-align: center;">
-                <col width="200" style="text-align: center;">
-                <col width="30" style="text-align: center;">
-                <col width="10" style="text-align: center;">
-                <col width="10" style="text-align: center;">
-                <tr>
-                    <td valign="bottom"><input type="checkbox" id="likelihood"></td>
-                    <td valign="bottom" style="font-size: 14px;">Likelihood</td>
-                    <td valign="bottom" style="text-align:center">
-                        <font size="1" color="#333">0%<font>
-                    </td>
-                    <td valign="top" style="padding-left: 5%;">
-                        <div id='likelihoodLegend'></div>
-                    </td>
-                    <td valign="bottom" style="text-align:center">
-                        <font size="1" color="#333">100%<font>
-                    </td>
-                </tr>
-            </table>
-        </div> -->
         <!-- <hr> -->
         <!-- <hr> -->
 
-        <div class="distribution" id="spreadDiv" hidden="true" style="margin-top:20px;">
+
+        <div class="distribution" id="spreadDiv" hidden="true">
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
-                <col width="150" style="text-align: center;">
-                <col width="200" style="text-align: left;">
+                <col width="auto" style="text-align: center;">
+                <col width="auto" style="text-align: left;">
                 <tr>
                     <td><input type="checkbox" id="spread"></td>
                     <td valign="middle" style="font-size: 14px;"><b>Distribution </b>
@@ -393,16 +284,99 @@
         </div>
 
 
+        <!-- <div class="distribution" id="spreadDiv" hidden="true" style="margin-top:20px;">
+            <table style="width: 100%;">
+                <col width="15" style="text-align: center;">
+                <col width="auto" style="text-align: center;">
+                <tr>
+                    <td valign="middle"><input type="checkbox" id="spread"></td>
+                    <td valign="middle" style="font-size: 14px;"><b>Distribution </b>
+                        <font size="1" color="#333">of the values in the Focus Cell<font>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <div id="spreadLegend"></div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <table style="width: 100%;">
+                        <col width="200" style="text-align: center;">
+                        <col width="50" style="text-align: center;">
+                        <tr>
+                            <td>
+                                <div class="g-chart" id="originalChart"></div>
+                            </td>
+                            <td>
+                                <div id="lines"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </tr>
+
+                <tr id="spaceHack" style="height: 5px;" hidden="true"></tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <div id="newSpreadLegend"></div>
+                    </td>
+                </tr>
+
+                <tr id="newDistribution" hidden="true">
+                    <td></td>
+                    <table style="width: 100%;">
+                        <col width="200" style="text-align: center;">
+                        <col width="50" style="text-align: center;">
+                        <tr>
+                            <td>
+                                <div class="what-if-chart" id="whatIfChart"></div>
+                            </td>
+                            <td>
+                                <div id="newLines"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </tr>
+            </table>
+        </div> -->
+
+
 
         <!-- <hr> -->
 
         <!-- Use Buttons -->
         <button class="btn" id="startWhatIf" hidden="true"><img width="auto" height="20" src="../../assets/whatif4.png"
                 alt="whatif" title="Start What-If Analysis"> Start What-If Analysis</button>
-        <button class="btn" id="useNewValues" hidden="true"><i class="fa fa-check"
-                style="font-size:12px;color:green;"></i> Accept changes (keep new values)</button>
-        <button class="btn" id="dismissValues" hidden="true"><i class="fa fa-times"
-                style="font-size:12px;color:#333;"></i> Reject changes (keep initial values)</button>
+
+        <div>
+            <button class="btnfloat" id="useNewValues" hidden="true">
+                <table>
+                    <col width="15" style="text-align: center;">
+                    <col width="auto" style="text-align: center;">
+                    <tr>
+                        <td valign="middle"><i class="fa fa-check" style="font-size:16px;color:green;text-align: left;"></i></td>
+                        <td valign="middle" style="font-size: 14px;">Finish and <br>keep new values</td>
+                    </tr>
+                </table>
+            </button>
+
+            <button class="btnfloat" id="dismissValues" hidden="true">
+                <table>
+                    <col width="15" style="text-align: center;">
+                    <col width="auto" style="text-align: center;">
+                    <tr>
+                        <td valign="middle"><i class="fa fa-times"
+                            style="font-size:16px;color:#333;text-align: left;"></i></td>
+                        <td valign="middle" style="font-size: 14px;">Finish and <br>undo changes</td>
+                    </tr>
+                </table>
+            </button>
+        </div>
     </main>
 </body>
 

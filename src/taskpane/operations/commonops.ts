@@ -42,7 +42,7 @@ export default class CommonOperations {
           cell.rect.left = cell.left + MARGIN;
           cell.rect.top = cell.top + cell.height / 2.5;
 
-          let color = 'gray';
+          let color = '#d9d9d9';
           let borderColor = 'gray';
           let transparency = 0;
 
