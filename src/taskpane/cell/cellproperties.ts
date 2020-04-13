@@ -27,7 +27,7 @@ export default class CellProperties {
   // for impact and likelihood
   public rect: Excel.Shape;
   public rectColor: string;
-  public rectTransparency: number;
+  public isImpactPositive: boolean = false;
 
   public degreeOfRelationship: number; // workaround for degreeToFocus
 

@@ -45,6 +45,8 @@ export default class SheetProp {
 
 
   public resetApp() {
+    this.uiOptions.deSelectAllOoptions();
+    console.log('Options deselected');
     SheetProp.isInputRelationship = false;
     SheetProp.isOutputRelationship = false;
     SheetProp.isImpact = false;
@@ -53,7 +55,6 @@ export default class SheetProp {
     SheetProp.isReferenceCell = false;
     SheetProp.degreeOfNeighbourhood = 0;
     SheetProp.newCells = null;
-    this.uiOptions.deSelectAllOoptions();
   }
 
   public async processNewValues() {
@@ -473,10 +474,10 @@ export default class SheetProp {
 
           if (cell.isImpact) {
             if (SheetProp.newCells != null) {
-              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.rectColor);
+              this.uiOptions.drawImpactLegend(cell.impact, SheetProp.newCells[index].impact, cell.isImpactPositive);
             } else {
               this.uiOptions.addImpactPercentage(cell);
-              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.rectColor);
+              this.uiOptions.drawImpactLegend(cell.impact, -1, cell.isImpactPositive);
             }
 
           }
