@@ -120,6 +120,11 @@ export default class SheetProp {
         range.load("address");
         await context.sync();
         this.setNewBorder(range.address);
+        const address = range.address;
+        let index = address.indexOf('!');
+        let localAddress = address.substr(index + 1);
+
+        this.uiOptions.addRefCellAddressInTaskpane(localAddress);
 
         console.log('Marking a reference cell');
 
@@ -456,6 +461,8 @@ export default class SheetProp {
   async handleSelectionChange(event) {
 
     try {
+
+      this.uiOptions.addSelCellAddressInTaskpane(event.address);
 
       this.cells.forEach((cell: CellProperties, index: number) => {
 

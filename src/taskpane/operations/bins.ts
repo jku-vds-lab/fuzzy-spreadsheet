@@ -1,4 +1,4 @@
-import { hsl } from "d3";
+import { hsl, rgb } from "d3";
 /* global console */
 
 export default class Bins {
@@ -60,15 +60,16 @@ export default class Bins {
 
     let blueColors = [];
     let i = 0;
-    let color = hsl(200, 0, 0.85);
+    let color = rgb(217, 217, 217)
     blueColors.push(color.hex());
-    while (i < this.nrOfBins) {
-      let color = hsl(210, 1, (0.9 * (1 - i / 15)));
+    while (i < this.nrOfBins) { // from range: RGB(199,233,192) to RGB(0,68,27)
+      color = rgb(199 - 14.21 * i, 233 - 11.78 * i, 192 - 11.78 * i); // in steps of 14
       blueColors.push(color.hex());
 
       i++;
     }
 
+    console.log('Final color: ' + color);
     return blueColors;
   }
 
@@ -76,10 +77,10 @@ export default class Bins {
 
     let orangeColors = [];
     let i = 0;
-    let color = hsl(30, 0, 0.85);
+    let color = rgb(217, 217, 217);
     orangeColors.push(color.hex());
     while (i < this.nrOfBins) {
-      let color = hsl(30, 1, 0.9 * (1 - i / 15));
+      let color = rgb(231, 225 - 13.3 * i, 239 - 8 * i);
       orangeColors.push(color.hex());
       i++;
     }
