@@ -403,7 +403,7 @@ div.tooltip {
 .dotted {
     border-style: solid;
     border-color: #008000;
-    border-width: 1px;
+    border-width: 2px;
     text-align: center;
     padding: 2px;
 }
