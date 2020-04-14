@@ -623,7 +623,7 @@ export default class UIOptions {
 
     var Svg = d3.select('#impactLegend').append("svg")
       .attr("width", 200)
-      .attr("height", 30);
+      .attr("height", 35);
 
     Svg.selectAll("mydots")
       .data(colors)
@@ -662,6 +662,7 @@ export default class UIOptions {
         if (i == impactTemp) {
           return sign + impact + ' %';
         } if (i == newImpactTemp) {
+          console.log('newImpact: ' + newImpact);
           return sign + newImpact + ' %';
         }
         return " ";
@@ -692,7 +693,7 @@ export default class UIOptions {
           return 7;
         }
         if (i == newImpactTemp) {
-          return 7;
+          return 35;
         }
         return 15;
       });
