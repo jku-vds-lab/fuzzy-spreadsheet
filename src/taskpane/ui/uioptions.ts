@@ -21,6 +21,12 @@ export default class UIOptions {
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
+    document.getElementById('refHr').hidden = true;
+    document.getElementById('relationHr').hidden = true;
+    document.getElementById('impactHr').hidden = true;
+    document.getElementById('likelihoodHr').hidden = true;
+    document.getElementById('spreadHr').hidden = true;
+
   }
 
   public deSelectAllOoptions() {
@@ -48,13 +54,23 @@ export default class UIOptions {
       document.getElementById('startWhatIf').hidden = true;
       document.getElementById('useNewValues').hidden = true;
       document.getElementById('dismissValues').hidden = true;
+      document.getElementById('refHr').hidden = true;
+      document.getElementById('relationHr').hidden = true;
+      document.getElementById('impactHr').hidden = true;
+      document.getElementById('likelihoodHr').hidden = true;
+      document.getElementById('spreadHr').hidden = true;
     } catch (error) {
       console.log('Error on deselection', error);
     }
   }
 
   public showReferenceCellOption() {
-    document.getElementById('referenceCell').hidden = false;
+    try {
+      document.getElementById('referenceCell').hidden = false;
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public addRefCellAddressInTaskpane(address: string = '') {
@@ -74,6 +90,12 @@ export default class UIOptions {
   }
 
   public showVisualizationOption() {
+
+    document.getElementById('refHr').style.display = 'unset';
+    document.getElementById('relationHr').style.display = 'unset';
+    document.getElementById('impactHr').style.display = 'unset';
+    document.getElementById('likelihoodHr').style.display = 'unset';
+    document.getElementById('spreadHr').style.display = 'unset';
 
     document.getElementById('relationshipDiv').hidden = false;
     document.getElementById('neighborhoodDiv').hidden = false;
