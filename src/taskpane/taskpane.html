@@ -52,8 +52,10 @@
 
         <button class="btn" id="referenceCell" hidden="true"><img width="20" height="20"
                 src="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as
-            Reference Cell <span class="refCell" id="refCell" hidden="true"></span> <font size="1" color="green">Selected</font>
-            <span class="selCell" id="selCell" hidden="true"></span></button>
+            Reference Cell <span class="refCell" id="refCell" hidden="true"></span>
+            <font size="1" color="green">Selected</font>
+            <span class="selCell" id="selCell" hidden="true"></span>
+        </button>
 
         <!-- <p style="margin-left:3em" class="selCell" id="selCell" hidden="true"></span></p> -->
 
@@ -170,7 +172,7 @@
                 <tr>
                     <td valign="middle"><input type="checkbox" id="impact"></td>
                     <td valign="middle" style="font-size: 14px;"><b>Impact </b>
-                        <font size="1" color="#333">of the Focus Cell on the Reference Cell<font>
+                        <font size="1" color="#333">of Selected Cell on Reference Cell<font>
                     </td>
                 </tr>
                 <tr>
@@ -207,7 +209,7 @@
                 <tr>
                     <td valign="middle"><input type="checkbox" id="likelihood"></td>
                     <td valign="middle" style="font-size: 14px;"><b>Likelihood </b>
-                        <font size="1" color="#333">of the Focus Cell<font>
+                        <font size="1" color="#333">of Selected Cell<font>
                     </td>
                 </tr>
                 <tr>
@@ -241,20 +243,24 @@
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="auto" style="text-align: center;">
-                <col width="auto" style="text-align: left;">
                 <tr>
                     <td><input type="checkbox" id="spread"></td>
                     <td valign="middle" style="font-size: 14px;"><b>Distribution </b>
-                        <font size="1" color="#333">of the values in the Focus Cell<font>
+                        <font size="1" color="#333">of values in Selected Cell<font>
                     </td>
                 </tr>
                 <tr>
-                    <td></td>
                     <td>
-                        <div class="g-chart" id="originalChart"></div>
                     </td>
                     <td>
                         <div id="spreadLegend"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    </td>
+                    <td>
+                        <div class="g-chart" id="originalChart"></div>
                     </td>
                 </tr>
                 <tr>
@@ -266,19 +272,23 @@
                 <tr id="spaceHack" style="height: 5px;" hidden="true"></tr>
 
                 <tr id="newDistribution" hidden="true">
+                <tr>
                     <td></td>
-                    <td>
-                        <div class="what-if-chart" id="whatIfChart"></div>
-                    </td>
                     <td>
                         <div id="newSpreadLegend"></div>
                     </td>
                 </tr>
                 <tr>
+                    <td></td>
+                    <td>
+                        <div class="what-if-chart" id="whatIfChart"></div>
+                    </td>
+                </tr>
+                <!-- <tr>
                     <td>
                         <div id="newLines"></div>
                     </td>
-                </tr>
+                </tr> -->
             </table>
         </div>
 
@@ -358,7 +368,8 @@
                     <col width="15" style="text-align: center;">
                     <col width="auto" style="text-align: center;">
                     <tr>
-                        <td valign="middle"><i class="fa fa-check" style="font-size:16px;color:green;text-align: left;"></i></td>
+                        <td valign="middle"><i class="fa fa-check"
+                                style="font-size:16px;color:green;text-align: left;"></i></td>
                         <td valign="middle" style="font-size: 14px;">Finish and <br>keep new values</td>
                     </tr>
                 </table>
@@ -370,7 +381,7 @@
                     <col width="auto" style="text-align: center;">
                     <tr>
                         <td valign="middle"><i class="fa fa-times"
-                            style="font-size:16px;color:#333;text-align: left;"></i></td>
+                                style="font-size:16px;color:#333;text-align: left;"></i></td>
                         <td valign="middle" style="font-size: 14px;">Finish and <br>undo changes</td>
                     </tr>
                 </table>

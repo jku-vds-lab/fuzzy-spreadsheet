@@ -565,11 +565,13 @@ export default class UIOptions {
     d3.select("#impactLegend").select('svg').remove();
     let impactTemp = Math.ceil(impact * 0.5);
     let newImpactTemp = Math.ceil(newImpact * 0.5);
+    let sign = '+';
 
     if (isImpactPositive) {
       impactTemp = impactTemp + 50;
       newImpactTemp = newImpactTemp + 50;
     } else {
+      sign = '-';
       impactTemp = 50 - impactTemp;
       newImpactTemp = 50 - newImpactTemp;
     }
@@ -629,9 +631,9 @@ export default class UIOptions {
       .append("text")
       .text(function (d, i) {
         if (i == impactTemp) {
-          return impact + ' %';
+          return sign + impact + ' %';
         } if (i == newImpactTemp) {
-          return newImpact + ' %';
+          return sign + newImpact + ' %';
         }
         return " ";
       })
@@ -689,7 +691,7 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
       .attr("y", function (d, i) {
         // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
-        return 30 - d / 6;       
+        return 30 - d / 6;
       })
       .attr("width", function (d, i) {
         return d / 6;
@@ -711,7 +713,7 @@ export default class UIOptions {
       .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
       .attr("y", function (d, i) {
         // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
-        return 30 - d/6;       
+        return 30 - d / 6;
       })
       .attr("width", function (d, i) {
         return d / 6;
@@ -719,7 +721,7 @@ export default class UIOptions {
       .attr("height", function (d, i) {
         if (d == likelihood || d == newLikelihood) {
           return d / 6;
-        } 
+        }
         return d / 6;
       }
       )
@@ -781,16 +783,16 @@ export default class UIOptions {
         }
         return "normal";
       })
-      .attr("x", function (d, i) { return (d / 12) / (i) + d/2; })
+      .attr("x", function (d, i) { return (d / 12) / (i) + d / 2; })
       .attr("y", function (d, i) {
-        return 30 - d/6 - 5;       
+        return 30 - d / 6 - 5;
       });
-      // .attr("x", function (d, i) { return (d / 12) * (i) })
-      // .attr("y", function (d, i) {
-      //   // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
-      //   // return d -5;
-      //   return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
-      // });
+    // .attr("x", function (d, i) { return (d / 12) * (i) })
+    // .attr("y", function (d, i) {
+    //   // return Math.max.apply(null,sizeArray)/3-(i-1)*sizeArray.length;
+    //   // return d -5;
+    //   return 100 / 3 - d / sizeArrayText.length - 2 * i + 18;
+    // });
   }
 
   public showWhatIfOptions() {
