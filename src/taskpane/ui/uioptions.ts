@@ -21,6 +21,8 @@ export default class UIOptions {
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
+    document.getElementById('selCellText').hidden = true;
+    document.getElementById('refCellText').hidden = true;
     document.getElementById('refHr').style.display = 'none';
     document.getElementById('relationHr').style.display = 'none';
     document.getElementById('impactHr').style.display = 'none';
@@ -44,6 +46,8 @@ export default class UIOptions {
       this.removeHtmlSpreadInfoForOriginalChart();
       this.removeRelationshipInfoInTaskpane();
       document.getElementById('referenceCell').hidden = true;
+      document.getElementById('selCellText').hidden = true;
+      document.getElementById('refCellText').hidden = true;
       document.getElementById('refCell').hidden = true;
       document.getElementById('selCell').hidden = true;
       document.getElementById('relationshipDiv').hidden = true;
@@ -67,6 +71,7 @@ export default class UIOptions {
   public showReferenceCellOption() {
     try {
       document.getElementById('referenceCell').hidden = false;
+      document.getElementById('referenceCell').style.display = 'flex';
 
     } catch (error) {
       console.log(error);
@@ -78,6 +83,7 @@ export default class UIOptions {
     if (address.length > 0) {
       document.getElementById('refCell').hidden = false;
       document.getElementById('refCell').innerHTML = address;
+      document.getElementById('refCellText').hidden = false;
     }
   }
 
@@ -86,6 +92,7 @@ export default class UIOptions {
     if (address.length > 0) {
       document.getElementById('selCell').hidden = false;
       document.getElementById('selCell').innerHTML = address;
+      document.getElementById('selCellText').hidden = false;
     }
   }
 

@@ -81,10 +81,11 @@ ul {
     text-align: center;
     padding: 2px;
     border-color: orange;
+    color: orange;
     width: 35px;
     margin-left: .5em;
     margin-right: 1em;
-    font-size: x-small;
+    font-size: 10px;
 
 }
 
@@ -94,9 +95,27 @@ ul {
     text-align: center;
     padding: 2px;
     border-color: green;
+    color: green;
     width: 35px;
     margin-left: .5em;
-    font-size: x-small;
+    font-size: 10px;
+}
+
+.selCellText {
+    text-align: center;
+    padding: 2px;
+    color: green;
+    margin-left: .5em;
+    font-size: 10px;
+
+}
+
+.refCellText {
+    text-align: center;
+    padding: 2px;
+    color: orange;
+    margin-left: .5em;
+    font-size: 10px;
 }
 
 b {
