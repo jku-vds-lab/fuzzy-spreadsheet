@@ -45,6 +45,7 @@ export default class UIOptions {
       this.removeHtmlSpreadInfoForNewChart();
       this.removeHtmlSpreadInfoForOriginalChart();
       this.removeRelationshipInfoInTaskpane();
+      document.getElementById('referenceCell').style.display = 'none';
       document.getElementById('referenceCell').hidden = true;
       document.getElementById('selCellText').hidden = true;
       document.getElementById('refCellText').hidden = true;
@@ -160,7 +161,7 @@ export default class UIOptions {
   public removeHtmlSpreadInfoForOriginalChart() {
     try {
       d3.select("#" + 'originalChart').select('svg').remove();
-      // d3.select("#" + 'lines').select('svg').remove();
+      d3.select("#" + 'lines').select('svg').remove();
       d3.select("#" + 'spreadLegend').select('svg').remove();
     } catch (error) {
       console.log(error);
@@ -170,7 +171,7 @@ export default class UIOptions {
   public removeHtmlSpreadInfoForNewChart() {
     try {
       d3.select("#" + 'whatIfChart').select('svg').remove();
-      // d3.select("#" + 'newLines').select('svg').remove();
+      d3.select("#" + 'newLines').select('svg').remove();
       d3.select("#" + 'newSpreadLegend').select('svg').remove();
       document.getElementById("newDistribution").hidden = true;
       document.getElementById("spaceHack").hidden = true;
@@ -294,9 +295,9 @@ export default class UIOptions {
       let computedMean = cell.computedMean
       let computedStdDev = cell.computedStdDev;
 
-      var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+      var margin = { top: 10, right: 30, bottom: 20, left: 40 },
         width = 260 - margin.left - margin.right,
-        height = 160 - margin.top - margin.bottom;
+        height = 140 - margin.top - margin.bottom;
 
       // append the svg object to the body of the page
       var svg = d3.select(divClass)
@@ -387,7 +388,7 @@ export default class UIOptions {
             let x1 = ((-minDomain + computedMean) * x(d.x1) - x(d.x0)) / binWidth
             return x1;
           })
-        .attr("y1", 130)
+        .attr("y1", 120)
         .attr("x2", function (d) {
           if (x(d.x0) == x(d.x1)) {
             return 1;
@@ -410,7 +411,7 @@ export default class UIOptions {
             let x1 = ((-minDomain + (computedMean - computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
             return x1;
           })
-        .attr("y1", 130)
+        .attr("y1", 120)
         .attr("x2", function (d) {
           if (x(d.x0) == x(d.x1)) {
             return 1;
@@ -433,7 +434,7 @@ export default class UIOptions {
             let x1 = ((-minDomain + (computedMean + computedStdDev)) * x(d.x1) - x(d.x0)) / binWidth
             return x1;
           })
-        .attr("y1", 130)
+        .attr("y1", 120)
         .attr("x2", function (d) {
           if (x(d.x0) == x(d.x1)) {
             return 1;
@@ -458,9 +459,9 @@ export default class UIOptions {
 
       svg.append('text')
         .attr("transform",
-          "translate(" + width + " ," +
+          "translate(" + (width - 50) + " ," +
           (0) + ")")
-        .style("text-anchor", "middle")
+        .style("text-anchor", "left")
         .style("font-size", "10px")
         .style('fill', color)
         .attr("dy", "0em")
@@ -468,9 +469,9 @@ export default class UIOptions {
 
       svg.append('text')
         .attr("transform",
-          "translate(" + width + " ," +
+          "translate(" + (width - 50) + " ," +
           (0) + ")")
-        .style("text-anchor", "middle")
+        .style("text-anchor", "left")
         .style("font-size", "10px")
         .style('fill', color)
         .attr("dy", "2em") // you can vary how far apart it shows up
@@ -479,16 +480,16 @@ export default class UIOptions {
       svg.append('text')
         .attr("transform",
           "translate(" + width + " ," +
-          (height + margin.bottom) + ")")
-        .style("text-anchor", "middle")
+          (height) + ")")
+        .style("text-anchor", "right")
         .style("font-size", "10px")
         .text('Mio.(€)');
 
       if (isLegendOrange) {
-        // this.drawLinesBeneathChart(cell, isLegendOrange);
+        this.drawLinesBeneathChart(cell, isLegendOrange);
         this.drawLegend(isLegendOrange);
       } else {
-        // this.drawLinesBeneathChart(cell);
+        this.drawLinesBeneathChart(cell);
         this.drawLegend();
 
       }

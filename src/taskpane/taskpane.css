@@ -135,6 +135,12 @@ table tr td {
     text-align: left;
 }
 
+.neighbour {
+    font-size: 1px;
+    color: #333;
+    text-align: right;
+}
+
 /* center image in table */
 td img {
     display: block;
@@ -191,7 +197,7 @@ table.table2 tr td {
     border: none;
     color: #333;
     padding: 12px 16px;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     text-align: left;
 }
@@ -354,7 +360,7 @@ body {
 
 .g-label-text {
     font-family: sans-serif;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .g-label-circle {
@@ -408,12 +414,21 @@ div.tooltip {
     padding: 2px;
 }
 
-.none {
-    border-style: none;
+/* .none {
+    border-style: solid;
     border-width: 2px;
     text-align: center;
     padding: 2px;
+    border-color: white;
 }
+
+.myEmptyBorder {
+    border-style: solid;
+    border-width: 2px;
+    text-align: center;
+    padding: 2px;
+    border-color: white;
+} */
 
 svg.mydots {
     position: absolute;
