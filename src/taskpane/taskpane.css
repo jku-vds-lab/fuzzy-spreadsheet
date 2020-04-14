@@ -84,6 +84,7 @@ ul {
     width: 35px;
     margin-left: .5em;
     margin-right: 1em;
+    font-size: x-small;
 
 }
 
@@ -95,6 +96,7 @@ ul {
     border-color: green;
     width: 35px;
     margin-left: .5em;
+    font-size: x-small;
 }
 
 b {
@@ -164,7 +166,8 @@ table.table2 tr td {
     }
 }
 
-.btn, .btnfloat {
+.btn,
+.btnfloat {
     background-color: white;
     border: none;
     color: #333;
@@ -176,7 +179,8 @@ table.table2 tr td {
 
 
 /* Darker background on mouse-over */
-.btn:hover, .btnfloat:hover {
+.btn:hover,
+.btnfloat:hover {
     background-color: #ededed;
     font-weight: bold;
 }
@@ -406,6 +410,6 @@ svg.mySquares {
     margin-top: 0.3em;
 }
 
- input[type="radio"] {
+input[type="radio"] {
     margin-right: 4em;
-  }
+}

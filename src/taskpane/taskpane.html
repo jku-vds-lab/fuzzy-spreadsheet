@@ -46,18 +46,39 @@
     </section>
     <main id="app-body" class="ms-welcome__main" style="display: none;">
 
+        <table style="width: 100%;">
+            <col width="300" style="text-align: left;">
+            <col width="100" style="text-align: center;">
+            <tr>
+                <td><button class="btn" id="parseSheet" style="display: flex;"><img width="15" height="15"
+                            src="../../assets/play-button.png" alt="initialize" title="Initialize the Sheet">
+                        Initialize
 
-        <button class="btn" id="parseSheet"><img width="15" height="15" src="../../assets/play-button.png"
-                alt="initialize" title="Initialize the Sheet"> Initialize</button>
+                    </button>
+                </td>
 
-        <span class="selCell" id="selCell" hidden="true"></span>
+                <td>
+                    <p class="selCell" id="selCell" hidden="true"></p>
+                </td>
+            </tr>
 
-        <button class="btn" id="referenceCell" hidden="true"><img width="20" height="20"
-                src="../../assets/referenceCell.png" alt="referenceCell" title="Mark Cell as Reference Cell"> Mark as
-            Reference Cell <span class="refCell" id="refCell" hidden="true"></span>
-            <!-- <font size="1" color="green">Selected</font> -->
+            <tr>
+                <td>
+                    <button class="btn" id="referenceCell" hidden="true"><img width="20" height="20"
+                            src="../../assets/referenceCell.png" alt="referenceCell"
+                            title="Mark Cell as Reference Cell"> Mark as
+                        Reference Cell
+                    </button>
 
-        </button>
+                </td>
+                <td>
+                    <p class="refCell" id="refCell" hidden="true"></p>
+                </td>
+            </tr>
+        </table>
+
+        <!-- <font size="1" color="green">Selected</font> -->
+
         <!-- <p id="selCell" class="selCell" color="green" hidden="true"> Selected</p> -->
 
         <!-- <p style="margin-left:3em" class="selCell" id="selCell" hidden="true"></span></p> -->
