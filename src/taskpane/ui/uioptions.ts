@@ -702,15 +702,21 @@ export default class UIOptions {
 
   public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = -1) {
 
+    console.log('NewLikelihood: ' + newLikelihood);
+
     d3.select("#likelihoodLegend").select('svg').remove();
 
-    let sizeArray = [0, 20, 40, 60, 80, 100];
+    let sizeArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
     let sizeArrayText = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
     likelihood = likelihood * 100;
+    likelihood = likelihood - likelihood % 10;
+
+    newLikelihood = newLikelihood * 100;
+    newLikelihood = newLikelihood - newLikelihood % 10;
 
     var Svg = d3.select('#likelihoodLegend').append("svg")
-      .attr("width", 100)
+      .attr("width", 220)
       .attr("height", 50);
 
     // add indicators for likelihood of occurrence (sqaures in grey)
@@ -718,7 +724,7 @@ export default class UIOptions {
       .data(sizeArray)
       .enter()
       .append("rect")
-      .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
+      .attr("x", function (d, i) { return 2 * (i + 1) + (i) * d / 6; })
       .attr("y", function (d, i) {
         // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
         return 30 - d / 6;
@@ -740,9 +746,8 @@ export default class UIOptions {
       .data(sizeArray)
       .enter()
       .append("rect")
-      .attr("x", function (d, i) { return (i) * (i + 1) * 2; })
+      .attr("x", function (d, i) { return 2 * (i + 1) + (i) * d / 6; })
       .attr("y", function (d, i) {
-        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
         return 30 - d / 6;
       })
       .attr("width", function (d, i) {
@@ -756,14 +761,11 @@ export default class UIOptions {
       }
       )
       .style("fill", function (d, i) {
-        // if (d == likelihood) {
-        //   return "orange";
-        // }
         return "rgba(0,0,0,0)";
       }
       )
       .style("stroke-width", function (d, i) {
-        if (d == likelihood) {
+        if (d == likelihood || d == newLikelihood) {
           return "1px";
         }
         return "0px";
@@ -813,9 +815,16 @@ export default class UIOptions {
         }
         return "normal";
       })
-      .attr("x", function (d, i) { return (d / 12) / (i) + d / 2; })
+      .attr("x", function (d, i) { return 2 * (i + 1) + (i) * d / 6; })
       .attr("y", function (d, i) {
-        return 30 - d / 6 - 5;
+        if (d == likelihood) {
+          return (30 - d / 6) - 5;
+        }
+
+        if (d == newLikelihood) {
+          return (55 - d / 6);
+        }
+
       });
     // .attr("x", function (d, i) { return (d / 12) * (i) })
     // .attr("y", function (d, i) {
