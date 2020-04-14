@@ -21,11 +21,11 @@ export default class UIOptions {
     document.getElementById('startWhatIf').hidden = true;
     document.getElementById('useNewValues').hidden = true;
     document.getElementById('dismissValues').hidden = true;
-    document.getElementById('refHr').hidden = true;
-    document.getElementById('relationHr').hidden = true;
-    document.getElementById('impactHr').hidden = true;
-    document.getElementById('likelihoodHr').hidden = true;
-    document.getElementById('spreadHr').hidden = true;
+    document.getElementById('refHr').style.display = 'none';
+    document.getElementById('relationHr').style.display = 'none';
+    document.getElementById('impactHr').style.display = 'none';
+    document.getElementById('likelihoodHr').style.display = 'none';
+    document.getElementById('spreadHr').style.display = 'none';
 
   }
 
@@ -54,11 +54,11 @@ export default class UIOptions {
       document.getElementById('startWhatIf').hidden = true;
       document.getElementById('useNewValues').hidden = true;
       document.getElementById('dismissValues').hidden = true;
-      document.getElementById('refHr').hidden = true;
-      document.getElementById('relationHr').hidden = true;
-      document.getElementById('impactHr').hidden = true;
-      document.getElementById('likelihoodHr').hidden = true;
-      document.getElementById('spreadHr').hidden = true;
+      document.getElementById('refHr').style.display = 'none';
+      document.getElementById('relationHr').style.display = 'none';
+      document.getElementById('impactHr').style.display = 'none';
+      document.getElementById('likelihoodHr').style.display = 'none';
+      document.getElementById('spreadHr').style.display = 'none';
     } catch (error) {
       console.log('Error on deselection', error);
     }
