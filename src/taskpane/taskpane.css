@@ -207,7 +207,7 @@ table.table2 tr td {
 .btn:hover,
 .btnfloat:hover {
     background-color: #ededed;
-    font-weight: bold;
+    /* font-color: bold; */
 }
 
 hr {
