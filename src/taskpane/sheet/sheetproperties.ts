@@ -483,8 +483,11 @@ export default class SheetProp {
           }
 
           if (cell.isLikelihood) {
-            this.uiOptions.addLikelihoodPercentage(cell);
-            this.uiOptions.drawLikelihoodLegend(cell.likelihood, -1);
+            if (SheetProp.newCells != null) {
+              this.uiOptions.drawLikelihoodLegend(cell.likelihood, SheetProp.newCells[index].likelihood);
+            } else {
+              this.uiOptions.drawLikelihoodLegend(cell.likelihood, -1);
+            }
           }
 
           if (cell.isInputRelationship) {

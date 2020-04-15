@@ -111,13 +111,15 @@ export default class Impact {
       }
 
       const impact = inCell.value / divisor;
+
       inCell.impact = round(impact * 100, 2);
       inCell.isImpactPositive = isImpactPositive;
+      let index = Math.ceil(inCell.impact);
 
       if (inCell.isImpactPositive) {
-        inCell.rectColor = this.blueColors[Math.ceil(inCell.impact)];
+        inCell.rectColor = this.blueColors[index];
       } else {
-        inCell.rectColor = this.redColors[Math.ceil(inCell.impact)];
+        inCell.rectColor = this.redColors[index];
       }
     })
 
