@@ -98,62 +98,99 @@
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="210">
-                <col width="auto">
+                <col width="20" style="text-align: right;">
+                <col width="20" style="text-align: right;">
+                <col width="20" style="text-align: right;">
+                <col width="20" style="text-align: right;">
                 <tr>
                     <td><input type="checkbox" id="inputRelationship"></td>
                     <td style="font-size: 12px;"><b>influencing</b> reference cell</td>
-                    <td>
-                        <table>
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
-                            <tr>
+                    <!-- <td> -->
+                        <!-- <table> -->
+                            
+                            <!-- <tr> -->
                                 <td></td>
-                                <td height="15">
+                                <td>
                                     <p class="none" id="diamond1"><i class="fa fa-square fa-rotate-45"
                                             style="font-size:10px;color:#333;"></i>
                                     </p>
                                 </td>
-                                <td height="15">
+                                <td>
                                     <p class="none" id="diamond2"><i class="fa fa-square fa-rotate-45"
                                             style="font-size:10px;color:#848484;"></i>
                                     </p>
                                 </td>
-                                <td height="15">
+                                <td>
                                     <p class="none" id="diamond3"><i class="fa fa-square fa-rotate-45"
                                             style="font-size:10px;color:#eaeaea;"></i>
                                     </p>
                                 </td>
-                            </tr>
-                        </table>
-                    </td>
+                            <!-- </tr> -->
+                        <!-- </table> -->
+                    <!-- </td> -->
                 </tr>
 
-                <tr>
+                <table style="width: 100%;">
+                    <col width="15" style="text-align: center;">
+                    <col width="210">
+                    <col width="20" style="text-align: right;">
+                    <col width="20" style="text-align: right;">
+                    <col width="20" style="text-align: right;">
+                    <col width="20" style="text-align: right;">
+                    <tr>
+                        <td><input type="checkbox" id="outputRelationship"></td>
+                        <td style="font-size: 12px;"><b>influenced by</b> reference cell</td>
+                        <!-- <td> -->
+                            <!-- <table> -->
+                                
+                                <!-- <tr> -->
+                                    <td></td>
+                                    <td height="15">
+                                        <p class="none" id="crcle1"><i class="fa fa-circle fa-rotate-45"
+                                                style="font-size:10px;color:#333;"></i>
+                                        </p>
+                                    </td>
+                                    <td height="15">
+                                        <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
+                                                style="font-size:10px;color:#848484;"></i>
+                                        </p>
+                                    </td>
+                                    <td height="15">
+                                        <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
+                                                style="font-size:10px;color:#eaeaea;"></i>
+                                        </p>
+                                    </td>
+                                <!-- </tr> -->
+                            <!-- </table> -->
+                        <!-- </td> -->
+                    </tr>
+
+                <!-- <tr>
                     <td><input type="checkbox" id="outputRelationship"></td>
                     <td style="font-size: 12px;"><b>influenced by</b> reference cell</td>
                     <td>
                         <table>
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
-                            <col width="14" style="text-align: right;">
+                            <col width="15" style="text-align: center;">
+                            <col width="210">
+                            <col width="20" style="text-align: right;">
+                            <col width="20" style="text-align: right;">
+                            <col width="20" style="text-align: right;">
+                            <col width="20" style="text-align: right;">
                             <tr>
                                 <td></td>
                                 <td height="15">
                                     <p class="none" id="circle1"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#333;"></i>
+                                            style="font-size:12px;color:#333;"></i>
                                     </p>
                                 </td>
                                 <td height="15">
                                     <p class="none" id="circle2"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#848484;"></i>
+                                            style="font-size:12px;color:#848484;"></i>
                                     </p>
                                 </td>
                                 <td height="15">
                                     <p class="none" id="circle3"><i class="fa fa-circle fa-rotate-45"
-                                            style="font-size:10px;color:#eaeaea;"></i>
+                                            style="font-size:12px;color:#eaeaea;"></i>
                                     </p>
                                 </td>
                             </tr>
@@ -161,59 +198,61 @@
                     </td>
                 </tr>
             </table>
-        </div>
+        </div> -->
 
 
         <div class="neighborhood" id="neighborhoodDiv" hidden="true" valign="middle">
             <form id="list">
                 <table class="neighbour" style="width: 100%;">
 
-                    <col width="400" style="text-align: left;">
-
-                    <col width="14" style="text-align: right;">
-                    <col width="14" style="text-align: right;">
-                    <col width="14" style="text-align: right;">
-                    <col width="14" style="text-align: right;">
+                    <col width="15" style="text-align: center;">
+                    <col width="210">
+                    <col width="20" style="text-align: center;">
+                    <col width="20" style="text-align: center;">
+                    <col width="20" style="text-align: center;">
+                    <col width="20" style="text-align: center;">
 
                     <tr>
+                        <td></td>
                         <td style="font-size: 12px;">
                             with degree of neighborhood
                         </td>
-                        <td>
+                        <td style="text-align: center;">
                             <input type="radio" id="zero" name="group1" value="0" checked>
                         </td>
 
-                        <td>
+                        <td style="text-align: center;">
                             <input type="radio" id="first" name="group1" value="1">
                         </td>
 
-                        <td>
+                        <td style="text-align: center;">
                             <input type="radio" id="second" name="group1" value="2">
                         </td>
 
-                        <td>
+                        <td style="text-align: center;">
                             <input type="radio" id="third" name="group1" value="3">
                         </td>
 
                     </tr>
 
                     <tr>
+                        <td style="font-size: 12px;"></td>
                         <td></td>
 
-                        <td style="font-size: 12px;">
+                        <td style="font-size: 12px; text-align: center;">
                             <font color="orange"><b> <label for="zero">0</label></b></font>
 
                         </td>
 
-                        <td style="font-size: 12px;">
+                        <td style="font-size: 12px;text-align: center;">
                             <label for="first">1</label>
                         </td>
 
-                        <td style="font-size: 12px;">
+                        <td style="font-size: 12px;text-align: center;">
                             <label for="second">2</label>
                         </td>
 
-                        <td style="font-size: 12px;">
+                        <td style="font-size: 12px;text-align: center;">
                             <label for="third">3</label>
                         </td>
                     </tr>
