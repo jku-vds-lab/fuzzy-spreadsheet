@@ -445,5 +445,9 @@ svg.mySquares {
 }
 
 input[type="radio"] {
-    margin-right: 4em;
+    /* margin-right: 4em; */
+    border: 0px;
+    width: 80%;
+    align-items: center;
+    /* height: 2em; */
 }
