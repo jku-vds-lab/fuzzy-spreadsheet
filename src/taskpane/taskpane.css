@@ -222,8 +222,8 @@ hr {
 }
 
 /* #relationship img {
-     float: right;
-     } */
+      float: right;
+      } */
 
 .fa-rotate-45 {
     -webkit-transform: rotate(45deg);
@@ -234,11 +234,11 @@ hr {
 }
 
 /* .fa-times:hover{
-         color: red !important;
-     }
-     .fa-check:hover{
-         color: green;
-     } */
+          color: red !important;
+      }
+      .fa-check:hover{
+          color: green;
+      } */
 
 .slidecontainer {
     width: 100%;
@@ -298,12 +298,12 @@ hr {
 }
 
 /* .triangle-up {
-         width: 0;
-         height: 0;
-         border-left: 25px solid transparent;
-         border-right: 25px solid transparent;
-         border-bottom: 50px solid #555;
-     } */
+          width: 0;
+          height: 0;
+          border-left: 25px solid transparent;
+          border-right: 25px solid transparent;
+          border-bottom: 50px solid #555;
+      } */
 
 
 /* chart styles */
@@ -445,9 +445,5 @@ svg.mySquares {
 }
 
 input[type="radio"] {
-    /* margin-right: 4em; */
-    border: 0px;
-    width: 80%;
-    align-items: center;
-    /* height: 2em; */
+    margin-right: 4em;
 }
