@@ -1,37 +1,59 @@
 <html>
-  <head>
-    <style>
-      a {
-        font-size: 2em;
-        text-decoration: none;
-        color: #ea005e;
-      }
 
-      .icon {
-        font-size: 8em;
-      }
+<head>
+  <style>
+    a {
+      font-size: 14 px;
+      text-decoration: none;
+      color: #ea005e;
+    }
 
-      h1 {
-        margin-bottom: 2em;
-      }
+    .icon {
+      font-size: 8em;
+    }
 
-      body {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+    h1 {
+      margin-bottom: 10 px;
+      font-size: 20 px;
+    }
 
-        background: #24333B;
-        color: #cccccc;
-        font-family: sans-serif;
-      }
-    </style>
-    <title>Fuzzy Spreadsheets</title>
-  </head>
-  <body>
-    <h1>Fuzzy Spreadsheets Add-in</h1>
-    <a href="./manifest.xml" download>manifest.xml</a><br>
-    <a href="./manifest.xml" download class="icon">💾</a>
-  </body>
+    li {
+      margin-bottom: 10px;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      justify-content: center;
+
+      background: #24333B;
+      color: #cccccc;
+      font-family: sans-serif;
+      font-size: 14 px;
+    }
+  </style>
+  <title>Fuzzy Spreadsheets</title>
+</head>
+
+<body>
+
+  <h1>Pre-Installation Checklist</h1>
+  Any of the latest browsers such as Firefox, Chrome, Edge.
+  <h1>Installation</h1>
+  <ol>
+    <li> Download <a href="./manifest.xml" download>manifest.xml</a> file in your Downloads folder. </li>
+    <li>Open the <a
+        href="https://jkulinz-my.sharepoint.com/:x:/g/personal/rgiyky6y9n_students_jku_at/EUGOpGbIwPhJpRWnO350qi4BNj3hQdgztF3MlX4XMKWXzg?e=VuakZs">Excel
+        Online document</a> </li>
+    <li> Go to Insert → Office Add-Ins → Manage My Add-Ins → Upload My Add-In (as shown in the figure)
+    </li>
+    <li> Upload locally stored manifest.xml</li>
+    <li> Open Fuzzy Spreadsheet side panel by clicking on ‘Show Taskpane’ (Home → Commands Group → Show taskpane)</li>
+    <img width="722" height="348" src="Installation.png" alt="installation" title="Installation">
+  </ol>
+  <h1>Post-Installation Checklist</h1>
+</body>
+
 </html>
