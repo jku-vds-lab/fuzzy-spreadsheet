@@ -39,7 +39,7 @@
       height: 348px;
       border: 3px solid white;
       box-shadow: 0px 0px 8px rgba(0, 0, 0, .3);
-      margin: 20px 0px 20px 00px;
+      margin: 20px 20px 20px 20px;
     }
 
     /* Styles the lightbox, removes it from sight and adds the fade-in transition */
@@ -161,25 +161,28 @@
   <ol>
     <li> Download <a href="./manifest.xml" download>manifest.xml</a> file and save it locally. </li>
     <li>Open the <a
-        href="https://jkulinz-my.sharepoint.com/:x:/g/personal/rgiyky6y9n_students_jku_at/EUGOpGbIwPhJpRWnO350qi4BNj3hQdgztF3MlX4XMKWXzg?e=VuakZs">Excel
+        href="https://jkulinz-my.sharepoint.com/:x:/g/personal/rgiyky6y9n_students_jku_at/EUGOpGbIwPhJpRWnO350qi4BNj3hQdgztF3MlX4XMKWXzg?e=VuakZs"
+        target="_blank">Excel
         Online document</a> in a new tab. </li>
     <li> Go to Insert → Office Add-Ins → Manage My Add-Ins → Upload My Add-In (as shown in Figure 1).
     </li>
     <li> Upload locally stored manifest.xml file.</li>
     <li> Open Fuzzy Spreadsheet side panel by clicking on ‘Show Taskpane’ (Home → Commands Group → Show taskpane).</li>
-    <figure>
-      <a class="lightbox">
-        <img src="./assets/Installation.png" alt="Installation" title="Installation">
-      </a>
-      <div class="lightbox-target" id="dog">
-        <img src="./assets/Installation.png" alt="Installation" title="Installation">
-        <a class="lightbox-close" href="#"></a>
-      </div>
-
-      <figcaption>Figure 1 - Upload manifest.xml file</figcaption>
-    </figure>
 
   </ol>
+
+  <!-- <figure> -->
+  <a class="lightbox" href="#installation">
+    <img src="./assets/Installation.png" alt="Installation" title="Installation">
+  </a>
+
+  <div class="lightbox-target" id="installation">
+    <img src="./assets/Installation.png" alt="Installation" title="Installation">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+  <figcaption>Figure 1 - Upload manifest.xml file</figcaption>
+  <!-- </figure> -->
+
   <h1>Post-Installation Checklist</h1>
   <ol>
     <li>Load the add-in and click on the "Initialize" button in the side panel (as shown in Figure 2).</li>
@@ -189,15 +192,29 @@
     <li>This should show the glyphs in the related cells.</li>
     <li>You can then choose to click on "Impact", "Likelihood" and/or "Distribution" and analyze the in-cell encodings
       along with the side-panel information (as shown in Figure 3).</li>
-    <figure>
-      <img width="722" height="348" src="./assets/Check1.png" alt="Check1" title="Check1">
-      <figcaption>Figure 2 - Load add-in and Click on the "Initalize" button</figcaption>
-    </figure>
-    <figure>
-      <img width="722" height="348" src="./assets/Check2.png" alt="Check2" title="Check2">
-      <figcaption>Figure 3 - Select the options to view in-cell encodings</figcaption>
-    </figure>
+
   </ol>
+
+  <a class="lightbox" href="#check1">
+    <img src="./assets/Check1.png" alt="Check1" title="Check1">
+  </a>
+
+  <div class="lightbox-target" id="check1">
+    <img src="./assets/Check1.png" alt="Check1" title="Check1">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+  <figcaption>Figure 2 - Load add-in and Click on the "Initalize" button</figcaption>
+
+  <a class="lightbox" href="#check2">
+    <img src="./assets/Check2.png" alt="Check2" title="Check2">
+  </a>
+
+  <div class="lightbox-target" id="check2">
+    <img src="./assets/Check2.png" alt="Check2" title="Check2">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+
+  <figcaption>Figure 3 - Select the options to view in-cell encodings</figcaption>
 
 </body>
 
