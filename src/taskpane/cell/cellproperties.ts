@@ -40,11 +40,11 @@ export default class CellProperties {
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private rowStart: number = 1;//7 // for the reviewers;
-  private rowEnd: number = 17;//20 // for the reviewers;
+  private rowStart: number = 7; // for the reviewers;
+  private rowEnd: number = 20; // for the reviewers;
 
   private colStart: number = 2; //2 // for the reviewers;
-  private colEnd: number = 9;//19 // for the reviewers;
+  private colEnd: number = 19;//19 // for the reviewers;
 
   // what if info
   public isTextbox: boolean = false;
