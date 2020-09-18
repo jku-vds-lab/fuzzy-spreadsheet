@@ -40,11 +40,11 @@ export default class CellProperties {
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private rowStart: number = 7; // for the reviewers;
-  private rowEnd: number = 20; // for the reviewers;
+  private rowStart: number = 5; // for the reviewers;
+  private rowEnd: number = 22; // for the reviewers;
 
   private colStart: number = 2; //2 // for the reviewers;
-  private colEnd: number = 19;//19 // for the reviewers;
+  private colEnd: number = 8;//19 // for the reviewers;
 
   // what if info
   public isTextbox: boolean = false;
@@ -194,6 +194,8 @@ export default class CellProperties {
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
 
     try {
+
+      console.log('Uncertain cells');
       for (let i = 0; i < this.cells.length; i++) {
         cells[i].stdev = 0;
         cells[i].likelihood = 1;
@@ -202,6 +204,8 @@ export default class CellProperties {
 
           cells[i].stdev = this.cells[i + 1].value;
           cells[i].likelihood = this.cells[i + 2].value;
+
+          console.log(cells[i].address + ' SD: ' + cells[i].stdev + ' L: ' + cells[i].likelihood);
         }
       }
     } catch (error) {
@@ -343,6 +347,18 @@ export default class CellProperties {
         }
         cell.isUncertain = result;
       }
+
+      if (cell.formula.includes("*")) {
+        let result = this.checkAverageValues(cell.inputCells);
+
+        // if the first degree input cells to a difference cell are not uncertain, may be second degree might be uncertain
+        if (!result) {
+          cell.inputCells.forEach((iCell: CellProperties) => {
+            result = this.checkAverageValues(iCell.inputCells);
+          })
+        }
+        cell.isUncertain = result;
+      }
     })
   }
 
@@ -392,6 +408,10 @@ export default class CellProperties {
 
     if (formula.includes("-")) {
       rangeAddress = formula.split('-');
+    }
+
+    if (formula.includes("*")) {
+      rangeAddress = formula.split('*');
     }
 
     return rangeAddress;
