@@ -1,5 +1,4 @@
 /* global console, Excel */
-
 export default class CellProperties {
   public id: string;
   public address: string;
@@ -130,15 +129,18 @@ export default class CellProperties {
     for (let i = this.rowStart; i < this.rowEnd; i++) {
       for (let j = this.colStart; j < this.colEnd; j++) {
 
-        if (cellRanges[index].values[0][0] == "") {
+        const value = cellRanges[index].values[0][0];
+        const address = cellRanges[index].address;
+
+        if (!(value === 0) && (value == "")) {
           index++;
           continue;
         }
 
         let cellProperties = new CellProperties();
         cellProperties.id = "R" + i + "C" + j;
-        cellProperties.address = cellRanges[index].address;
-        cellProperties.value = cellRanges[index].values[0][0];
+        cellProperties.address = address;
+        cellProperties.value = value;
         cellProperties.top = cellRanges[index].top;
         cellProperties.left = cellRanges[index].left;
         cellProperties.height = 15;

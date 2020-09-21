@@ -1,11 +1,12 @@
 /* global console, Excel */
 import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
-import { range, dotMultiply } from 'mathjs';
+import { range, dotMultiply, norm } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
 import { sum, contours } from 'd3';
+import { BaseLegendLayout } from 'vega';
 
 export default class Spread {
 
@@ -247,6 +248,10 @@ export default class Spread {
         cell.samples = this.addSamplesToSumCell(cell, true);
       }
 
+      if (cell.formula.includes('*')) {
+        cell.samples = this.addSamplesToSumCell(cell, false, true);
+      }
+
       if (cell.formula.includes('AVERAGE')) {
         cell.samples = this.addSamplesToAverageCell(cell);
       }
@@ -278,25 +283,21 @@ export default class Spread {
       const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
+
       cell.samples = new Array<number>();
 
-      let normalSamples = new Array<number>();
-      const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
+      if (stdev === 0) {
+        cell.samples = this.computeBernoulliSamples(likelihood);
+      } else if (likelihood == 1) {
+        cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
+      } else {
+        const normal = this.computeNormalSamples(mean, stdev);
+        const normalSamples = normal.normalSamples;
+        const sampleLength = normal.sampleLength;
+        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
 
-      values.forEach((val: number) => {
-        normalSamples.push(jStat.normal.inv(val, mean, stdev));
-      })
-
-      normalSamples = normalSamples.filter(outliers());
-
-      const sampleLength = normalSamples.length;
-
-      const bern = Bernoulli(likelihood);
-      bern.draw();
-
-      const bernoulliSamples = bern.sample(sampleLength);
-
-      cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+        cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+      }
 
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
@@ -305,7 +306,28 @@ export default class Spread {
     return cell.samples;
   }
 
-  private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {
+  private computeNormalSamples(mean: number, stdev: number) {
+    let normalSamples = new Array<number>();
+    const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
+
+    values.forEach((val: number) => {
+      normalSamples.push(jStat.normal.inv(val, mean, stdev));
+    })
+
+    normalSamples = normalSamples.filter(outliers());
+    const sampleLength = normalSamples.length;
+    return { normalSamples: normalSamples, sampleLength: sampleLength };
+  }
+
+  private computeBernoulliSamples(likelihood: number, sampleLength: number = 100) {
+    const bern = Bernoulli(likelihood);
+    bern.draw();
+
+    const bernoulliSamples = bern.sample(sampleLength);
+    return bernoulliSamples;
+  }
+
+  private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false, isMulti: boolean = false) {
 
     try {
 
@@ -322,12 +344,12 @@ export default class Spread {
       resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
-        resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
+        resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference, isMulti);
         index = index + 2;
       }
 
       while (index < inputCells.length) {
-        resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
+        resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference, isMulti);
         index = index + 1;
       }
 
@@ -340,7 +362,7 @@ export default class Spread {
     return cell.samples;
   }
 
-  private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false) {
+  private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false, isMulti: boolean = false) {
 
     let resultantSample = new CellProperties();
     resultantSample.samples = new Array<number>();
@@ -352,10 +374,14 @@ export default class Spread {
           return;
         }
 
-        let value = sampleCell1 + sample2.samples[index];
+        let value = 0;
 
         if (isDifference) {
           value = sampleCell1 - sample2.samples[index];
+        } else if (isMulti) {
+          value = sampleCell1 * sample2.samples[index];
+        } else {
+          value = sampleCell1 + sample2.samples[index];
         }
 
         resultantSample.samples.push(value);
