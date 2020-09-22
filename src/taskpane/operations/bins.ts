@@ -1,4 +1,5 @@
 import { hsl, rgb } from "d3";
+import { floor } from "mathjs";
 /* global console */
 
 export default class Bins {
@@ -12,7 +13,7 @@ export default class Bins {
     this.minDomain = minDomain;
     this.maxDomain = maxDomain;
     this.width = width;
-    this.nrOfBins = (this.maxDomain - this.minDomain) / this.width;
+    this.nrOfBins = floor((this.maxDomain - this.minDomain) / this.width);
     this.bins = new Array<Bin>();
   }
 
@@ -50,7 +51,7 @@ export default class Bins {
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 6;
+      i = i + 20;
     }
 
     return ticks;
@@ -62,8 +63,11 @@ export default class Bins {
     let i = 0;
     let color = rgb(217, 217, 217)
     blueColors.push(color.hex());
+    const stepSizeR = 199 / this.nrOfBins;
+    const stepSizeG = 233 / this.nrOfBins;
+    const stepSizeB = 192 / this.nrOfBins;
     while (i < this.nrOfBins) { // from range: RGB(199,233,192) to RGB(0,68,27)
-      color = rgb(199 - 14.21 * i, 233 - 11.78 * i, 192 - 11.78 * i); // in steps of 14
+      color = rgb(199 - stepSizeR * i, 233 - stepSizeG * i, 192 - stepSizeB * i); // in steps of 14
       blueColors.push(color.hex());
 
       i++;
@@ -79,8 +83,11 @@ export default class Bins {
     let i = 0;
     let color = rgb(217, 217, 217);
     orangeColors.push(color.hex());
+
+    const stepSizeG = 225 / this.nrOfBins;
+    const stepSizeB = 239 / this.nrOfBins;
     while (i < this.nrOfBins) {
-      let color = rgb(231, 225 - 13.3 * i, 239 - 8 * i);
+      let color = rgb(231, 225 - stepSizeG * i, 239 - stepSizeB * i);
       orangeColors.push(color.hex());
       i++;
     }

@@ -15,8 +15,8 @@ export default class Spread {
   private blueColors: string[];
   private orangeColors: string[];
   private minDomain = -5;
-  private maxDomain = 40;
-  private binWidth = 3;
+  private maxDomain = 150;
+  private binWidth = 10;
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -182,12 +182,15 @@ export default class Spread {
             })
           }
 
+          let i = 0;
           sortedLinesWithColors.forEach((el) => {
             let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
             rect.name = cell.address + name;
             rect.top = top;
-            rect.left = left + el.value * 0.8 - 2;
+            // rect.left = left + el.value * 0.8 - 2;
             rect.width = 2.4;
+            rect.left = left + rect.width * i;
+            i++;
             rect.height = height;
             rect.fill.setSolidColor(el.color);
             rect.fill.transparency = 0.5;
