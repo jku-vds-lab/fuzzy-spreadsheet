@@ -1,7 +1,7 @@
 /* global console, Excel */
 import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
-import { range, dotMultiply, norm } from 'mathjs';
+import { range, dotMultiply, norm, multiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
@@ -290,14 +290,14 @@ export default class Spread {
       cell.samples = new Array<number>();
 
       if (stdev === 0) {
-        cell.samples = this.computeBernoulliSamples(likelihood);
+        cell.samples = this.computeBernoulliSamples(mean, likelihood);
       } else if (likelihood == 1) {
         cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
       } else {
         const normal = this.computeNormalSamples(mean, stdev);
         const normalSamples = normal.normalSamples;
         const sampleLength = normal.sampleLength;
-        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
+        const bernoulliSamples = this.computeBernoulliSamples(1, likelihood, sampleLength);
 
         cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
       }
@@ -322,11 +322,11 @@ export default class Spread {
     return { normalSamples: normalSamples, sampleLength: sampleLength };
   }
 
-  private computeBernoulliSamples(likelihood: number, sampleLength: number = 100) {
+  private computeBernoulliSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 100) {
     const bern = Bernoulli(likelihood);
     bern.draw();
 
-    const bernoulliSamples = bern.sample(sampleLength);
+    const bernoulliSamples = <number[]>multiply(bern.sample(sampleLength), mean);
     return bernoulliSamples;
   }
 
