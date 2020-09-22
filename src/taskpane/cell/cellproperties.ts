@@ -40,7 +40,7 @@ export default class CellProperties {
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private rowStart: number = 6; // for the reviewers;
+  private rowStart: number = 3; // for the reviewers;
   private rowEnd: number = 20; // for the reviewers;
 
   private colStart: number = 2; //2 // for the reviewers;
@@ -194,14 +194,25 @@ export default class CellProperties {
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
 
     try {
+      // console.log('Cells -> ', this.cells);
       for (let i = 0; i < this.cells.length; i++) {
         cells[i].stdev = 0;
         cells[i].likelihood = 1;
 
         if (cells[i].isUncertain) {
 
-          cells[i].stdev = this.cells[i + 1].value;
-          cells[i].likelihood = this.cells[i + 2].value;
+          if ((i % 4) == 0) {
+            if (cells[1].value.toString().includes('Likelihood')) {
+              cells[i].likelihood = this.cells[i + 1].value;
+            }
+          } else {
+            if (cells[3].value.toString().includes('Standard')) {
+              cells[i].stdev = this.cells[i + 1].value;
+            }
+          }
+
+          // cells[i].stdev = this.cells[i + 1].value;
+          // cells[i].likelihood = this.cells[i + 2].value;
         }
       }
     } catch (error) {

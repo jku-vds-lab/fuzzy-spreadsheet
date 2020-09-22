@@ -50,7 +50,7 @@ export default class Bins {
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 6;
+      i = i + 2;
     }
 
     return ticks;
@@ -69,7 +69,7 @@ export default class Bins {
       i++;
     }
 
-    console.log('Final color: ' + color);
+    // console.log('Final color: ' + color);
     return blueColors;
   }
 

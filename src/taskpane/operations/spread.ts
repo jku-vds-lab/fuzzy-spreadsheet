@@ -1,7 +1,7 @@
 /* global console, Excel */
 import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
-import { range, dotMultiply } from 'mathjs';
+import { range, dotMultiply, multiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
@@ -14,8 +14,8 @@ export default class Spread {
   private blueColors: string[];
   private orangeColors: string[];
   private minDomain = 0;
-  private maxDomain = 60;
-  private binWidth = 4;
+  private maxDomain = 30;
+  private binWidth = 2;
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -181,12 +181,15 @@ export default class Spread {
             })
           }
 
+          let i = 0;
           sortedLinesWithColors.forEach((el) => {
             let rect = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.rectangle);
             rect.name = cell.address + name;
             rect.top = top;
-            rect.left = left + el.value * 0.8 - 2;
+            // rect.left = left + el.value * 0.8 - 2;
             rect.width = 2.4;
+            rect.left = left + rect.width * i;
+            i++;
             rect.height = height;
             rect.fill.setSolidColor(el.color);
             rect.fill.transparency = 0.5;
@@ -278,31 +281,52 @@ export default class Spread {
       const stdev = cell.stdev;
       const likelihood = cell.likelihood;
 
+
       cell.samples = new Array<number>();
 
-      let normalSamples = new Array<number>();
-      const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
+      if (stdev === 0) {
+        console.log('Computing Bernoulli Samples with likelihood ' + likelihood);
+        cell.samples = this.computeBernoulliSamples(mean, likelihood);
+        console.log('Samples: ', cell.samples);
+      } else if (likelihood == 1) {
+        console.log('Computing Normal Samples');
+        cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
+      } else {
+        console.log('Computing Bernoulli & Normal Samples');
+        const normal = this.computeNormalSamples(mean, stdev);
+        const normalSamples = normal.normalSamples;
+        const sampleLength = normal.sampleLength;
+        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
 
-      values.forEach((val: number) => {
-        normalSamples.push(jStat.normal.inv(val, mean, stdev));
-      })
-
-      normalSamples = normalSamples.filter(outliers());
-
-      const sampleLength = normalSamples.length;
-
-      const bern = Bernoulli(likelihood);
-      bern.draw();
-
-      const bernoulliSamples = bern.sample(sampleLength);
-
-      cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+        cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+      }
 
     } catch (error) {
       console.log('Error in Average Spread Computation', error);
     }
 
     return cell.samples;
+  }
+
+  private computeNormalSamples(mean: number, stdev: number) {
+    let normalSamples = new Array<number>();
+    const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
+
+    values.forEach((val: number) => {
+      normalSamples.push(jStat.normal.inv(val, mean, stdev));
+    })
+
+    normalSamples = normalSamples.filter(outliers());
+    const sampleLength = normalSamples.length;
+    return { normalSamples: normalSamples, sampleLength: sampleLength };
+  }
+
+  private computeBernoulliSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 100) {
+    const bern = Bernoulli(likelihood);
+    bern.draw();
+
+    const bernoulliSamples = <number[]>multiply(bern.sample(sampleLength), mean);
+    return bernoulliSamples;
   }
 
   private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {

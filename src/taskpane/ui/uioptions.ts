@@ -278,7 +278,7 @@ export default class UIOptions {
       if (tooltipInfo == null) {
         console.log('Null atm');
       } else {
-        console.log('Deleting atm');
+        // console.log('Deleting atm');
         document.getElementById(divClass + "tooltip").remove();
       }
 
@@ -310,8 +310,8 @@ export default class UIOptions {
 
 
       const minDomain = 0;
-      const maxDomain = 60;
-      const binWidth = 4;
+      const maxDomain = 30;
+      const binWidth = 2;
 
       let binsObj = new Bins(minDomain, maxDomain, binWidth);
       let bins = binsObj.createBins(data);
@@ -545,8 +545,8 @@ export default class UIOptions {
   public drawLegend(isLegendOrange: boolean = false) {
 
     const minDomain = 0;
-    const maxDomain = 60;
-    const binWidth = 4;
+    const maxDomain = 30;
+    const binWidth = 2;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateBlueColors();
@@ -703,7 +703,7 @@ export default class UIOptions {
 
   public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = -1) {
 
-    console.log('NewLikelihood: ' + newLikelihood);
+    // console.log('NewLikelihood: ' + newLikelihood);
 
     d3.select("#likelihoodLegend").select('svg').remove();
 
