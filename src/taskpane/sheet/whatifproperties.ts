@@ -456,8 +456,12 @@ export default class WhatIfProps extends SheetProp {
 
     if ((oldCell.value == newCell.value) && (oldCell.stdev == newCell.stdev) && (oldCell.likelihood == newCell.likelihood)) {
       changedCell = null;
+      console.log('Cell not changed');
+      console.log('Old Values: ' + oldCell.value + ' , ' + oldCell.stdev + ' , ' + oldCell.likelihood);
+      console.log('New Values: ' + newCell.value + ' , ' + newCell.stdev + ' , ' + newCell.likelihood);
     } else {
       changedCell = { oldCell: oldCell, newCell: newCell };
+      console.log('Cell changed');
     }
 
     return changedCell;

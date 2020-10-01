@@ -63,15 +63,18 @@ export default class Bins {
     let i = 0;
     let color = rgb(217, 217, 217)
     blueColors.push(color.hex());
-    const stepSizeR = 199 / this.nrOfBins;
-    const stepSizeG = 233 / this.nrOfBins;
-    const stepSizeB = 192 / this.nrOfBins;
-    while (i < this.nrOfBins) { // from range: RGB(199,233,192) to RGB(0,68,27)
-      color = rgb(199 - stepSizeR * i, 233 - stepSizeG * i, 192 - stepSizeB * i); // in steps of 14
+    // last should be 1, 41, 26
+    const stepSizeR = 177 / this.nrOfBins;
+    const stepSizeG = 179 / this.nrOfBins;
+    const stepSizeB = 177 / this.nrOfBins;
+    while (i < this.nrOfBins) { // from range: RGB(200,233,200) to RGB(23,54,23)
+      color = rgb(200 - stepSizeR * i, 233 - stepSizeG * i, 200 - stepSizeB * i); // in steps of 14
       blueColors.push(color.hex());
 
       i++;
     }
+
+    console.log('Green colors: ', blueColors);
 
     console.log('Final color: ' + color);
     return blueColors;

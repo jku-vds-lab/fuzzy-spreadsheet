@@ -483,7 +483,7 @@ export default class UIOptions {
           (height) + ")")
         .style("text-anchor", "right")
         .style("font-size", "10px")
-        .text('Mio.(€)');
+        .text('k(€)');
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
