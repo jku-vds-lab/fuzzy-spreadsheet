@@ -1,8 +1,9 @@
 /* global console, Excel */
-import { abs, round } from 'mathjs';
+import { abs, round, usolve } from 'mathjs';
 import CellProperties from '../cell/cellproperties';
 import CommonOperations from './commonops';
 import Bins from './bins';
+import { increment } from 'src/functions/functions';
 
 export default class Impact {
 
@@ -84,10 +85,34 @@ export default class Impact {
     })
   }
 
+  private getUltimateDivisor(cell: CellProperties, n: number, divisor: { sum: number }) {
+
+    cell.inputCells.forEach((inCell: CellProperties) => {
+      if (n == 1 || inCell.formula.includes('AVERAGE')) {
+        divisor.sum = divisor.sum + inCell.value;
+        console.log('Sum: ' + divisor.sum + ' n is --> ' + n);
+      } else {
+        // n = n - 1;
+        this.getUltimateDivisor(inCell, n - 1, divisor);
+      }
+    })
+
+    n = 100;
+    console.log('n is --> ' + n);
+
+    return divisor.sum;
+  }
+
+
+
+
   private addImpactInfoInputCells(n: number = 1) {
 
+    let divisor = { sum: 0 };
+    const uSum = this.getUltimateDivisor(this.referenceCell, n, divisor);
+    console.log('Ultimate Sum : ' + uSum);
+
     const isreferenceCellDiff = this.referenceCell.formula.includes('-');
-    const divisor = this.getDivisor(this.referenceCell);
     let subtrahend = null;
 
 
@@ -99,7 +124,7 @@ export default class Impact {
     let isImpactPositive = true;
     const inputCells = this.referenceCell.inputCells;
 
-    this.addInputImpactInfoRecursively(inputCells, n, isImpactPositive, divisor, subtrahend);
+    this.addInputImpactInfoRecursively(inputCells, n, isImpactPositive, divisor.sum, subtrahend);
   }
 
   private addInputImpactInfoRecursively(inputCells: CellProperties[], n: number, isImpactPositive: boolean, divisor: number, subtrahend: string = null) {
@@ -130,7 +155,15 @@ export default class Impact {
     n = n - 1;
 
     inputCells.forEach((inCell: CellProperties) => {
-      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.isImpactPositive, divisor);
+      const isCellDiff = inCell.formula.includes('-');
+      subtrahend = null;
+
+      if (isCellDiff) {
+        let formula = inCell.formula;
+        let idx = formula.indexOf('-');
+        subtrahend = formula.substring(idx + 1, formula.length);
+      }
+      this.addInputImpactInfoRecursively(inCell.inputCells, n, inCell.isImpactPositive, divisor, subtrahend);
     })
   }
 

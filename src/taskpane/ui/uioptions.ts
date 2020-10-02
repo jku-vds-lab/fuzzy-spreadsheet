@@ -310,8 +310,8 @@ export default class UIOptions {
 
 
       const minDomain = 0;
-      const maxDomain = 30;
-      const binWidth = 2;
+      const maxDomain = 15;
+      const binWidth = 1;
 
       let binsObj = new Bins(minDomain, maxDomain, binWidth);
       let bins = binsObj.createBins(data);
@@ -483,7 +483,7 @@ export default class UIOptions {
           (height) + ")")
         .style("text-anchor", "right")
         .style("font-size", "10px")
-        .text('Mio.(€)');
+        .text('k.(€)');
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
@@ -545,8 +545,8 @@ export default class UIOptions {
   public drawLegend(isLegendOrange: boolean = false) {
 
     const minDomain = 0;
-    const maxDomain = 30;
-    const binWidth = 2;
+    const maxDomain = 15;
+    const binWidth = 1;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateBlueColors();
