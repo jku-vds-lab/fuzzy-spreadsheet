@@ -14,9 +14,9 @@ export default class Spread {
   private colors: string[];
   private blueColors: string[];
   private orangeColors: string[];
-  private minDomain = -5;
-  private maxDomain = 150;
-  private binWidth = 10;
+  private minDomain = -2;
+  private maxDomain = 28;
+  private binWidth = 2; // (maxDomain - minDomain) / 15
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];

@@ -309,9 +309,9 @@ export default class UIOptions {
           "translate(" + margin.left + "," + margin.top + ")");
 
 
-      const minDomain = -5;
-      const maxDomain = 150;
-      const binWidth = 10;
+      const minDomain = -2;
+      const maxDomain = 28;
+      const binWidth = 2;
 
       let binsObj = new Bins(minDomain, maxDomain, binWidth);
       let bins = binsObj.createBins(data);
@@ -544,9 +544,9 @@ export default class UIOptions {
 
   public drawLegend(isLegendOrange: boolean = false) {
 
-    const minDomain = -5;
-    const maxDomain = 150;
-    const binWidth = 10;
+    const minDomain = -2;
+    const maxDomain = 28;
+    const binWidth = 2;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateBlueColors();

@@ -51,7 +51,7 @@ export default class Bins {
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 20;
+      i = i + 2;
     }
 
     return ticks;
