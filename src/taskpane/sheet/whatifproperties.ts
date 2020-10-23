@@ -587,12 +587,13 @@ export default class WhatIfProps extends SheetProp {
         if (updatedValue == Math.ceil(updatedValue)) {
           text += updatedValue;
         } else {
-          text += updatedValue.toFixed(2);
+          text += updatedValue.toFixed(1);
         }
+        let MARGIN = 25;
 
         const textbox = sheet.shapes.addTextBox(text);
         textbox.name = cell.address + 'TextBoxUpdate';
-        textbox.left = cell.left + 5;
+        textbox.left = cell.left + MARGIN;
         textbox.top = cell.top + 2;
         textbox.height = cell.height + 4;
         textbox.width = cell.width - 5;
@@ -600,6 +601,7 @@ export default class WhatIfProps extends SheetProp {
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
+        textbox.textFrame.textRange.font.size = 8;
 
         let rotation = 0;
 
@@ -612,7 +614,7 @@ export default class WhatIfProps extends SheetProp {
         arrow.width = 5;
         arrow.height = cell.height / 3;
         arrow.top = cell.top + cell.height / 2 + 2;
-        arrow.left = cell.left + 5;
+        arrow.left = cell.left + MARGIN;
         arrow.lineFormat.color = color;
         arrow.rotation = rotation;
         arrow.fill.setSolidColor(color);

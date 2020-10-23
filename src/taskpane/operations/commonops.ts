@@ -31,7 +31,7 @@ export default class CommonOperations {
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
-        let MARGIN = 10;
+        let MARGIN = 15;
         let height = 5;
         let width = 5;
 
