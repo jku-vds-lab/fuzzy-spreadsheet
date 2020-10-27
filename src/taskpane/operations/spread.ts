@@ -187,12 +187,12 @@ export default class Spread {
             rect.name = cell.address + name;
             rect.top = top;
             // rect.left = left + el.value * 0.8 - 2;
-            rect.width = 2.4;
+            rect.width = 2;
             rect.left = left + rect.width * i;
             i++;
             rect.height = height;
             rect.fill.setSolidColor(el.color);
-            rect.fill.transparency = 0.5;
+            // rect.fill.transparency = 0.5;
             rect.lineFormat.visible = false;
             // rect.lineFormat.color = el.color;
             // rect.lineFormat.transparency = 0.5;

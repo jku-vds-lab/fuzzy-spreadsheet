@@ -589,19 +589,19 @@ export default class WhatIfProps extends SheetProp {
         } else {
           text += updatedValue.toFixed(1);
         }
-        let MARGIN = 25;
+        let MARGIN = 26;
 
         const textbox = sheet.shapes.addTextBox(text);
         textbox.name = cell.address + 'TextBoxUpdate';
         textbox.left = cell.left + MARGIN;
-        textbox.top = cell.top + 2;
-        textbox.height = cell.height + 4;
+        textbox.top = cell.top ;
+        textbox.height = cell.height;
         textbox.width = cell.width - 5;
         // textbox.setZOrder(Excel.ShapeZOrder.sendToBack);
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
-        textbox.textFrame.textRange.font.size = 8;
+        textbox.textFrame.textRange.font.size = 7.5;
 
         let rotation = 0;
 
@@ -609,11 +609,14 @@ export default class WhatIfProps extends SheetProp {
           rotation = 180;
         }
 
+        let arrowHeight = cell.height / 3;
+        let arrowWidth = 5;
+
         let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.triangle);
         arrow.name = cell.address + 'TextBoxUpdate';
-        arrow.width = 5;
-        arrow.height = cell.height / 3;
-        arrow.top = cell.top + cell.height / 2 + 2;
+        arrow.width = arrowWidth;
+        arrow.height = arrowHeight;
+        arrow.top = cell.top + (cell.height - arrowHeight) / 2;
         arrow.left = cell.left + MARGIN;
         arrow.lineFormat.color = color;
         arrow.rotation = rotation;
