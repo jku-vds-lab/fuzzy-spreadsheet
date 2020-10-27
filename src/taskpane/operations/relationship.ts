@@ -84,7 +84,7 @@ export default class Relationship {
           let diamond = shapes.addGeometricShape(type);
           diamond.name = element.cell.address + name;
           diamond.left = element.cell.left + MARGIN;
-          diamond.top = element.cell.top + element.cell.height / 3;
+          diamond.top = element.cell.top + 4.5;
           diamond.height = 6;
           diamond.width = 6;
           diamond.lineFormat.weight = 0;

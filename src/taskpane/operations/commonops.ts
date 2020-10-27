@@ -34,13 +34,13 @@ export default class CommonOperations {
         let MARGIN = 15;
         let height = 5;
         let width = 5;
+        let top = 0;
+        let left = 0;
 
         cells.forEach((cell: CellProperties) => {
 
           cell.rect = sheet.shapes.addGeometricShape("Rectangle");
           cell.rect.name = cell.address + name;
-          cell.rect.left = cell.left + MARGIN;
-          cell.rect.top = cell.top + cell.height / 2.5;
 
           let color = '#d9d9d9';
           let borderColor = 'gray';
@@ -59,23 +59,15 @@ export default class CommonOperations {
           if (cell.isLikelihood) {
             height = cell.likelihood * 10;
             width = cell.likelihood * 10;
-
-            if (cell.likelihood >= 0.8) {
-              cell.rect.top = cell.top + cell.height / 5;
-            }
-            if (cell.likelihood < 0.8) {
-              cell.rect.top = cell.top + cell.height / 3.5;
-            }
-            if (cell.likelihood <= 0.5) {
-              cell.rect.top = cell.top + cell.height / 2;
-            }
-            if (cell.likelihood <= 0.2) {
-              cell.rect.top = cell.top + cell.height / 1.8;
-            }
           }
+
+          top = cell.top + (cell.height - height) / 2; // cell.height is 15
+          left = cell.left + MARGIN + (10 - width) / 2;
 
           cell.rect.height = height;
           cell.rect.width = width;
+          cell.rect.top = top;
+          cell.rect.left = left;
 
           cell.rect.geometricShapeType = Excel.GeometricShapeType.rectangle;
           cell.rect.fill.setSolidColor(color);
