@@ -149,8 +149,8 @@ export default class Spread {
 
         cells.forEach((cell: CellProperties) => {
 
-          let height = cell.height;
-          let top = cell.top;
+          let height = cell.height - 2;
+          let top = cell.top + 1;
           let left = cell.left + 45;
           if (isUpperHalf) {
             height = height / 2;
@@ -194,8 +194,6 @@ export default class Spread {
             rect.fill.setSolidColor(el.color);
             // rect.fill.transparency = 0.5;
             rect.lineFormat.visible = false;
-            // rect.lineFormat.color = el.color;
-            // rect.lineFormat.transparency = 0.5;
           })
         })
         let range = sheet.getRange(this.referenceCell.address);
