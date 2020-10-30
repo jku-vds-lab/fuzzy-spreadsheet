@@ -549,14 +549,14 @@ export default class UIOptions {
     const binWidth = 2;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
-    var colors = binsObj.generateBlueColors();
+    var colors = binsObj.generateGreenColors();
 
 
     let div = '#spreadLegend';
 
     if (isLegendOrange) {
       div = '#newSpreadLegend';
-      colors = binsObj.generateOrangeColors();
+      colors = binsObj.generatePinkColors();
     }
 
     var Svg = d3.select(div).append("svg")
