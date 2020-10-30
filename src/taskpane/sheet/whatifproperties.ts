@@ -615,7 +615,7 @@ export default class WhatIfProps extends SheetProp {
         let lineLeft = cell.left + MARGIN + 4;
         let lineTop = cell.top + (cell.height - arrowHeight) / 2;
         const line = sheet.shapes.addLine(lineLeft, lineTop, lineLeft, lineTop + arrowHeight, Excel.ConnectorType.straight);
-        line.name = "StraightLine";
+        line.name = cell.address + 'TextBoxUpdate';
         line.line.beginArrowheadStyle = Excel.ArrowheadStyle.triangle;
         line.line.beginArrowheadWidth = Excel.ArrowheadWidth.narrow;
         line.rotation = rotation;
