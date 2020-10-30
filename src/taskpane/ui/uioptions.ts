@@ -588,6 +588,32 @@ export default class UIOptions {
   }
 
 
+  public removeImpactInfo() {
+    d3.select("#impactLegend").select('svg').remove();
+    const minDomain = -5;
+    const maxDomain = 40;
+    const binWidth = 1;
+
+    let binsObj = new Bins(minDomain, maxDomain, binWidth);
+    var colors = binsObj.generateRedBlueColors();
+
+    var Svg = d3.select('#impactLegend').append("svg")
+      .attr("width", 200)
+      .attr("height", 35);
+
+      Svg.selectAll("mydots")
+      .data(colors)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return (i) * 2 })
+      .attr("y", 15)
+      .attr("width", 2)
+      .attr("height", 8)
+      .style("fill", function (d, i) {
+        return d;
+      });
+  }
+
 
   public drawImpactLegend(impact: number = -1, newImpact: number = -1, isImpactPositive: boolean = false) {
 
@@ -698,6 +724,41 @@ export default class UIOptions {
         }
         return 15;
       });
+  }
+
+  public removeLikelihoodInfo() {
+
+    d3.select("#likelihoodLegend").select('svg').remove();
+
+    let sizeArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+    var Svg = d3.select('#likelihoodLegend').append("svg")
+      .attr("width", 220)
+      .attr("height", 50);
+
+    // add indicators for likelihood of occurrence (sqaures in grey)
+    Svg.selectAll("mySquares")
+      .data(sizeArray)
+      .enter()
+      .append("rect")
+      .attr("x", function (d, i) { return 2 * (i + 1) + (i) * d / 6; })
+      .attr("y", function (d, i) {
+        // return Math.max.apply(null, sizeArray) / 3 - (i - 1) * sizeArray.length + 20;
+        return 30 - d / 6;
+      })
+      .attr("width", function (d, i) {
+        return d / 6;
+      })
+      .attr("height", function (d, i) {
+        return d / 6;
+      }
+      )
+      // .style("fill", (d) => { return d });
+      .style("fill", function (d, i) {
+        return "#d9d9d9";
+      }
+      );
+
   }
 
 

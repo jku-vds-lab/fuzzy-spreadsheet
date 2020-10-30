@@ -151,7 +151,7 @@ export default class Spread {
 
           let height = cell.height - 2;
           let top = cell.top + 1;
-          let left = cell.left + 45;
+          let left = cell.left + 48;
           if (isUpperHalf) {
             height = height / 2;
           }
