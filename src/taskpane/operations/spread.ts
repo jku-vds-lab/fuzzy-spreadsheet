@@ -25,8 +25,8 @@ export default class Spread {
 
     this.referenceCell = referenceCell;
     this.binsObj = new Bins(this.minDomain, this.maxDomain, this.binWidth);
-    this.blueColors = this.binsObj.generateBlueColors();
-    this.orangeColors = this.binsObj.generateOrangeColors();
+    this.blueColors = this.binsObj.generateGreenColors();
+    this.orangeColors = this.binsObj.generatePinkColors();
     this.colors = this.blueColors;
     this.inputCellsWithSpread = new Array<CellProperties>();
     this.outputCellsWithSpread = new Array<CellProperties>();
