@@ -8,6 +8,12 @@ export default class Bins {
   private width: number;
   private nrOfBins: number;
   public bins: Bin[]
+  private lightestLuminance: number;
+  private darkestLuminance: number;
+  private stepsLuminance: number;
+  private neutralGreyShade: string;
+  private greenColors: string[];
+  private pinkColors: string[];
 
   constructor(minDomain: number, maxDomain: number, width: number) {
     this.minDomain = minDomain;
@@ -15,6 +21,14 @@ export default class Bins {
     this.width = width;
     this.nrOfBins = floor((this.maxDomain - this.minDomain) / this.width);
     this.bins = new Array<Bin>();
+    this.lightestLuminance = 0.9;
+    this.darkestLuminance = 0.3;
+    this.stepsLuminance = (this.lightestLuminance - this.darkestLuminance) / this.nrOfBins;
+    this.neutralGreyShade = rgb(240, 240, 240).hex();
+    this.greenColors = [];
+    this.pinkColors = [];
+    this.greenColors.push(this.neutralGreyShade);
+    this.pinkColors.push(this.neutralGreyShade);
   }
 
   createBins(data: number[]) {
@@ -57,45 +71,28 @@ export default class Bins {
     return ticks;
   }
 
-  generateBlueColors() {
-
-    let blueColors = [];
+  generateGreenColors() {
     let i = 0;
-    let color = rgb(217, 217, 217)
-    blueColors.push(color.hex());
-    // last should be 1, 41, 26
-    const stepSizeR = 177 / this.nrOfBins;
-    const stepSizeG = 179 / this.nrOfBins;
-    const stepSizeB = 177 / this.nrOfBins;
-    while (i < this.nrOfBins) { // from range: RGB(200,233,200) to RGB(23,54,23)
-      color = rgb(200 - stepSizeR * i, 233 - stepSizeG * i, 200 - stepSizeB * i); // in steps of 14
-      blueColors.push(color.hex());
 
+    while (i < this.nrOfBins) {
+      let color = hsl( 147, 0.55, 0.9 - this.stepsLuminance * i);
+      this.greenColors.push(color.hex());
       i++;
     }
 
-    console.log('Green colors: ', blueColors);
-
-    console.log('Final color: ' + color);
-    return blueColors;
+    return this.greenColors;
   }
 
-  generateOrangeColors() {
-
-    let orangeColors = [];
+  generatePinkColors() {
     let i = 0;
-    let color = rgb(217, 217, 217);
-    orangeColors.push(color.hex());
 
-    const stepSizeG = 225 / this.nrOfBins;
-    const stepSizeB = 239 / this.nrOfBins;
     while (i < this.nrOfBins) {
-      let color = rgb(231, 225 - stepSizeG * i, 239 - stepSizeB * i);
-      orangeColors.push(color.hex());
+      let color = hsl( 333, 0.86, 0.9 - this.stepsLuminance * i);
+      this.pinkColors.push(color.hex());
       i++;
     }
 
-    return orangeColors;
+    return this.pinkColors;
   }
 
   generateRedBlueColors() {
