@@ -40,8 +40,8 @@ export default class CellProperties {
 
   private cells: CellProperties[];
 
-  private rowStart: number = 3; // for the reviewers;
-  private rowEnd: number = 20; // for the reviewers;
+  private rowStart: number = 5; // for the reviewers;
+  private rowEnd: number = 26; // for the reviewers;
 
   private colStart: number = 1; //2 // for the reviewers;
   private colEnd: number = 15;//19 // for the reviewers;
