@@ -197,6 +197,7 @@ export default class CellProperties {
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
 
     try {
+      console.log('All cells: ', this.cells);
 
       for (let i = 0; i < this.cells.length; i++) {
         cells[i].stdev = 0;
@@ -204,19 +205,25 @@ export default class CellProperties {
 
         if (cells[i].isUncertain) {
 
-          if ((i % 4) == 0) {
-            if (cells[1].value.toString().includes('Likelihood')) {
-              cells[i].likelihood = this.cells[i + 1].value;
-            }
-          } else {
-            if (cells[3].value.toString().includes('Standard')) {
-              cells[i].stdev = this.cells[i + 1].value;
-            }
-          }
+          cells[i].likelihood = this.cells[i + 1].value;
+
+          // if ((i % 4) == 0) {
+          //   if (cells[1].value.toString().includes('Likelihood')) {
+          //     cells[i].likelihood = this.cells[i + 1].value;
+          //   }
+          // } else {
+          //   if (cells[3].value.toString().includes('Standard')) {
+          //     cells[i].stdev = this.cells[i + 1].value;
+          //   }
+          // }
 
           // cells[i].stdev = this.cells[i + 1].value;
           // cells[i].likelihood = this.cells[i + 2].value;
+
+          console.log('Uncertain cell: ' + cells[i].address + ' has stdev : ' + cells[i].stdev + ' and likelihood: ' + cells[i].likelihood);
         }
+
+
       }
     } catch (error) {
       console.log(error);

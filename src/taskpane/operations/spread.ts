@@ -289,20 +289,27 @@ export default class Spread {
 
       cell.samples = new Array<number>();
 
-      if (stdev === 0) {
-        console.log('Computing Bernoulli Samples with likelihood ' + likelihood);
+      if (stdev === 0 && likelihood === 1) {
+
+        console.log('For cell: ' +cell.address + ' we are just computing no distribution');
+
+        let i = 0;
+        while (i < 100) {
+          cell.samples.push(mean);
+          i++;
+        }
+      } else if(stdev === 0) {
+        console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
         cell.samples = this.computeBernoulliSamples(mean, likelihood);
-        console.log('Samples: ', cell.samples);
       } else if (likelihood == 1) {
-        console.log('Computing Normal Samples');
+        console.log('For cell: ' +cell.address + ' we are computing normal samples');
         cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
       } else {
-        console.log('Computing Bernoulli & Normal Samples');
+        console.log('For cell: ' +cell.address + ' we are computing all samples');
         const normal = this.computeNormalSamples(mean, stdev);
         const normalSamples = normal.normalSamples;
         const sampleLength = normal.sampleLength;
         const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
-
         cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
       }
 
