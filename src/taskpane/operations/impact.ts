@@ -139,6 +139,10 @@ export default class Impact {
 
       inCell.impact = round(impact * 100, 2);
       inCell.isImpactPositive = isImpactPositive;
+      if (inCell.impact > 100) {
+        console.log('Impact for ' + inCell.address + ' is: ' + inCell.impact + ' is it positive? ' + inCell.isImpactPositive);
+        inCell.impact = 100;
+      }
       let index = Math.ceil(inCell.impact);
 
       if (inCell.isImpactPositive) {

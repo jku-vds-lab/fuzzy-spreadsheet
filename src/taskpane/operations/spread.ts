@@ -1,11 +1,12 @@
 /* global console, Excel */
 import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
-import { range, dotMultiply, multiply } from 'mathjs';
+import { range, dotMultiply, norm, multiply } from 'mathjs';
 import { Bernoulli } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
 import { sum, contours } from 'd3';
+import { BaseLegendLayout } from 'vega';
 
 export default class Spread {
 
@@ -13,9 +14,10 @@ export default class Spread {
   private colors: string[];
   private blueColors: string[];
   private orangeColors: string[];
-  private minDomain = 0;
-  private maxDomain = 15;
-  private binWidth = 1;
+
+  private minDomain = 0; // -2 for demo use case
+  private maxDomain = 15; // 28 for demo use case
+  private binWidth = (maxDomain - minDomain) / 15; 
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -24,8 +26,8 @@ export default class Spread {
 
     this.referenceCell = referenceCell;
     this.binsObj = new Bins(this.minDomain, this.maxDomain, this.binWidth);
-    this.blueColors = this.binsObj.generateBlueColors();
-    this.orangeColors = this.binsObj.generateOrangeColors();
+    this.blueColors = this.binsObj.generateGreenColors();
+    this.orangeColors = this.binsObj.generatePinkColors();
     this.colors = this.blueColors;
     this.inputCellsWithSpread = new Array<CellProperties>();
     this.outputCellsWithSpread = new Array<CellProperties>();
@@ -148,10 +150,9 @@ export default class Spread {
 
         cells.forEach((cell: CellProperties) => {
 
-          let height = cell.height;
-          let top = cell.top;
-          let left = cell.left + 30;
-
+          let height = cell.height - 2;
+          let top = cell.top + 1;
+          let left = cell.left + 48;
           if (isUpperHalf) {
             height = height / 2;
           }
@@ -187,15 +188,15 @@ export default class Spread {
             rect.name = cell.address + name;
             rect.top = top;
             // rect.left = left + el.value * 0.8 - 2;
-            rect.width = 2.4;
+
+            rect.width = 2;
+
             rect.left = left + rect.width * i;
             i++;
             rect.height = height;
             rect.fill.setSolidColor(el.color);
-            rect.fill.transparency = 0.5;
+            // rect.fill.transparency = 0.5;
             rect.lineFormat.visible = false;
-            // rect.lineFormat.color = el.color;
-            // rect.lineFormat.transparency = 0.5;
           })
         })
         let range = sheet.getRange(this.referenceCell.address);
@@ -250,6 +251,10 @@ export default class Spread {
         cell.samples = this.addSamplesToSumCell(cell, true);
       }
 
+      if (cell.formula.includes('*')) {
+        cell.samples = this.addSamplesToSumCell(cell, false, true);
+      }
+
       if (cell.formula.includes('AVERAGE')) {
         cell.samples = this.addSamplesToAverageCell(cell);
       }
@@ -296,7 +301,7 @@ export default class Spread {
         const normal = this.computeNormalSamples(mean, stdev);
         const normalSamples = normal.normalSamples;
         const sampleLength = normal.sampleLength;
-        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
+        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);    
 
         cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
       }
@@ -329,7 +334,7 @@ export default class Spread {
     return bernoulliSamples;
   }
 
-  private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false) {
+  private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false, isMulti: boolean = false) {
 
     try {
 
@@ -346,12 +351,12 @@ export default class Spread {
       resultantSample.samples = new Array<number>();
 
       if (inputCells.length > 1) {
-        resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference);
+        resultantSample = this.addTwoSamples(inputCells[index], inputCells[index + 1], isDifference, isMulti);
         index = index + 2;
       }
 
       while (index < inputCells.length) {
-        resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference);
+        resultantSample = this.addTwoSamples(resultantSample, inputCells[index], isDifference, isMulti);
         index = index + 1;
       }
 
@@ -364,7 +369,7 @@ export default class Spread {
     return cell.samples;
   }
 
-  private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false) {
+  private addTwoSamples(sample1: CellProperties, sample2: CellProperties, isDifference: boolean = false, isMulti: boolean = false) {
 
     let resultantSample = new CellProperties();
     resultantSample.samples = new Array<number>();
@@ -376,10 +381,14 @@ export default class Spread {
           return;
         }
 
-        let value = sampleCell1 + sample2.samples[index];
+        let value = 0;
 
         if (isDifference) {
           value = sampleCell1 - sample2.samples[index];
+        } else if (isMulti) {
+          value = sampleCell1 * sample2.samples[index];
+        } else {
+          value = sampleCell1 + sample2.samples[index];
         }
 
         resultantSample.samples.push(value);

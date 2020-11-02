@@ -456,8 +456,12 @@ export default class WhatIfProps extends SheetProp {
 
     if ((oldCell.value == newCell.value) && (oldCell.stdev == newCell.stdev) && (oldCell.likelihood == newCell.likelihood)) {
       changedCell = null;
+      console.log('Cell not changed');
+      console.log('Old Values: ' + oldCell.value + ' , ' + oldCell.stdev + ' , ' + oldCell.likelihood);
+      console.log('New Values: ' + newCell.value + ' , ' + newCell.stdev + ' , ' + newCell.likelihood);
     } else {
       changedCell = { oldCell: oldCell, newCell: newCell };
+      console.log('Cell changed');
     }
 
     return changedCell;
@@ -574,44 +578,63 @@ export default class WhatIfProps extends SheetProp {
 
         let text = '';
 
-        let color = 'red';
+        // let color = 'red';
         if (updatedValue > 0) {
-          color = 'green';
+          // color = 'green';
           text += '+';
         }
 
         if (updatedValue == Math.ceil(updatedValue)) {
           text += updatedValue;
         } else {
-          text += updatedValue.toFixed(2);
+          text += updatedValue.toFixed(1);
         }
+        let MARGIN = 24;
 
         const textbox = sheet.shapes.addTextBox(text);
         textbox.name = cell.address + 'TextBoxUpdate';
-        textbox.left = cell.left + 5;
-        textbox.top = cell.top + 2;
-        textbox.height = cell.height + 4;
+        textbox.left = cell.left + MARGIN;
+        textbox.top = cell.top ;
+        textbox.height = cell.height;
         textbox.width = cell.width - 5;
         // textbox.setZOrder(Excel.ShapeZOrder.sendToBack);
         textbox.lineFormat.visible = false;
         textbox.fill.transparency = 1;
         textbox.textFrame.verticalAlignment = "Distributed";
+        textbox.textFrame.textRange.font.size = 7.5;
 
-        let rotation = 0;
+        let rotation = 0; //45;
 
-        if (color == 'red') {
-          rotation = 180;
+        if (updatedValue < 0) {
+          rotation = 180; // 225;
         }
 
-        let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.triangle);
-        arrow.name = cell.address + 'TextBoxUpdate';
-        arrow.width = 5;
-        arrow.height = cell.height / 3;
-        arrow.top = cell.top + cell.height / 2 + 2;
-        arrow.left = cell.left + 5;
-        arrow.lineFormat.color = color;
-        arrow.rotation = rotation;
-        arrow.fill.setSolidColor(color);
+        let arrowHeight = 8.5;
+        let arrowWidth = 5.9;
+
+        let lineLeft = cell.left + MARGIN + 4;
+        let lineTop = cell.top + (cell.height - arrowHeight) / 2;
+        const line = sheet.shapes.addLine(lineLeft, lineTop, lineLeft, lineTop + arrowHeight, Excel.ConnectorType.straight);
+        line.name = cell.address + 'TextBoxUpdate';
+        line.line.beginArrowheadStyle = Excel.ArrowheadStyle.triangle;
+        line.line.beginArrowheadWidth = Excel.ArrowheadWidth.narrow;
+        line.rotation = rotation;
+        line.lineFormat.color = '000000';
+        line.fill.setSolidColor('000000');
+
+        // ARROWS
+        // // let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.halfFrame);
+        // let arrow = sheet.shapes.addGeometricShape(Excel.GeometricShapeType.upArrow);
+        // arrow.name = cell.address + 'TextBoxUpdate';
+        // arrow.width = arrowWidth;
+        // arrow.height = arrowHeight;
+        // arrow.top = cell.top + (cell.height - arrowHeight) / 2;
+        // arrow.left = cell.left + MARGIN;
+        // // arrow.lineFormat.color = color;
+        // // arrow.fill.setSolidColor(color);
+        // arrow.rotation = rotation;
+        // arrow.lineFormat.visible = false;
+        // arrow.fill.setSolidColor('7F7F7F');
 
         let range = sheet.getRange(this.newReferenceCell.address);
         range.select();
