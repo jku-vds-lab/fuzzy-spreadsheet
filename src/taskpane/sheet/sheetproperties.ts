@@ -480,6 +480,8 @@ export default class SheetProp {
               this.uiOptions.drawImpactLegend(cell.impact, -1, cell.isImpactPositive);
             }
 
+          } else {
+            this.uiOptions.removeImpactInfo();
           }
 
           if (cell.isLikelihood) {
@@ -488,6 +490,8 @@ export default class SheetProp {
             } else {
               this.uiOptions.drawLikelihoodLegend(cell.likelihood, -1);
             }
+          } else {
+            this.uiOptions.removeLikelihoodInfo();
           }
 
           if (cell.isInputRelationship) {

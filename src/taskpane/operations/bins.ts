@@ -1,4 +1,5 @@
 import { hsl, rgb } from "d3";
+import { floor } from "mathjs";
 /* global console */
 
 export default class Bins {
@@ -7,13 +8,27 @@ export default class Bins {
   private width: number;
   private nrOfBins: number;
   public bins: Bin[]
+  private lightestLuminance: number;
+  private darkestLuminance: number;
+  private stepsLuminance: number;
+  private neutralGreyShade: string;
+  private greenColors: string[];
+  private pinkColors: string[];
 
   constructor(minDomain: number, maxDomain: number, width: number) {
     this.minDomain = minDomain;
     this.maxDomain = maxDomain;
     this.width = width;
-    this.nrOfBins = (this.maxDomain - this.minDomain) / this.width;
+    this.nrOfBins = floor((this.maxDomain - this.minDomain) / this.width);
     this.bins = new Array<Bin>();
+    this.lightestLuminance = 0.9;
+    this.darkestLuminance = 0.3;
+    this.stepsLuminance = (this.lightestLuminance - this.darkestLuminance) / this.nrOfBins;
+    this.neutralGreyShade = rgb(240, 240, 240).hex();
+    this.greenColors = [];
+    this.pinkColors = [];
+    this.greenColors.push(this.neutralGreyShade);
+    this.pinkColors.push(this.neutralGreyShade);
   }
 
   createBins(data: number[]) {
@@ -50,42 +65,34 @@ export default class Bins {
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 6;
+      i = i + 2;
     }
 
     return ticks;
   }
 
-  generateBlueColors() {
-
-    let blueColors = [];
+  generateGreenColors() {
     let i = 0;
-    let color = rgb(217, 217, 217)
-    blueColors.push(color.hex());
-    while (i < this.nrOfBins) { // from range: RGB(199,233,192) to RGB(0,68,27)
-      color = rgb(199 - 14.21 * i, 233 - 11.78 * i, 192 - 11.78 * i); // in steps of 14
-      blueColors.push(color.hex());
 
+    while (i < this.nrOfBins) {
+      let color = hsl( 147, 0.55, 0.9 - this.stepsLuminance * i);
+      this.greenColors.push(color.hex());
       i++;
     }
 
-    console.log('Final color: ' + color);
-    return blueColors;
+    return this.greenColors;
   }
 
-  generateOrangeColors() {
-
-    let orangeColors = [];
+  generatePinkColors() {
     let i = 0;
-    let color = rgb(217, 217, 217);
-    orangeColors.push(color.hex());
+
     while (i < this.nrOfBins) {
-      let color = rgb(231, 225 - 13.3 * i, 239 - 8 * i);
-      orangeColors.push(color.hex());
+      let color = hsl( 333, 0.86, 0.9 - this.stepsLuminance * i);
+      this.pinkColors.push(color.hex());
       i++;
     }
 
-    return orangeColors;
+    return this.pinkColors;
   }
 
   generateRedBlueColors() {

@@ -72,6 +72,8 @@ export default class Relationship {
   private drawInputRelation(cellsWithColors: { cell: CellProperties, color: string }[], name: string) {
     try {
 
+      let MARGIN = 5;
+
       Excel.run((context) => {
 
         const sheet = context.workbook.worksheets.getActiveWorksheet();
@@ -81,8 +83,8 @@ export default class Relationship {
           let type = Excel.GeometricShapeType.diamond;
           let diamond = shapes.addGeometricShape(type);
           diamond.name = element.cell.address + name;
-          diamond.left = element.cell.left;
-          diamond.top = element.cell.top + element.cell.height / 3;
+          diamond.left = element.cell.left + MARGIN;
+          diamond.top = element.cell.top + 4.5;
           diamond.height = 6;
           diamond.width = 6;
           diamond.lineFormat.weight = 0;
