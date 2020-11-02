@@ -278,7 +278,7 @@ export default class UIOptions {
       if (tooltipInfo == null) {
         console.log('Null atm');
       } else {
-        console.log('Deleting atm');
+        // console.log('Deleting atm');
         document.getElementById(divClass + "tooltip").remove();
       }
 
@@ -309,9 +309,10 @@ export default class UIOptions {
           "translate(" + margin.left + "," + margin.top + ")");
 
 
-      const minDomain = -2;
-      const maxDomain = 28;
-      const binWidth = 2;
+      const minDomain = 0; // -2 for demo use case
+      const maxDomain = 15; // 28 for demo use case
+      const binWidth = (maxDomain - minDomain) / 15;
+
 
       let binsObj = new Bins(minDomain, maxDomain, binWidth);
       let bins = binsObj.createBins(data);
@@ -483,7 +484,7 @@ export default class UIOptions {
           (height) + ")")
         .style("text-anchor", "right")
         .style("font-size", "10px")
-        .text('k(€)');
+        .text('k.(€)');
 
       if (isLegendOrange) {
         this.drawLinesBeneathChart(cell, isLegendOrange);
@@ -544,9 +545,11 @@ export default class UIOptions {
 
   public drawLegend(isLegendOrange: boolean = false) {
 
-    const minDomain = -2;
-    const maxDomain = 28;
-    const binWidth = 2;
+
+    const minDomain = 0; // -2 for demo use case
+    const maxDomain = 15; // 28 for demo use csae
+    const binWidth = (maxDomain - minDomain) / 15;
+
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateGreenColors();
@@ -764,7 +767,7 @@ export default class UIOptions {
 
   public drawLikelihoodLegend(likelihood: number = 0, newLikelihood: number = -1) {
 
-    console.log('NewLikelihood: ' + newLikelihood);
+    // console.log('NewLikelihood: ' + newLikelihood);
 
     d3.select("#likelihoodLegend").select('svg').remove();
 

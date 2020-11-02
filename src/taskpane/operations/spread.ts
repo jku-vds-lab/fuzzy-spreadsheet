@@ -14,9 +14,10 @@ export default class Spread {
   private colors: string[];
   private blueColors: string[];
   private orangeColors: string[];
-  private minDomain = -2;
-  private maxDomain = 28;
-  private binWidth = 2; // (maxDomain - minDomain) / 15
+
+  private minDomain = 0; // -2 for demo use case
+  private maxDomain = 15; // 28 for demo use case
+  private binWidth = (maxDomain - minDomain) / 15; 
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -187,7 +188,9 @@ export default class Spread {
             rect.name = cell.address + name;
             rect.top = top;
             // rect.left = left + el.value * 0.8 - 2;
+
             rect.width = 2;
+
             rect.left = left + rect.width * i;
             i++;
             rect.height = height;
@@ -287,14 +290,18 @@ export default class Spread {
       cell.samples = new Array<number>();
 
       if (stdev === 0) {
+        console.log('Computing Bernoulli Samples with likelihood ' + likelihood);
         cell.samples = this.computeBernoulliSamples(mean, likelihood);
+        console.log('Samples: ', cell.samples);
       } else if (likelihood == 1) {
+        console.log('Computing Normal Samples');
         cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
       } else {
+        console.log('Computing Bernoulli & Normal Samples');
         const normal = this.computeNormalSamples(mean, stdev);
         const normalSamples = normal.normalSamples;
         const sampleLength = normal.sampleLength;
-        const bernoulliSamples = this.computeBernoulliSamples(1, likelihood, sampleLength);
+        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);    
 
         cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
       }

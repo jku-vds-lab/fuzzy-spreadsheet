@@ -39,8 +39,9 @@ export default class CellProperties {
   public binOrangeColors: string[];
 
   private cells: CellProperties[];
-  private rowStart: number = 5; // for the reviewers;
-  private rowEnd: number = 26; // for the reviewers;
+
+  private rowStart: number = 3; // for the reviewers;
+  private rowEnd: number = 20; // for the reviewers;
 
   private colStart: number = 1; //2 // for the reviewers;
   private colEnd: number = 15;//19 // for the reviewers;
@@ -197,17 +198,24 @@ export default class CellProperties {
 
     try {
 
-      console.log('Uncertain cells');
       for (let i = 0; i < this.cells.length; i++) {
         cells[i].stdev = 0;
         cells[i].likelihood = 1;
 
         if (cells[i].isUncertain) {
 
-          cells[i].stdev = this.cells[i + 1].value;
-          cells[i].likelihood = this.cells[i + 2].value;
+          if ((i % 4) == 0) {
+            if (cells[1].value.toString().includes('Likelihood')) {
+              cells[i].likelihood = this.cells[i + 1].value;
+            }
+          } else {
+            if (cells[3].value.toString().includes('Standard')) {
+              cells[i].stdev = this.cells[i + 1].value;
+            }
+          }
 
-          // console.log(cells[i].address + ' SD: ' + cells[i].stdev + ' L: ' + cells[i].likelihood);
+          // cells[i].stdev = this.cells[i + 1].value;
+          // cells[i].likelihood = this.cells[i + 2].value;
         }
       }
     } catch (error) {
