@@ -17,7 +17,7 @@ export default class Spread {
 
   private minDomain = 0; // -2 for demo use case
   private maxDomain = 15; // 28 for demo use case
-  private binWidth = (maxDomain - minDomain) / 15; 
+  private binWidth = (this.maxDomain - this.minDomain) / 15;
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -301,7 +301,7 @@ export default class Spread {
         const normal = this.computeNormalSamples(mean, stdev);
         const normalSamples = normal.normalSamples;
         const sampleLength = normal.sampleLength;
-        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);    
+        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
 
         cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
       }
