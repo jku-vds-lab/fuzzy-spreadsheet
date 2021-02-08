@@ -6,8 +6,8 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="FuzzySpreadsheet"/>
   <Description DefaultValue="Write your own Excel functions in TypeScript."/>
-  <IconUrl DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/assets/icon-80.png"/>
+  <IconUrl DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/assets/icon-80.png"/>
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
   <AppDomains>
     <AppDomain>contoso.com</AppDomain>
@@ -21,7 +21,7 @@
     </Sets>
   </Requirements>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/taskpane.html"/>
+    <SourceLocation DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/taskpane.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -81,17 +81,17 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Functions.Script.Url" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/functions.js"/>
-        <bt:Url id="Functions.Metadata.Url" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/functions.json"/>
-        <bt:Url id="Functions.Page.Url" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/functions.html"/>
+        <bt:Url id="Functions.Script.Url" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/functions.js"/>
+        <bt:Url id="Functions.Metadata.Url" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/functions.json"/>
+        <bt:Url id="Functions.Page.Url" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/functions.html"/>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Commands.Url" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://jku-icg.github.io/fuzzy-spreadsheet/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://jku-vds-lab.at/fuzzy-spreadsheet/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="Functions.Namespace" DefaultValue="CONTOSO"/>
