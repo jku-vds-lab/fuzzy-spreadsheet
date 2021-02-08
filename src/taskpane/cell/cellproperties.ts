@@ -43,8 +43,8 @@ export default class CellProperties {
   private rowStart: number = 5; // for the reviewers;
   private rowEnd: number = 26; // for the reviewers;
 
-  private colStart: number = 1; //2 // for the reviewers;
-  private colEnd: number = 15;//19 // for the reviewers;
+  private colStart: number = 2 // for the reviewers;
+  private colEnd: number = 19 // for the reviewers;
 
   // what if info
   public isTextbox: boolean = false;

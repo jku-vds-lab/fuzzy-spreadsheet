@@ -62,10 +62,11 @@ export default class Bins {
   getTickValues() {
     let ticks = new Array<number>();
     let i = this.minDomain;
+    let stepSize = 2 * ((this.maxDomain - this.minDomain) / this.nrOfBins);
 
     while (i <= this.maxDomain) {
       ticks.push(i);
-      i = i + 1;
+      i = i + stepSize;
     }
 
     return ticks;

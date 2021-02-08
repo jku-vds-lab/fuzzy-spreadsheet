@@ -310,7 +310,7 @@ export default class UIOptions {
 
 
       const minDomain = -5; // 0 for guiding example ; // -2 for demo use case
-      const maxDomain = 150; // 15 for guiding example; // 28 for demo use case
+      const maxDomain = 145; // 15 for guiding example; // 28 for demo use case
       const binWidth = (maxDomain - minDomain) / 15;
 
 
@@ -547,7 +547,7 @@ export default class UIOptions {
 
 
     const minDomain = -5; // 0 for guiding example ; // -2 for demo use case
-    const maxDomain = 150; // 15 for guiding example; // 28 for demo use case
+    const maxDomain = 145; // 15 for guiding example; // 28 for demo use case
     const binWidth = (maxDomain - minDomain) / 15;
 
 
