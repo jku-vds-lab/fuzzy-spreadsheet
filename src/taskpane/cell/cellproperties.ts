@@ -205,7 +205,9 @@ export default class CellProperties {
 
         if (cells[i].isUncertain) {
 
-          cells[i].likelihood = this.cells[i + 1].value;
+          // Assume that standard deviation and likelihood are stored in the adjacent columns
+          cells[i].stdev = this.cells[i + 1].value;
+          cells[i].likelihood = this.cells[i + 2].value;
 
           // if ((i % 4) == 0) {
           //   if (cells[1].value.toString().includes('Likelihood')) {

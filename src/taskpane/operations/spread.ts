@@ -15,8 +15,8 @@ export default class Spread {
   private blueColors: string[];
   private orangeColors: string[];
 
-  private minDomain = 0; // -2 for demo use case
-  private maxDomain = 15; // 28 for demo use case
+  private minDomain =  -2 // for demo use case
+  private maxDomain =  28 // for demo use case
   private binWidth = (this.maxDomain - this.minDomain) / 15;
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
@@ -263,7 +263,7 @@ export default class Spread {
       if (cell.formula == "") {
         if (stdev == 0 && likelihood == 1) {
           let i = 0;
-          while (i < 100) {
+          while (i < 95) {
             cell.samples.push(mean);
             i++;
           }
@@ -294,7 +294,7 @@ export default class Spread {
         console.log('For cell: ' +cell.address + ' we are just computing no distribution');
 
         let i = 0;
-        while (i < 100) {
+        while (i < 95) {
           cell.samples.push(mean);
           i++;
         }
@@ -333,7 +333,7 @@ export default class Spread {
     return { normalSamples: normalSamples, sampleLength: sampleLength };
   }
 
-  private computeBernoulliSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 100) {
+  private computeBernoulliSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 95) {
     const bern = Bernoulli(likelihood);
     bern.draw();
 

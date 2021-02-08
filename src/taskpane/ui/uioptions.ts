@@ -309,8 +309,8 @@ export default class UIOptions {
           "translate(" + margin.left + "," + margin.top + ")");
 
 
-      const minDomain = 0; // -2 for demo use case
-      const maxDomain = 15; // 28 for demo use case
+      const minDomain =  -2; // for demo use case
+      const maxDomain = 28; // for demo use case
       const binWidth = (maxDomain - minDomain) / 15;
 
 
@@ -546,8 +546,8 @@ export default class UIOptions {
   public drawLegend(isLegendOrange: boolean = false) {
 
 
-    const minDomain = 0; // -2 for demo use case
-    const maxDomain = 15; // 28 for demo use csae
+    const minDomain =  -2  // for demo use case
+    const maxDomain =  28 // for demo use csae
     const binWidth = (maxDomain - minDomain) / 15;
 
 
