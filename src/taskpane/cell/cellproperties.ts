@@ -40,8 +40,8 @@ export default class CellProperties {
 
   private cells: CellProperties[];
 
-  private rowStart: number = 3; // for the reviewers;
-  private rowEnd: number = 20; // for the reviewers;
+  private rowStart: number = 5; // for the reviewers;
+  private rowEnd: number = 26; // for the reviewers;
 
   private colStart: number = 2 // for the reviewers;
   private colEnd: number = 19 // for the reviewers;
@@ -205,7 +205,8 @@ export default class CellProperties {
 
         if (cells[i].isUncertain) {
 
-          cells[i].likelihood = this.cells[i + 1].value;
+          cells[i].stdev = this.cells[i + 1].value;
+          cells[i].likelihood = this.cells[i + 2].value;
 
           // if ((i % 4) == 0) {
           //   if (cells[1].value.toString().includes('Likelihood')) {
