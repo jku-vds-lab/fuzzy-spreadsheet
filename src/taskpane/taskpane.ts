@@ -26,6 +26,8 @@ Office.initialize = () => {
   document.getElementById("startWhatIf").onclick = MainClass.whatIf;
   document.getElementById("useNewValues").onclick = MainClass.keepNewValues;
   document.getElementById("dismissValues").onclick = MainClass.dismissNewValues;
+  document.getElementById("uniformDist").onclick = MainClass.assignUniformDist;
+  document.getElementById("poissonDist").onclick = MainClass.assignPoissonDist;
 
   Excel.run(async (context) => {
     context.workbook.worksheets.onActivated.add(() => MainClass.resetApp());
@@ -151,4 +153,13 @@ class MainClass {
     MainClass.whatIfProp.keepNewValues();
     setTimeout(() => MainClass.sheetProp.processNewValues(), 1000);
   }
+
+  public static assignUniformDist() {
+    MainClass.sheetProp.changeToUniformDist();
+  }
+
+  public static assignPoissonDist() {
+    MainClass.sheetProp.changeToPoissonDist();
+  }
+
 }

@@ -16,6 +16,8 @@ export default class CellProperties {
   public outputCells: CellProperties[];
   public impact: number = 0;
   public likelihood: number = 1;
+  public discreteDist: string = 'Bernoulli';
+  public continuousDist: string = 'Normal';
   public spreadRange: string;
   public stdev: number = 0;
   public computedMean: number = 0;
@@ -40,11 +42,11 @@ export default class CellProperties {
 
   private cells: CellProperties[];
 
-  private rowStart: number = 3; // for the reviewers;
-  private rowEnd: number = 20; // for the reviewers;
+  private rowStart: number = 6; // for the reviewers;
+  private rowEnd: number = 26; // for the reviewers;
 
-  private colStart: number = 2 // for the reviewers;
-  private colEnd: number = 19 // for the reviewers;
+  private colStart: number = 2 ;// for the reviewers;
+  private colEnd: number = 23; // for the reviewers;
 
   // what if info
   public isTextbox: boolean = false;
@@ -69,6 +71,9 @@ export default class CellProperties {
 
   async getCells() {
 
+    // eslint-disable-next-line no-undef
+    const t0 = performance.now();
+
     this.cells = new Array<CellProperties>();
     let cellRanges = new Array<Excel.Range>();
     let fontColors = new Array<Excel.RangeFont>();
@@ -90,10 +95,15 @@ export default class CellProperties {
       this.updateCellsValues(cellRanges, fontColors);
 
     });
+    // eslint-disable-next-line no-undef
+    const t1 = performance.now();
+    console.log('Time taken to get cells: ', (t1 - t0), ' ms');
     return this.cells;
   }
 
   async getCellsFormulasValues() {
+     // eslint-disable-next-line no-undef
+     const t0 = performance.now();
 
     let cellRanges = new Array<Excel.Range>();
     let newValues = new Array<Array<any>>();
@@ -120,6 +130,10 @@ export default class CellProperties {
     } catch (error) {
       console.log(error);
     }
+
+     // eslint-disable-next-line no-undef
+     const t1 = performance.now();
+     console.log('Time taken to get formulas and values: ', (t1 - t0), ' ms');
     return { values: newValues, formulas: newFormulas };
   }
 
@@ -197,7 +211,7 @@ export default class CellProperties {
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
 
     try {
-      console.log('All cells: ', this.cells);
+      // console.log('All cells: ', this.cells);
 
       for (let i = 0; i < this.cells.length; i++) {
         cells[i].stdev = 0;
@@ -222,7 +236,7 @@ export default class CellProperties {
           // cells[i].stdev = this.cells[i + 1].value;
           // cells[i].likelihood = this.cells[i + 2].value;
 
-          console.log('Uncertain cell: ' + cells[i].address + ' has stdev : ' + cells[i].stdev + ' and likelihood: ' + cells[i].likelihood);
+          // console.log('Uncertain cell: ' + cells[i].address + ' has stdev : ' + cells[i].stdev + ' and likelihood: ' + cells[i].likelihood);
         }
 
 
@@ -242,6 +256,8 @@ export default class CellProperties {
   }
 
   getRelationshipOfCells(cells: CellProperties[] = this.cells) {
+     // eslint-disable-next-line no-undef
+     const t0 = performance.now();
 
     cells.forEach((cell: CellProperties) => {
       // eslint-disable-next-line no-empty
@@ -308,6 +324,9 @@ export default class CellProperties {
         })
       }
     })
+     // eslint-disable-next-line no-undef
+     const t1 = performance.now();
+     console.log('Time taken to get relationship: ', (t1 - t0), ' ms');
   }
 
   // can be optimised further

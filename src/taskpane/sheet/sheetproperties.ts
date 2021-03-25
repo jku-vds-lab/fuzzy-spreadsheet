@@ -19,6 +19,7 @@ export default class SheetProp {
   protected cellProp = new CellProperties();
   protected cells: CellProperties[];
   protected referenceCell: CellProperties;
+  protected focusCell: CellProperties;
   protected uiOptions: UIOptions;
 
   private originalTopBorder: Excel.RangeBorder;
@@ -448,6 +449,14 @@ export default class SheetProp {
     }
   }
 
+  public changeToUniformDist() {
+    this.focusCell.continuousDist = "Uniform";
+  }
+
+  public changeToPoissonDist() {
+    this.focusCell.discreteDist = "Poisson";
+  }
+
   public registerCellSelectionChangedEvent() {
 
     Excel.run(async (context) => {
@@ -468,6 +477,8 @@ export default class SheetProp {
       this.cells.forEach((cell: CellProperties, index: number) => {
 
         if (cell.address.includes(event.address)) {
+
+          this.focusCell = cell;
 
           this.uiOptions.removeImpactInfoInTaskpane();
           this.uiOptions.removeRelationshipInfoInTaskpane();

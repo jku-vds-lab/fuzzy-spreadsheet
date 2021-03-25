@@ -2,7 +2,7 @@
 import CellProperties from '../cell/cellproperties';
 import * as outliers from 'outliers';
 import { range, dotMultiply, norm, multiply } from 'mathjs';
-import { Bernoulli } from 'discrete-sampling';
+import { Bernoulli, Poisson } from 'discrete-sampling';
 import * as jStat from 'jstat';
 import Bins from './bins';
 import { sum, contours } from 'd3';
@@ -15,8 +15,8 @@ export default class Spread {
   private blueColors: string[];
   private orangeColors: string[];
 
-  private minDomain =  -2 // for demo use case
-  private maxDomain =  28 // for demo use case
+  private minDomain =  -6 // for demo use case -6
+  private maxDomain =  24 // for demo use case 24
   private binWidth = (this.maxDomain - this.minDomain) / 15;
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
@@ -37,6 +37,9 @@ export default class Spread {
 
     try {
 
+        // eslint-disable-next-line no-undef
+        const t0 = performance.now();
+
       this.showReferenceCellSpread();
 
       if (isInput && n > 0) {
@@ -54,6 +57,10 @@ export default class Spread {
           this.drawBarCodePlot(this.outputCellsWithSpread, 'OutputSpread');
         }
       }
+
+      // eslint-disable-next-line no-undef
+     const t1 = performance.now();
+     console.log('Time taken to compute and draw heatmaps: ', (t1 - t0), ' ms');
 
     } catch (error) {
       console.log('Error in Show spread', error);
@@ -299,18 +306,49 @@ export default class Spread {
           i++;
         }
       } else if(stdev === 0) {
+        if(cell.discreteDist == 'Poisson') {
+          console.log('For cell: ' +cell.address + ' we are computing poisson samples');
+          cell.samples = this.computePoissonSamples(mean, likelihood);
+        } else {
         console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
         cell.samples = this.computeBernoulliSamples(mean, likelihood);
+        }
       } else if (likelihood == 1) {
+        if(cell.continuousDist == 'Uniform') {
+          console.log('For cell: ' +cell.address + ' we are computing uniform samples');
+          cell.samples = this.computeUniformSamples(mean, stdev).samples;
+        } else {
         console.log('For cell: ' +cell.address + ' we are computing normal samples');
-        cell.samples = this.computeNormalSamples(mean, stdev).normalSamples;
+        cell.samples = this.computeNormalSamples(mean, stdev).samples;
+        }
       } else {
         console.log('For cell: ' +cell.address + ' we are computing all samples');
-        const normal = this.computeNormalSamples(mean, stdev);
-        const normalSamples = normal.normalSamples;
-        const sampleLength = normal.sampleLength;
-        const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
-        cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+
+        let continuousSamples = null;
+        let discreteSamples = null;
+        if(cell.continuousDist == 'Uniform') {
+          console.log('For cell: ' +cell.address + ' we are computing uniform samples');
+          continuousSamples = this.computeUniformSamples(mean, stdev);
+        } else if(cell.continuousDist == 'Normal') {
+          console.log('For cell: ' +cell.address + ' we are computing normal samples');
+          continuousSamples = this.computeNormalSamples(mean, stdev);
+        }
+
+        if(cell.discreteDist == 'Poisson') {
+          console.log('Continuous sample length: ',  continuousSamples.sampleLength);
+          discreteSamples = this.computePoissonSamples(1, likelihood, continuousSamples.sampleLength);
+
+        } else if(cell.discreteDist == 'Bernoulli') {
+          console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
+          discreteSamples = this.computeBernoulliSamples(1, likelihood, continuousSamples.sampleLength);
+        }
+
+        // const normal = this.computeNormalSamples(mean, stdev);
+        // const normalSamples = normal.normalSamples;
+        // const sampleLength = normal.sampleLength;
+        // const bernoulliSamples = this.computeBernoulliSamples(likelihood, sampleLength);
+        // cell.samples = <number[]>dotMultiply(normalSamples, bernoulliSamples);
+        cell.samples = <number[]>dotMultiply(continuousSamples.samples, discreteSamples);
       }
 
     } catch (error) {
@@ -330,8 +368,24 @@ export default class Spread {
 
     normalSamples = normalSamples.filter(outliers());
     const sampleLength = normalSamples.length;
-    return { normalSamples: normalSamples, sampleLength: sampleLength };
+    return { samples: normalSamples, sampleLength: sampleLength };
   }
+
+  private computeUniformSamples(mean: number, stdev: number) {
+    let uniformSamples = new Array<number>();
+    const values = <number[]>range(0, 1, 0.01).toArray(); // for 100 samples
+
+    values.forEach((val: number) => {
+      uniformSamples.push(jStat.uniform.inv(val, mean, stdev));
+    })
+
+    uniformSamples = uniformSamples.filter(outliers());
+    const sampleLength = uniformSamples.length;
+    console.log('Uniform sample lenght: ', sampleLength);
+    return { samples: uniformSamples, sampleLength: sampleLength };
+  }
+
+
 
   private computeBernoulliSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 95) {
     const bern = Bernoulli(likelihood);
@@ -339,6 +393,15 @@ export default class Spread {
 
     const bernoulliSamples = <number[]>multiply(bern.sample(sampleLength), mean);
     return bernoulliSamples;
+  }
+
+  private computePoissonSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 95) {
+    console.log('Sample length: ', sampleLength);
+    const poisson = Poisson(likelihood);
+    poisson.draw();
+
+    const poissonSamples = <number[]>multiply(poisson.sample(sampleLength), mean);
+    return poissonSamples;
   }
 
   private addSamplesToSumCell(cell: CellProperties, isDifference: boolean = false, isMulti: boolean = false) {
