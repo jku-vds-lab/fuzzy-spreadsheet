@@ -42,11 +42,11 @@ export default class CellProperties {
 
   private cells: CellProperties[];
 
-  private rowStart: number = 6; // for the reviewers;
-  private rowEnd: number = 26; // for the reviewers;
+  private rowStart: number = 7; // for the reviewers;
+  private rowEnd: number = 30; // for the reviewers;
 
   private colStart: number = 2 ;// for the reviewers;
-  private colEnd: number = 23; // for the reviewers;
+  private colEnd: number = 75; // for the reviewers;
 
   // what if info
   public isTextbox: boolean = false;
@@ -209,11 +209,13 @@ export default class CellProperties {
   }
 
   public addVarianceAndLikelihoodInfo(cells: CellProperties[]) {
+    let errorCell = null;
 
     try {
       // console.log('All cells: ', this.cells);
 
       for (let i = 0; i < this.cells.length; i++) {
+        errorCell = cells[i];
         cells[i].stdev = 0;
         cells[i].likelihood = 1;
 
@@ -242,6 +244,7 @@ export default class CellProperties {
 
       }
     } catch (error) {
+      console.log('Error in the cell: ', errorCell);
       console.log(error);
     }
   }
