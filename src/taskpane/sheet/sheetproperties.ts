@@ -15,7 +15,7 @@ export default class SheetProp {
   protected static isReferenceCell: boolean = false;
   protected static degreeOfNeighbourhood: number = 0;
   protected static newCells: CellProperties[] = null;
-  public static fileInfo: string[][] = new string[10][10];
+  public static fileInfo: string[][] = new Array<Array<string>>();
 
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
@@ -463,11 +463,11 @@ export default class SheetProp {
 
     Excel.run(async (context) => {
       let worksheet = context.workbook.worksheets.getItem('Stats');
-      let myRange: Excel.Range = worksheet.getRange("A1");
+      let myRange: Excel.Range = worksheet.getRange("A1:A2");
       myRange.load(['values']);
       await context.sync();
-      myRange.values = SheetProp.fileInfo;
-      await context.sync();
+      myRange.values = [['a'], ['b']]; //SheetProp.fileInfo;
+      // await context.sync();
 
     }).catch((reason: any) => { console.log(reason) });
   }

@@ -164,7 +164,7 @@ class MainClass {
   }
 
   public static writeToFile() {
-    MainClass.sheetProp.writeToFile();
+     MainClass.sheetProp.writeToFile();
   }
 
 }

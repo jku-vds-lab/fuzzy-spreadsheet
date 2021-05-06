@@ -136,8 +136,8 @@ export default class CellProperties {
 
      // eslint-disable-next-line no-undef
      const t1 = performance.now();
-    //  SheetProp.fileInfo.push(['Time taken to get formulas and values:' + (t1 - t0) + ' ms']);
-    //  console.log('Time taken to get formulas and values: ', (t1 - t0), ' ms');
+    SheetProp.fileInfo.push(['Time taken to get formulas and values:' + (t1 - t0) + ' ms']);
+     console.log('Time taken to get formulas and values: ', (t1 - t0), ' ms');
     return { values: newValues, formulas: newFormulas };
   }
 
