@@ -90,7 +90,7 @@ export default class Impact {
     cell.inputCells.forEach((inCell: CellProperties) => {
       if (n == 1 || inCell.formula.includes('AVERAGE')) {
         divisor.sum = divisor.sum + inCell.value;
-        console.log('Sum: ' + divisor.sum + ' n is --> ' + n);
+        // console.log('Sum: ' + divisor.sum + ' n is --> ' + n);
       } else {
         // n = n - 1;
         this.getUltimateDivisor(inCell, n - 1, divisor);
@@ -98,7 +98,7 @@ export default class Impact {
     })
 
     n = 100;
-    console.log('n is --> ' + n);
+    // console.log('n is --> ' + n);
 
     return divisor.sum;
   }
@@ -110,7 +110,7 @@ export default class Impact {
 
     let divisor = { sum: 0 };
     const uSum = this.getUltimateDivisor(this.referenceCell, n, divisor);
-    console.log('Ultimate Sum : ' + uSum);
+    // console.log('Ultimate Sum : ' + uSum);
 
     const isreferenceCellDiff = this.referenceCell.formula.includes('-');
     let subtrahend = null;
@@ -140,7 +140,7 @@ export default class Impact {
       inCell.impact = round(impact * 100, 2);
       inCell.isImpactPositive = isImpactPositive;
       if (inCell.impact > 100) {
-        console.log('Impact for ' + inCell.address + ' is: ' + inCell.impact + ' is it positive? ' + inCell.isImpactPositive);
+        // console.log('Impact for ' + inCell.address + ' is: ' + inCell.impact + ' is it positive? ' + inCell.isImpactPositive);
         inCell.impact = 100;
       }
       let index = Math.ceil(inCell.impact);

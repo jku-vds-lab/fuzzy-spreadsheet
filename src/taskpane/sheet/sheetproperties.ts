@@ -1,3 +1,4 @@
+import { string } from "mathjs";
 import CellOperations from "../cell/celloperations";
 import CellProperties from "../cell/cellproperties";
 import UIOptions from "../ui/uioptions";
@@ -14,6 +15,7 @@ export default class SheetProp {
   protected static isReferenceCell: boolean = false;
   protected static degreeOfNeighbourhood: number = 0;
   protected static newCells: CellProperties[] = null;
+  public static fileInfo: string[][] = new string[10][10];
 
   protected cellOp: CellOperations;
   protected cellProp = new CellProperties();
@@ -47,7 +49,7 @@ export default class SheetProp {
 
   public resetApp() {
     this.uiOptions.deSelectAllOoptions();
-    console.log('Options deselected');
+    // console.log('Options deselected');
     SheetProp.isInputRelationship = false;
     SheetProp.isOutputRelationship = false;
     SheetProp.isImpact = false;
@@ -87,7 +89,7 @@ export default class SheetProp {
   public async parseSheet() {
     try {
 
-      console.log('Parsing the sheet');
+      // console.log('Parsing the sheet');
 
       this.uiOptions.hideOptions();
       // eslint-disable-next-line require-atomic-updates
@@ -95,7 +97,7 @@ export default class SheetProp {
       this.cellProp.getRelationshipOfCells(this.cells);
       this.uiOptions.showReferenceCellOption();
 
-      console.log('Done parsing the sheet');
+      // console.log('Done parsing the sheet');
 
     } catch (error) {
       console.log(error);
@@ -128,11 +130,11 @@ export default class SheetProp {
 
         this.uiOptions.addRefCellAddressInTaskpane(localAddress);
 
-        console.log('Marking a reference cell');
+        // console.log('Marking a reference cell');
 
         this.addPropertiesToCells(range.address);
 
-        console.log('Done Marking a reference cell');
+        // console.log('Done Marking a reference cell');
 
         this.uiOptions.showVisualizationOption();
         this.registerCellSelectionChangedEvent();
@@ -319,7 +321,7 @@ export default class SheetProp {
 
   public setDegreeOfNeighbourhood(n: number) {
     SheetProp.degreeOfNeighbourhood = n;
-    console.log('DON: ' + n);
+    // console.log('DON: ' + n);
     this.cellOp.setOptions(SheetProp.isImpact, SheetProp.isLikelihood, SheetProp.isSpread, SheetProp.isInputRelationship, SheetProp.isOutputRelationship);
     this.cellOp.removeShapesNeighbourWise(n);
     setTimeout(() => this.displayOptions(), 1000);
@@ -455,6 +457,19 @@ export default class SheetProp {
 
   public changeToPoissonDist() {
     this.focusCell.discreteDist = "Poisson";
+  }
+
+  public writeToFile() {
+
+    Excel.run(async (context) => {
+      let worksheet = context.workbook.worksheets.getItem('Stats');
+      let myRange: Excel.Range = worksheet.getRange("A1");
+      myRange.load(['values']);
+      await context.sync();
+      myRange.values = SheetProp.fileInfo;
+      await context.sync();
+
+    }).catch((reason: any) => { console.log(reason) });
   }
 
   public registerCellSelectionChangedEvent() {

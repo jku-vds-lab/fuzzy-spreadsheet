@@ -28,11 +28,12 @@ Office.initialize = () => {
   document.getElementById("dismissValues").onclick = MainClass.dismissNewValues;
   document.getElementById("uniformDist").onclick = MainClass.assignUniformDist;
   document.getElementById("poissonDist").onclick = MainClass.assignPoissonDist;
+  document.getElementById("writeToFile").onclick = MainClass.writeToFile;
 
   Excel.run(async (context) => {
     context.workbook.worksheets.onActivated.add(() => MainClass.resetApp());
     await context.sync();
-    console.log("Sheet activated.");
+
   }).catch((reason: any) => { console.log(reason) });
 }
 
@@ -43,7 +44,7 @@ class MainClass {
   public static isWhatIfStarted: boolean = false;
 
   public static async resetApp() {
-    console.log('Reset App');
+
     MainClass.sheetProp.resetApp();
     await MainClass.whatIfProp.removeHandler();
   }
@@ -160,6 +161,10 @@ class MainClass {
 
   public static assignPoissonDist() {
     MainClass.sheetProp.changeToPoissonDist();
+  }
+
+  public static writeToFile() {
+    MainClass.sheetProp.writeToFile();
   }
 
 }

@@ -1,3 +1,5 @@
+import SheetProp from "../sheet/sheetproperties";
+
 /* global console, Excel */
 export default class CellProperties {
   public id: string;
@@ -97,6 +99,7 @@ export default class CellProperties {
     });
     // eslint-disable-next-line no-undef
     const t1 = performance.now();
+    SheetProp.fileInfo.push(['Time taken to get cells:' + (t1 - t0) + ' ms']);
     console.log('Time taken to get cells: ', (t1 - t0), ' ms');
     return this.cells;
   }
@@ -133,7 +136,8 @@ export default class CellProperties {
 
      // eslint-disable-next-line no-undef
      const t1 = performance.now();
-     console.log('Time taken to get formulas and values: ', (t1 - t0), ' ms');
+    //  SheetProp.fileInfo.push(['Time taken to get formulas and values:' + (t1 - t0) + ' ms']);
+    //  console.log('Time taken to get formulas and values: ', (t1 - t0), ' ms');
     return { values: newValues, formulas: newFormulas };
   }
 

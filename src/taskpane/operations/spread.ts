@@ -298,7 +298,7 @@ export default class Spread {
 
       if (stdev === 0 && likelihood === 1) {
 
-        console.log('For cell: ' +cell.address + ' we are just computing no distribution');
+        // console.log('For cell: ' +cell.address + ' we are just computing no distribution');
 
         let i = 0;
         while (i < 95) {
@@ -307,39 +307,39 @@ export default class Spread {
         }
       } else if(stdev === 0) {
         if(cell.discreteDist == 'Poisson') {
-          console.log('For cell: ' +cell.address + ' we are computing poisson samples');
+          // console.log('For cell: ' +cell.address + ' we are computing poisson samples');
           cell.samples = this.computePoissonSamples(mean, likelihood);
         } else {
-        console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
+        // console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
         cell.samples = this.computeBernoulliSamples(mean, likelihood);
         }
       } else if (likelihood == 1) {
         if(cell.continuousDist == 'Uniform') {
-          console.log('For cell: ' +cell.address + ' we are computing uniform samples');
+          // console.log('For cell: ' +cell.address + ' we are computing uniform samples');
           cell.samples = this.computeUniformSamples(mean, stdev).samples;
         } else {
-        console.log('For cell: ' +cell.address + ' we are computing normal samples');
+        // console.log('For cell: ' +cell.address + ' we are computing normal samples');
         cell.samples = this.computeNormalSamples(mean, stdev).samples;
         }
       } else {
-        console.log('For cell: ' +cell.address + ' we are computing all samples');
+        // console.log('For cell: ' +cell.address + ' we are computing all samples');
 
         let continuousSamples = null;
         let discreteSamples = null;
         if(cell.continuousDist == 'Uniform') {
-          console.log('For cell: ' +cell.address + ' we are computing uniform samples');
+          // console.log('For cell: ' +cell.address + ' we are computing uniform samples');
           continuousSamples = this.computeUniformSamples(mean, stdev);
         } else if(cell.continuousDist == 'Normal') {
-          console.log('For cell: ' +cell.address + ' we are computing normal samples');
+          // console.log('For cell: ' +cell.address + ' we are computing normal samples');
           continuousSamples = this.computeNormalSamples(mean, stdev);
         }
 
         if(cell.discreteDist == 'Poisson') {
-          console.log('Continuous sample length: ',  continuousSamples.sampleLength);
+          // console.log('Continuous sample length: ',  continuousSamples.sampleLength);
           discreteSamples = this.computePoissonSamples(1, likelihood, continuousSamples.sampleLength);
 
         } else if(cell.discreteDist == 'Bernoulli') {
-          console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
+          // console.log('For cell: ' +cell.address + ' we are computing bernoulli samples');
           discreteSamples = this.computeBernoulliSamples(1, likelihood, continuousSamples.sampleLength);
         }
 
@@ -381,7 +381,7 @@ export default class Spread {
 
     uniformSamples = uniformSamples.filter(outliers());
     const sampleLength = uniformSamples.length;
-    console.log('Uniform sample lenght: ', sampleLength);
+    // console.log('Uniform sample lenght: ', sampleLength);
     return { samples: uniformSamples, sampleLength: sampleLength };
   }
 
@@ -396,7 +396,7 @@ export default class Spread {
   }
 
   private computePoissonSamples(mean: number = 1, likelihood: number = 1, sampleLength: number = 95) {
-    console.log('Sample length: ', sampleLength);
+    // console.log('Sample length: ', sampleLength);
     const poisson = Poisson(likelihood);
     poisson.draw();
 
