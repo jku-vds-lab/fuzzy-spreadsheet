@@ -7,6 +7,7 @@ import * as jStat from 'jstat';
 import Bins from './bins';
 import { sum, contours } from 'd3';
 import { BaseLegendLayout } from 'vega';
+import SheetProp from '../sheet/sheetproperties';
 
 export default class Spread {
 
@@ -60,7 +61,9 @@ export default class Spread {
 
       // eslint-disable-next-line no-undef
      const t1 = performance.now();
+     SheetProp.fileInfo.push(['Time taken to compute and draw heatmaps:' + (t1 - t0) + ' ms']);
      console.log('Time taken to compute and draw heatmaps: ', (t1 - t0), ' ms');
+
 
     } catch (error) {
       console.log('Error in Show spread', error);

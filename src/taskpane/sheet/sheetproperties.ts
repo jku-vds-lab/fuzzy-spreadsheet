@@ -463,10 +463,11 @@ export default class SheetProp {
 
     Excel.run(async (context) => {
       let worksheet = context.workbook.worksheets.getItem('Stats');
-      let myRange: Excel.Range = worksheet.getRange("A1:A2");
+      let myRange: Excel.Range = worksheet.getRange("A1:A3");
       myRange.load(['values']);
+      console.log('SheetProp.fileInfo: ', SheetProp.fileInfo);
       await context.sync();
-      myRange.values = [['a'], ['b']]; //SheetProp.fileInfo;
+      myRange.values = SheetProp.fileInfo;
       // await context.sync();
 
     }).catch((reason: any) => { console.log(reason) });
