@@ -335,12 +335,22 @@
             <table style="width: 100%;">
                 <col width="15" style="text-align: center;">
                 <col width="auto" style="text-align: center;">
+                <col width="15" style="text-align: center;">
+
                 <tr>
                     <td><input type="checkbox" id="spread"></td>
                     <td valign="middle" style="font-size: 12px;"><b>Distribution </b>
                         <font size="1" color="#333">of values in focus cell<font>
                     </td>
-
+                    <td>
+                        <div class="custom-select">
+                            <select name="advDistributions" id="advDistributions">
+                                <option value="uniformDist">Uniform</option>
+                                <option value="poissonDist">Poisson</option>
+                                <option value="betaDist">Beta</option>
+                            </select>
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <td>
@@ -388,6 +398,7 @@
         </div>
 
 
+
         <hr id="spreadHr" style="display: none;">
 
 
@@ -431,9 +442,10 @@
             </select>
         </div> -->
 
-            <button class="btn" id="uniformDist" style="display: flex;">Uniform Distribution</button>
-            <button class="btn" id="poissonDist" style="display: flex;">Poisson Distribution</button>
-            <button class="btn" id="writeToFile" style="display: flex;">Write To The File</button>
+            <!-- <button class="btn" id="uniformDist" style="display: flex;">Uniform Distribution</button>
+            <button class="btn" id="poissonDist" style="display: flex;">Poisson Distribution</button> -->
+
+            <!-- <button class="btn" id="writeToFile" style="display: flex;">Write To The File</button> -->
 
     </main>
 </body>

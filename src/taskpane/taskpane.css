@@ -312,7 +312,11 @@ body {
     margin: 0;
     align: left;
 }
-
+.custom-select {
+    position: relative;
+    font-family: sans-serif;
+    font-size: 1px;;
+  }
 .y.axis line {
     fill: none;
     stroke: #002999;

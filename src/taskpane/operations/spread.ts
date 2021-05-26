@@ -22,6 +22,7 @@ export default class Spread {
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
+  private globalSamplesCount: number = 0;
 
   constructor(referenceCell: CellProperties) {
 
@@ -49,6 +50,7 @@ export default class Spread {
         if (isDraw) {
           this.drawBarCodePlot(this.inputCellsWithSpread, 'InputSpread');
         }
+        console.log("Input Cells with Spread: ", this.globalSamplesCount);
       }
 
       if (isOutput && n > 0) {
@@ -57,6 +59,7 @@ export default class Spread {
         if (isDraw) {
           this.drawBarCodePlot(this.outputCellsWithSpread, 'OutputSpread');
         }
+        console.log("Output Cells with Spread: ", this.globalSamplesCount);
       }
 
       // eslint-disable-next-line no-undef
@@ -246,6 +249,7 @@ export default class Spread {
   private addSamplesToCell(cell: CellProperties) {
 
     try {
+      this.globalSamplesCount++;
 
       cell.samples = new Array<number>();
 
