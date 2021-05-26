@@ -1,0 +1,223 @@
+<html>
+
+<head>
+  <link rel='icon' href='./assets/favicon.ico' type='image/x-icon' />
+  <style>
+    a {
+      font-size: 14 px;
+      text-decoration: none;
+      color: #ea005e;
+    }
+
+    .icon {
+      font-size: 8em;
+    }
+
+    h1 {
+      margin-bottom: 10 px;
+      font-size: 20 px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    body {
+      /* height: 100vh; */
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      justify-content: center;
+
+      background: #24333B;
+      color: #cccccc;
+      font-family: sans-serif;
+      font-size: 14 px;
+    }
+
+    a.lightbox img {
+      width: 722px;
+      height: 348px;
+      border: 3px solid white;
+      box-shadow: 0px 0px 8px rgba(0, 0, 0, .3);
+      margin: 20px 20px 20px 20px;
+    }
+
+    /* Styles the lightbox, removes it from sight and adds the fade-in transition */
+
+    .lightbox-target {
+      position: fixed;
+      top: -100%;
+      width: 100%;
+      background: rgba(0, 0, 0, .7);
+      width: 100%;
+      opacity: 0;
+      -webkit-transition: opacity .5s ease-in-out;
+      -moz-transition: opacity .5s ease-in-out;
+      -o-transition: opacity .5s ease-in-out;
+      transition: opacity .5s ease-in-out;
+      overflow: hidden;
+    }
+
+    /* Styles the lightbox image, centers it vertically and horizontally, adds the zoom-in transition and makes it responsive using a combination of margin and absolute positioning */
+
+    .lightbox-target img {
+      margin: auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 0%;
+      max-width: 0%;
+      border: 3px solid white;
+      box-shadow: 0px 0px 8px rgba(0, 0, 0, .3);
+      box-sizing: border-box;
+      -webkit-transition: .5s ease-in-out;
+      -moz-transition: .5s ease-in-out;
+      -o-transition: .5s ease-in-out;
+      transition: .5s ease-in-out;
+    }
+
+    /* Styles the close link, adds the slide down transition */
+
+    a.lightbox-close {
+      display: block;
+      width: 50px;
+      height: 50px;
+      box-sizing: border-box;
+      background: white;
+      color: black;
+      text-decoration: none;
+      position: absolute;
+      top: -80px;
+      right: 0;
+      -webkit-transition: .5s ease-in-out;
+      -moz-transition: .5s ease-in-out;
+      -o-transition: .5s ease-in-out;
+      transition: .5s ease-in-out;
+    }
+
+    /* Provides part of the "X" to eliminate an image from the close link */
+
+    a.lightbox-close:before {
+      content: "";
+      display: block;
+      height: 30px;
+      width: 1px;
+      background: black;
+      position: absolute;
+      left: 26px;
+      top: 10px;
+      -webkit-transform: rotate(45deg);
+      -moz-transform: rotate(45deg);
+      -o-transform: rotate(45deg);
+      transform: rotate(45deg);
+    }
+
+    /* Provides part of the "X" to eliminate an image from the close link */
+
+    a.lightbox-close:after {
+      content: "";
+      display: block;
+      height: 30px;
+      width: 1px;
+      background: black;
+      position: absolute;
+      left: 26px;
+      top: 10px;
+      -webkit-transform: rotate(-45deg);
+      -moz-transform: rotate(-45deg);
+      -o-transform: rotate(-45deg);
+      transform: rotate(-45deg);
+    }
+
+    /* Uses the :target pseudo-class to perform the animations upon clicking the .lightbox-target anchor */
+
+    .lightbox-target:target {
+      opacity: 1;
+      top: 0;
+      bottom: 0;
+    }
+
+    .lightbox-target:target img {
+      max-height: 100%;
+      max-width: 100%;
+    }
+
+    .lightbox-target:target a.lightbox-close {
+      top: 0px;
+    }
+  </style>
+  <title>Fuzzy Spreadsheets</title>
+</head>
+
+<body>
+  <h1>Welcome to Fuzzy Spreadsheet! <img style="vertical-align: middle;" width="50" height="50"
+      src="./assets/Logo_FuzzySpreadsheet.png" alt="Logo" title="Logo"> </h1>
+  Fuzzy Spreadsheet augments traditional spreadsheets with compact in-cell visualizations. To explore the features of
+  Fuzzy Spreadsheet please follow the instructions.
+  <h1>Pre-Installation Checklist</h1>
+  Any of the latest browsers such as Firefox, Chrome, Edge.
+  <h1>Installation</h1>
+  <ol>
+    <li> Download <a href="./manifest.xml" download>manifest.xml</a> file and save it locally. </li>
+    <li>Open the <a
+        href="https://jkulinz-my.sharepoint.com/:x:/g/personal/rgiyky6y9n_students_jku_at/EZ9G60gOuMFAseyUqb9eKsUBoUGF6vVRPremM-frC-psjQ?e=S55S0D"
+        target="_blank">Excel
+        Online document</a> in a new tab. </li>
+    <li> Go to Insert → Office Add-Ins → Manage My Add-Ins → Upload My Add-In (as shown in Figure 1).
+    </li>
+    <li> Upload locally stored manifest.xml file.</li>
+    <li> Open Fuzzy Spreadsheet side panel by clicking on ‘Show Taskpane’ (Home → Commands Group → Show taskpane).</li>
+
+  </ol>
+
+  <!-- <figure> -->
+  <a class="lightbox" href="#installation">
+    <img src="./assets/Installation.png" alt="Installation" title="Installation">
+  </a>
+
+  <div class="lightbox-target" id="installation">
+    <img src="./assets/Installation.png" alt="Installation" title="Installation">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+  <figcaption>Figure 1 - Upload manifest.xml file</figcaption>
+  <!-- </figure> -->
+
+  <h1>Post-Installation Checklist</h1>
+  <ol>
+    <li>Load the add-in and click on the "Initialize" button in the side panel (as shown in Figure 2).</li>
+    <li>Select a cell in the worksheet and click on "Mark as Reference Cell" button in the side panel.</li>
+    <li>Choose the options "Influencing the reference cell" and "Influenced by the reference cell".</li>
+    <li>Change the "degree of neighborhood" to 1.</li>
+    <li>This should show the glyphs in the related cells.</li>
+    <li>You can then choose to click on "Impact", "Likelihood" and/or "Distribution" and analyze the in-cell encodings
+      along with the side-panel information (as shown in Figure 3).</li>
+
+  </ol>
+
+  <a class="lightbox" href="#check1">
+    <img src="./assets/Check1.png" alt="Check1" title="Check1">
+  </a>
+
+  <div class="lightbox-target" id="check1">
+    <img src="./assets/Check1.png" alt="Check1" title="Check1">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+  <figcaption>Figure 2 - Load add-in and Click on the "Initalize" button</figcaption>
+
+  <a class="lightbox" href="#check2">
+    <img src="./assets/Check2.png" alt="Check2" title="Check2">
+  </a>
+
+  <div class="lightbox-target" id="check2">
+    <img src="./assets/Check2.png" alt="Check2" title="Check2">
+    <a class="lightbox-close" href="#"></a>
+  </div>
+
+  <figcaption>Figure 3 - Select the options to view in-cell encodings</figcaption>
+
+</body>
+
+</html>
