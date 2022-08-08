@@ -15,9 +15,10 @@ export default class Spread {
   private blueColors: string[];
   private orangeColors: string[];
 
-  private minDomain = -5; // 0 for guiding example ; // -2 for demo use case
-  private maxDomain = 145; // 15 for guiding example; // 28 for demo use case
-  private binWidth = (this.maxDomain - this.minDomain) / 15;
+  private minDomain = 0; // 0 for guiding example ; // -2 for demo use case
+  private maxDomain = 80; // 15 for guiding example; // 28 for demo use case
+  private binWidth = (this.maxDomain - this.minDomain) / 20;
+  // private binNr = 80/4 = 20
   private binsObj: Bins;
   private inputCellsWithSpread: CellProperties[];
   private outputCellsWithSpread: CellProperties[];
@@ -152,7 +153,7 @@ export default class Spread {
 
           let height = cell.height - 2;
           let top = cell.top + 1;
-          let left = cell.left + 48;
+          let left = cell.left + 30;
           if (isUpperHalf) {
             height = height / 2;
           }

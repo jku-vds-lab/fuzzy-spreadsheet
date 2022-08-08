@@ -309,9 +309,9 @@ export default class UIOptions {
           "translate(" + margin.left + "," + margin.top + ")");
 
 
-      const minDomain = -5; // 0 for guiding example ; // -2 for demo use case
-      const maxDomain = 145; // 15 for guiding example; // 28 for demo use case
-      const binWidth = (maxDomain - minDomain) / 15;
+      const minDomain = 0; // 0 for guiding example ; // -2 for demo use case
+      const maxDomain = 80; // 15 for guiding example; // 28 for demo use case
+      const binWidth = (maxDomain - minDomain) / 20;
 
 
       let binsObj = new Bins(minDomain, maxDomain, binWidth);
@@ -546,9 +546,9 @@ export default class UIOptions {
   public drawLegend(isLegendOrange: boolean = false) {
 
 
-    const minDomain = -5; // 0 for guiding example ; // -2 for demo use case
-    const maxDomain = 145; // 15 for guiding example; // 28 for demo use case
-    const binWidth = (maxDomain - minDomain) / 15;
+    const minDomain = 0; // 0 for guiding example ; // -2 for demo use case
+    const maxDomain = 80; // 15 for guiding example; // 28 for demo use case
+    const binWidth = (maxDomain - minDomain) / 20;
 
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
@@ -644,9 +644,9 @@ export default class UIOptions {
       newImpactTemp = -1;
     }
 
-    const minDomain = -5;
-    const maxDomain = 40;
-    const binWidth = 1;
+    const minDomain = 0;
+    const maxDomain = 80;
+    const binWidth = 4;
 
     let binsObj = new Bins(minDomain, maxDomain, binWidth);
     var colors = binsObj.generateRedBlueColors();
